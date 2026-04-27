@@ -68,22 +68,24 @@ export default function IntroSequence() {
     }, VIDEO_TIMEOUT_MS);
 
     if (video) {
-      /* Attempt play immediately (video may already be buffered) */
       const tryPlay = () => {
         video.play().catch(() => {
-          /* Play failed (autoplay policy, codec, etc.) — skip video */
+          /* Autoplay blocked or codec unsupported — skip to site */
           finishIntro();
         });
       };
 
-      if (video.readyState >= 3) {
+      /* readyState 2+ means we have enough data to start */
+      if (video.readyState >= 2) {
         tryPlay();
       } else {
+        /* Wait for enough data — canplaythrough is more reliable than canplay */
+        video.addEventListener('canplaythrough', tryPlay, { once: true });
+        /* Also accept canplay as fallback for slower connections */
         video.addEventListener('canplay', tryPlay, { once: true });
         video.addEventListener('error', () => finishIntro(), { once: true });
       }
     } else {
-      /* No video element — skip immediately */
       finishIntro();
     }
 
@@ -261,11 +263,11 @@ export default function IntroSequence() {
                 ref={videoRef}
                 className="w-full h-full object-cover"
                 playsInline
+                autoPlay
                 muted
                 preload="auto"
                 onEnded={finishIntro}
                 onError={finishIntro}
-                onStalled={finishIntro}
               >
                 <source src="/videos/intro.mp4" type="video/mp4" />
                 <source src="/videos/intro.mov" type="video/quicktime" />

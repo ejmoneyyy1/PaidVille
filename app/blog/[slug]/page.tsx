@@ -6,7 +6,7 @@ export const runtime = 'edge';
 export const revalidate = 60;
 
 interface Params {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 async function getPost(slug: string): Promise<BlogPost | null> {
@@ -25,7 +25,8 @@ async function getPost(slug: string): Promise<BlogPost | null> {
 }
 
 export default async function BlogPostPage({ params }: Params) {
-  const post = await getPost(params.slug);
+  const { slug } = await params;
+  const post = await getPost(slug);
   if (!post) notFound();
 
   const date = new Date(post.publishedAt).toLocaleDateString('en-US', {
