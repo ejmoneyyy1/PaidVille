@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { sanityClient } from '@/lib/sanity';
 import type { BlogPost } from '@/components/sections/BlogPreview';
 
+export const runtime = 'edge';
 export const revalidate = 60;
 
 interface Params {

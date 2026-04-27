@@ -2,6 +2,7 @@ import { sanityClient, galleryQuery } from '@/lib/sanity';
 import type { GalleryItem } from '@/components/sections/Gallery';
 import GallerySection from '@/components/sections/Gallery';
 
+export const runtime = 'edge';
 export const revalidate = 60;
 
 export default async function GalleryPage() {

@@ -9,6 +9,7 @@ import { sanityClient, blogQuery, galleryQuery } from '@/lib/sanity';
 import type { BlogPost } from '@/components/sections/BlogPreview';
 import type { GalleryItem } from '@/components/sections/Gallery';
 
+export const runtime = 'edge';
 export const revalidate = 60;
 
 const STATIC_GALLERY: GalleryItem[] = [

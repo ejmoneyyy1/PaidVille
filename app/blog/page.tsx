@@ -2,6 +2,7 @@ import { sanityClient, blogQuery } from '@/lib/sanity';
 import type { BlogPost } from '@/components/sections/BlogPreview';
 import BlogCard from './_components/BlogCard';
 
+export const runtime = 'edge';
 export const revalidate = 60;
 
 export default async function BlogPage() {
