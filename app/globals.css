@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Reset & Defaults ────────────────────────────── */
+@layer base {
+  :root {
+    --brand-red: #b00000;
+    --brand-red-light: #d40000;
+    --brand-red-dark: #800000;
+    --brand-bg: #0a0a0a;
+    --brand-surface: #111111;
+    --brand-card: #1a1a1a;
+    --brand-muted: #2a2a2a;
+    --brand-text-dim: #9a9a9a;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-[#0A0A0A] text-white antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #b00000;
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #b00000;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #d40000;
+  }
+}
+
+/* ─── Utility Classes ────────────────────────────────────── */
+@layer utilities {
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #ffffff 0%, #b00000 60%, #800000 100%);
+  }
+
+  .text-gradient-white {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.6) 100%);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 30px rgba(176, 0, 0, 0.4), 0 0 60px rgba(176, 0, 0, 0.15);
+  }
+
+  .glow-red-sm {
+    box-shadow: 0 0 15px rgba(176, 0, 0, 0.3);
+  }
+
+  .border-brand {
+    border-color: rgba(176, 0, 0, 0.4);
+  }
+
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .card-glass {
+    background: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .card-glass-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-glass-hover:hover {
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(176, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(176, 0, 0, 0.1);
+  }
+
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 xl:px-12;
+  }
+
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .divider-brand {
+    @apply h-px w-16 bg-gradient-to-r from-transparent via-brand-red to-transparent;
+  }
+}
+
+/* ─── Component Classes ──────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full
+      bg-gradient-to-r from-brand-red to-brand-red-dark text-white font-display font-semibold
+      text-sm tracking-wider uppercase transition-all duration-300
+      hover:from-brand-red-light hover:to-brand-red hover:scale-[1.03] hover:shadow-lg
+      focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:ring-offset-black
+      active:scale-[0.98];
+    box-shadow: 0 4px 24px rgba(176, 0, 0, 0.35);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full
+      border border-white/20 text-white font-display font-semibold
+      text-sm tracking-wider uppercase transition-all duration-300
+      hover:border-brand-red hover:bg-brand-red/10 hover:scale-[1.03]
+      focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-black
+      active:scale-[0.98];
+  }
+
+  .section-label {
+    @apply inline-flex items-center gap-2 text-xs font-display font-semibold tracking-[0.2em]
+      uppercase text-brand-red mb-4;
+  }
+
+  .section-title {
+    @apply font-display font-black text-4xl md:text-5xl lg:text-6xl leading-tight;
+  }
+
+  .section-subtitle {
+    @apply text-brand-text-dim text-lg leading-relaxed max-w-2xl;
+  }
+}
