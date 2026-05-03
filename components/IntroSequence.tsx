@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,8 +8,8 @@ type Phase = 'loader' | 'logo' | 'video' | 'done';
 
 const LOADER_DURATION_MS = 2400;
 const LOGO_HOLD_MS = 1600;
-/** Max time we wait for the video before giving up and entering the site */
-const VIDEO_TIMEOUT_MS = 12000;
+/** Allow long clips / slow Safari decode before we bail out */
+const VIDEO_TIMEOUT_MS = 120000;
 
 export default function IntroSequence() {
   const [phase, setPhase] = useState<Phase>('loader');
@@ -19,11 +19,16 @@ export default function IntroSequence() {
   const videoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doneRef = useRef(false);
 
-  /* ── Skip if already shown this session ── */
+  /* ── Skip full intro if already completed this tab session (production only) ── */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    /* Clear old cache so intro always plays fresh during development */
-    sessionStorage.removeItem('pv_intro_done');
+    if (process.env.NODE_ENV === 'development') {
+      sessionStorage.removeItem('pv_intro_done');
+      return;
+    }
+    if (sessionStorage.getItem('pv_intro_done')) {
+      setPhase('done');
+    }
   }, []);
 
   /* ── Phase 1: count 0 → 100 ── */
@@ -56,40 +61,104 @@ export default function IntroSequence() {
     return () => clearTimeout(t);
   }, [phase]);
 
-  /* ── Phase 3: video — never block, always have an escape ── */
-  useEffect(() => {
+  /* ── Phase 3: video — Safari: no video.load(), gated ready, retry play until timeout ── */
+  useLayoutEffect(() => {
     if (phase !== 'video') return;
 
-    const video = videoRef.current;
+    const ac = new AbortController();
+    const { signal } = ac;
 
-    /* Hard timeout — if video doesn't play within limit, go to site */
-    videoTimeoutRef.current = setTimeout(() => {
-      finishIntro();
-    }, VIDEO_TIMEOUT_MS);
+    let cancelled = false;
+    let raf = 0;
 
-    if (video) {
-      const tryPlay = () => {
-        video.play().catch(() => {
-          /* Autoplay blocked or codec unsupported — skip to site */
+    let nullRefRetries = 0;
+
+    const start = () => {
+      const video = videoRef.current;
+      if (cancelled) return;
+      if (!video) {
+        nullRefRetries += 1;
+        if (nullRefRetries > 40) {
           finishIntro();
+          return;
+        }
+        window.setTimeout(start, 50);
+        return;
+      }
+
+      /* Safari: explicit mute + inline before play() */
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', 'true');
+
+      videoTimeoutRef.current = setTimeout(() => {
+        finishIntro();
+      }, VIDEO_TIMEOUT_MS);
+
+      let playAttempts = 0;
+
+      const tryPlay = () => {
+        if (cancelled || !videoRef.current) return;
+        const el = videoRef.current;
+        el.muted = true;
+        el.volume = 0;
+        try {
+          if (el.currentTime === 0) el.currentTime = 0.001;
+        } catch {
+          /* ignore */
+        }
+        el.play()
+          .then(() => {
+            playAttempts = 0;
+          })
+          .catch(() => {
+            if (cancelled) return;
+            playAttempts += 1;
+            const delay = Math.min(250 + playAttempts * 80, 2000);
+            window.setTimeout(tryPlay, delay);
+          });
+      };
+
+      let readyFired = false;
+      const onReady = () => {
+        if (cancelled || readyFired) return;
+        readyFired = true;
+        requestAnimationFrame(() => {
+          requestAnimationFrame(tryPlay);
         });
       };
 
-      /* readyState 2+ means we have enough data to start */
+      const onFatalError = () => {
+        const err = video.error;
+        if (err?.code === MediaError.MEDIA_ERR_ABORTED || err?.code === 1) return;
+        window.setTimeout(() => {
+          if (cancelled || !video.error) return;
+          if (video.error.code === MediaError.MEDIA_ERR_ABORTED || video.error.code === 1) {
+            return;
+          }
+          finishIntro();
+        }, 400);
+      };
+
+      video.addEventListener('loadedmetadata', onReady, { once: true, signal });
+      video.addEventListener('loadeddata', onReady, { once: true, signal });
+      video.addEventListener('canplay', onReady, { once: true, signal });
+      video.addEventListener('error', onFatalError, { signal });
+
       if (video.readyState >= 2) {
-        tryPlay();
-      } else {
-        /* Wait for enough data — canplaythrough is more reliable than canplay */
-        video.addEventListener('canplaythrough', tryPlay, { once: true });
-        /* Also accept canplay as fallback for slower connections */
-        video.addEventListener('canplay', tryPlay, { once: true });
-        video.addEventListener('error', () => finishIntro(), { once: true });
+        onReady();
       }
-    } else {
-      finishIntro();
-    }
+    };
+
+    raf = requestAnimationFrame(() => {
+      requestAnimationFrame(start);
+    });
 
     return () => {
+      cancelled = true;
+      ac.abort();
+      cancelAnimationFrame(raf);
       if (videoTimeoutRef.current) clearTimeout(videoTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,7 +186,7 @@ export default function IntroSequence() {
     <AnimatePresence>
       <motion.div
         key="intro-overlay"
-        className="fixed inset-0 z-[200] bg-[#0A0A0A] flex items-center justify-center overflow-hidden"
+        className="fixed inset-0 z-[200] bg-cream flex items-center justify-center overflow-hidden"
         animate={{ opacity: exiting ? 0 : 1 }}
         transition={{ duration: 0.65, ease: 'easeInOut' }}
       >
@@ -165,7 +234,7 @@ export default function IntroSequence() {
                   >
                     {count}
                   </span>
-                  <span className="font-display text-[10px] font-bold tracking-[0.2em] text-white/25 uppercase">
+                  <span className="font-display text-[10px] font-bold tracking-[0.2em] text-charcoal/30 uppercase">
                     %
                   </span>
                 </div>
@@ -179,12 +248,12 @@ export default function IntroSequence() {
                 transition={{ delay: 0.15 }}
               >
                 <p className="font-display font-black text-[2rem] leading-none" style={{ letterSpacing: '0.12em' }}>
-                  <span className="text-white">PAID</span>
+                  <span className="text-charcoal">PAID</span>
                   <span style={{ color: '#B00000' }}>VILLE</span>
                 </p>
                 <div className="flex items-center gap-3">
                   <span className="h-px w-8" style={{ background: 'rgba(176,0,0,0.4)' }} />
-                  <span className="font-display text-[10px] tracking-[0.28em] uppercase text-white/25">
+                  <span className="font-display text-[10px] tracking-[0.28em] uppercase text-charcoal/35">
                     Est. 2018
                   </span>
                   <span className="h-px w-8" style={{ background: 'rgba(176,0,0,0.4)' }} />
@@ -193,7 +262,7 @@ export default function IntroSequence() {
 
               {/* Progress bar */}
               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[200px]">
-                <div className="h-[2px] bg-white/5 w-full rounded-full overflow-hidden">
+                <div className="h-[2px] bg-charcoal/10 w-full rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ background: 'linear-gradient(to right, #800000, #B00000, #D40000)' }}
@@ -236,7 +305,7 @@ export default function IntroSequence() {
                 transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Image
-                  src="/images/splashlogo.jpg"
+                  src="/images/splashlogo.png"
                   alt="PaidVille"
                   fill
                   className="object-contain"
@@ -252,7 +321,7 @@ export default function IntroSequence() {
           {phase === 'video' && (
             <motion.div
               key="video"
-              className="absolute inset-0 bg-black flex items-center justify-center"
+              className="absolute inset-0 bg-cream flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -267,18 +336,22 @@ export default function IntroSequence() {
                 muted
                 preload="auto"
                 onEnded={finishIntro}
-                onError={finishIntro}
               >
-                <source src="/videos/intro.mp4" type="video/mp4" />
-                <source src="/videos/intro.mov" type="video/quicktime" />
+                {/*
+                  Order: Safari prefers native QuickTime (.mov) first for autoplay + best match to
+                  your master file Lights.MOV. MP4 is a high-quality H.264 fallback (CRF 17) for
+                  browsers that do not play this .mov reliably.
+                */}
+                <source src="/videos/lights.mov" type="video/quicktime" />
+                <source src="/videos/lights.mp4" type="video/mp4" />
               </video>
 
               {/* Skip */}
               <motion.button
                 className="absolute bottom-8 right-8 flex items-center gap-2 px-5 py-2.5
                   rounded-full text-xs font-display font-semibold tracking-wider uppercase
-                  text-white/60 hover:text-white border border-white/15 hover:border-white/40
-                  backdrop-blur-sm bg-black/30 transition-all duration-200 hover:bg-black/50
+                  text-charcoal/50 hover:text-charcoal border border-brand-red/40 hover:border-brand-red
+                  backdrop-blur-sm bg-white/70 transition-all duration-200 hover:bg-white
                   focus:outline-none"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -289,8 +362,8 @@ export default function IntroSequence() {
               </motion.button>
 
               {/* Watermark */}
-              <div className="absolute top-6 left-6 opacity-30 pointer-events-none">
-                <span className="font-display font-black text-sm tracking-[0.15em] uppercase text-white">
+              <div className="absolute top-6 left-6 opacity-40 pointer-events-none">
+                <span className="font-display font-black text-sm tracking-[0.15em] uppercase text-charcoal">
                   PAID<span style={{ color: '#B00000' }}>VILLE</span>
                 </span>
               </div>

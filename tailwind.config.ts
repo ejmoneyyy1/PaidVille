@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss';
+import type {Config} from 'tailwindcss';
 
 const config: Config = {
   content: [
@@ -10,6 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        cream: '#F5F5F0',
+        silver: '#E5E5E5',
+        'pv-red': '#B00000',
+        charcoal: '#1A1A1A',
         brand: {
           red: '#B00000',
           'red-light': '#D40000',
@@ -32,15 +36,13 @@ const config: Config = {
       },
       keyframes: {
         float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-12px)' },
+          '0%, 100%': {transform: 'translateY(0px)'},
+          '50%': {transform: 'translateY(-12px)'},
         },
       },
       backgroundImage: {
-        'radial-brand':
-          'radial-gradient(ellipse at center, rgba(176,0,0,0.15) 0%, transparent 70%)',
-        'gradient-brand':
-          'linear-gradient(135deg, #B00000 0%, #800000 100%)',
+        'radial-brand': 'radial-gradient(ellipse at center, rgba(176,0,0,0.12) 0%, transparent 70%)',
+        'gradient-brand': 'linear-gradient(135deg, #B00000 0%, #800000 100%)',
       },
     },
   },

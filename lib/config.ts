@@ -2,19 +2,19 @@ export const SiteConfig = {
   name: 'PaidVille',
   tagline: 'Premium Events. Elevated Lifestyle.',
   description:
-    'PaidVille is a local event planning and lifestyle brand delivering high-energy experiences through curated events, media, fashion, and community.',
+    'PaidVille is a creative agency and lifestyle brand delivering high-energy experiences through curated events, media, fashion, and community.',
   url: 'https://paidville.com',
-  logo: '/images/logo.png',
+  logo: '/images/splashlogo.png',
 
   brand: {
     primary: '#B00000',
     primaryLight: '#D40000',
     primaryDark: '#800000',
-    background: '#0A0A0A',
-    surface: '#111111',
-    cardSurface: '#1A1A1A',
-    text: '#FFFFFF',
-    textDim: '#9A9A9A',
+    background: '#F5F5F0',
+    surface: '#E5E5E5',
+    cardSurface: '#F5F5F0',
+    text: '#1A1A1A',
+    textDim: '#4A4A4A',
   },
 
   social: {
@@ -31,42 +31,44 @@ export const SiteConfig = {
     location: 'Fayetteville, AR',
   },
 
+  communityGiveUrl: 'https://www.paypal.com/donate',
+
   nav: [
-    { label: 'Services', href: '#services' },
-    { label: 'Events', href: '#events' },
-    { label: 'About', href: '#about' },
-    { label: 'Gallery', href: '/gallery' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Shop', href: '/shop' },
+    {label: 'Services', href: '#services'},
+    {label: 'Events', href: '#events'},
+    {label: 'About', href: '#about'},
+    {label: 'Gallery', href: '/gallery'},
+    {label: 'Blog', href: '/blog'},
+    {label: 'Shop', href: '/shop'},
   ],
 
   services: [
     {
-      id: 'promo',
-      title: 'Promo & Entertainment',
+      id: 'events',
+      title: 'Events & Entertainment',
       description:
-        'From intimate gatherings to large-scale productions, we craft unforgettable entertainment experiences that keep crowds electric all night.',
+        'FROM INTIMATE GATHERINGS TO LARGE SCALE PRODUCTIONS, LET US CRAFT YOUR NEXT UNFORGETTABLE EXPERIENCE',
       icon: 'Zap',
-      href: '#events',
-      gradient: 'from-red-900 to-brand-black',
+      cta: 'Experience Now',
+      inquiryMode: 'event' as const,
     },
     {
-      id: 'media',
-      title: 'Media',
+      id: 'branding',
+      title: 'Branding',
       description:
-        'Professional photography, videography, and content creation that captures every electric moment and amplifies your brand story.',
+        'Your brand is priceless. With our professional approach, spanning marketing and analytics, we will amplify your brand story.',
       icon: 'Camera',
-      href: '/gallery',
-      gradient: 'from-slate-900 to-brand-black',
+      cta: 'Elevate Now',
+      inquiryMode: 'branding' as const,
     },
     {
-      id: 'clothing',
-      title: 'Clothing & Receivables',
+      id: 'shop',
+      title: 'Clothing / Members Shop',
       description:
-        'Exclusive PaidVille merch and collectibles. Wear the brand. Rep the culture. Limited drops that move fast.',
+        'Exclusive drops and members-only pieces. Pre-order through our secure Stripe link — updated anytime from our dashboard.',
       icon: 'ShoppingBag',
-      href: '/shop',
-      gradient: 'from-zinc-900 to-brand-black',
+      cta: 'Shop Now',
+      inquiryMode: 'shop' as const,
     },
     {
       id: 'community',
@@ -74,8 +76,8 @@ export const SiteConfig = {
       description:
         'Building lasting bonds through outreach, partnerships, and grassroots activations that elevate the people around us.',
       icon: 'Users',
-      href: '#about',
-      gradient: 'from-neutral-900 to-brand-black',
+      cta: 'Give Now',
+      inquiryMode: 'community' as const,
     },
   ],
 } as const;

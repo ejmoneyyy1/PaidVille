@@ -1,10 +1,9 @@
-import type { Metadata, Viewport } from 'next';
-import { Inter, Montserrat } from 'next/font/google';
+import type {Metadata, Viewport} from 'next';
+import {Inter, Montserrat} from 'next/font/google';
 import './globals.css';
-import { SiteConfig } from '@/lib/config';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import IntroSequence from '@/components/IntroSequence';
+import {SiteConfig} from '@/lib/config';
+import {draftMode} from 'next/headers';
+import {VisualEditing} from 'next-sanity';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
   },
   description: SiteConfig.description,
   keywords: ['events', 'entertainment', 'lifestyle', 'Fayetteville', 'Arkansas', 'PaidVille', 'media', 'clothing'],
-  authors: [{ name: 'PaidVille' }],
+  authors: [{name: 'PaidVille'}],
   creator: 'PaidVille',
   openGraph: {
     type: 'website',
@@ -48,22 +47,18 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0A0A0A',
-  colorScheme: 'dark',
+  themeColor: '#F5F5F0',
+  colorScheme: 'light',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({children}: {children: React.ReactNode}) {
+  const draft = await draftMode();
+
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
-      <body>
-        <IntroSequence />
-        <Navbar />
-        <main className="relative">{children}</main>
-        <Footer />
+      <body className="min-h-screen">
+        {children}
+        {draft.isEnabled && <VisualEditing />}
       </body>
     </html>
   );

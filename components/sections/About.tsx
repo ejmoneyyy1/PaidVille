@@ -15,7 +15,7 @@ const pillars = [
 
 export default function About() {
   return (
-    <section id="about" className="relative bg-[#0D0D0D] overflow-hidden">
+    <section id="about" className="relative bg-silver overflow-hidden">
       {/* ═══════════════════════════════════════════
           FOUNDERS STORY — top half
       ═══════════════════════════════════════════ */}
@@ -53,10 +53,10 @@ export default function About() {
                 />
 
                 {/* Main image */}
-                <div className="relative rounded-2xl overflow-hidden border border-white/6 shadow-2xl bg-white">
+                <div className="relative rounded-2xl overflow-hidden border border-brand-red shadow-xl bg-white">
                   <div className="relative w-full aspect-square">
                     <Image
-                      src="/images/founders-desk.png"
+                      src="/images/founders.png"
                       alt="PaidVille founders at the desk — Take a chance to seize every opportunity. Est. 2018"
                       fill
                       className="object-contain"
@@ -69,20 +69,19 @@ export default function About() {
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-                  className="absolute -bottom-5 -right-5 card-glass rounded-xl px-5 py-3
-                    shadow-xl border border-brand-red/20 glow-red-sm"
+                  className="absolute -bottom-5 -right-5 rounded-xl px-5 py-3 shadow-xl border border-brand-red bg-cream"
                 >
-                  <p className="font-display font-black text-2xl text-white">Est.</p>
+                  <p className="font-display font-black text-2xl text-charcoal">Est.</p>
                   <p className="font-display font-black text-brand-red text-2xl -mt-1">2018</p>
                 </motion.div>
 
                 <motion.div
                   animate={{ y: [0, 6, 0] }}
                   transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1.2 }}
-                  className="absolute -top-4 -left-4 card-glass rounded-xl px-4 py-3 shadow-xl border border-white/8"
+                  className="absolute -top-4 -left-4 rounded-xl px-4 py-3 shadow-xl border border-brand-red bg-cream"
                 >
                   <p className="font-display font-black text-xl text-brand-red">3</p>
-                  <p className="text-xs text-brand-text-dim whitespace-nowrap">Founders</p>
+                  <p className="text-xs text-charcoal/55 whitespace-nowrap">Founders</p>
                 </motion.div>
               </div>
             </ScrollReveal>
@@ -91,7 +90,7 @@ export default function About() {
             <div className="flex flex-col gap-6">
               <ScrollReveal direction="left" delay={0.1}>
                 <span className="section-label">Our Story</span>
-                <h2 className="section-title text-gradient-white mt-1">
+                <h2 className="section-title text-charcoal mt-1">
                   Built from the
                   <br />
                   <span className="text-brand-red">Ground Up</span>
@@ -102,23 +101,23 @@ export default function About() {
                 {/* Pull quote */}
                 <div className="flex gap-3 p-5 rounded-xl border border-brand-red/15 bg-brand-red/5 mb-1">
                   <Quote size={18} className="text-brand-red flex-shrink-0 mt-0.5" />
-                  <p className="text-white/80 text-sm leading-relaxed italic font-medium">
+                  <p className="text-charcoal/80 text-sm leading-relaxed italic font-medium">
                     &ldquo;Take a chance to seize every opportunity.&rdquo;
                   </p>
                 </div>
               </ScrollReveal>
 
               <ScrollReveal direction="left" delay={0.25}>
-                <p className="text-brand-text-dim leading-relaxed text-base">
+                <p className="text-charcoal/70 leading-relaxed text-base">
                   PaidVille didn&apos;t start in a boardroom. It started with{' '}
-                  <span className="text-white font-medium">three people</span> with a
+                  <span className="text-charcoal font-medium">three people</span> with a
                   shared vision — sitting at a desk, grinding, believing in something bigger
                   than themselves. That founding energy is still the DNA of everything we do.
                 </p>
               </ScrollReveal>
 
               <ScrollReveal direction="left" delay={0.3}>
-                <p className="text-brand-text-dim leading-relaxed text-base">
+                <p className="text-charcoal/70 leading-relaxed text-base">
                   What started as a grassroots events crew in Fayetteville has grown into a
                   full-service lifestyle brand — touching entertainment, media, fashion, and
                   community engagement. Every event, every drop, every frame of content carries
@@ -137,7 +136,7 @@ export default function About() {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.4 + i * 0.08 }}
-                      className="flex items-center gap-3 text-sm text-white/80"
+                      className="flex items-center gap-3 text-sm text-charcoal/80"
                     >
                       <CheckCircle2 size={15} className="text-brand-red flex-shrink-0" />
                       {pillar}
@@ -168,18 +167,16 @@ export default function About() {
           MISSION BANNER — bottom accent
       ═══════════════════════════════════════════ */}
       <ScrollReveal direction="up" delay={0.1}>
-        <div className="border-t border-white/5 bg-[#0A0A0A]">
+        <div className="border-t border-brand-red bg-cream">
           <div className="container-max section-padding py-16">
             <div className="max-w-3xl mx-auto text-center flex flex-col items-center gap-5">
               <span className="section-label justify-center">Our Mission</span>
-              <p className="font-display font-black text-2xl md:text-3xl text-white leading-snug">
+              <p className="font-display font-black text-2xl md:text-3xl text-charcoal leading-snug">
                 To create premium experiences, amplify our culture, and build a brand that
                 gives back to the community that built us.
               </p>
               <div className="h-px w-16 bg-gradient-to-r from-transparent via-brand-red to-transparent" />
-              <p className="text-brand-text-dim text-sm">
-                PaidVille — Est. 2018 · Fayetteville, AR
-              </p>
+              <p className="text-charcoal/55 text-sm">Est. 2018 — ARK USA | Fayetteville, AR</p>
             </div>
           </div>
         </div>
