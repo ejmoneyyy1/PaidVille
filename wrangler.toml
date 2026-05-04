@@ -5,3 +5,9 @@ name = "paidville"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".open-next/assets"
+
+[vars]
+NEXT_PUBLIC_SANITY_PROJECT_ID = "qxv0mc90"
+NEXT_PUBLIC_SANITY_DATASET = "production"
+NEXT_PUBLIC_SITE_URL = "https://paidville.pages.dev"
+SANITY_REVALIDATE_SECRET = "paidville2018secret"
