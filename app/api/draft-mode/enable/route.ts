@@ -13,5 +13,22 @@ export async function GET(request: NextRequest) {
 
   const redirectUrl = redirectTo.startsWith('http') ? redirectTo : `${origin}${redirectTo}`;
 
-  return NextResponse.redirect(redirectUrl);
+  return new NextResponse(
+    `<!DOCTYPE html>
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="0;url=${redirectUrl}" />
+      </head>
+      <body>
+        <p>Redirecting to <a href="${redirectUrl}">${redirectUrl}</a>...</p>
+        <script>window.location.href = "${redirectUrl}"</script>
+      </body>
+    </html>`,
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+      },
+    },
+  );
 }
