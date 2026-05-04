@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Default Next.js output is suitable for SSR / OpenNext — do not set `output: 'export'`.
+  experimental: {
+    // Avoid critters-based CSS optimization issues on Cloudflare workerd (unstyled HTML).
+    optimizeCss: false,
+  },
   images: {
     remotePatterns: [
       {protocol: 'https', hostname: 'cdn.sanity.io'},
