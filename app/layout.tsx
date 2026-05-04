@@ -2,7 +2,6 @@ import type {Metadata, Viewport} from 'next';
 import {Inter, Montserrat} from 'next/font/google';
 import './globals.css';
 import {SiteConfig} from '@/lib/config';
-import {draftMode} from 'next/headers';
 import {VisualEditing} from 'next-sanity';
 
 const inter = Inter({
@@ -51,14 +50,12 @@ export const viewport: Viewport = {
   colorScheme: 'light',
 };
 
-export default async function RootLayout({children}: {children: React.ReactNode}) {
-  const {isEnabled} = await draftMode();
-
+export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
       <body className="min-h-screen">
         {children}
-        {isEnabled && <VisualEditing />}
+        <VisualEditing />
       </body>
     </html>
   );
