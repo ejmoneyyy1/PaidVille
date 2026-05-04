@@ -1,15 +1,17 @@
 import {draftMode} from 'next/headers';
-import {redirect} from 'next/navigation';
-import {NextRequest} from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  const {searchParams} = new URL(request.url);
-  const redirectTo = searchParams.get('redirect') || '/';
+  const {searchParams, origin} = new URL(request.url);
+  const redirectTo =
+    searchParams.get('redirect') || searchParams.get('sanity-preview-pathname') || '/';
 
   const dm = await draftMode();
   dm.enable();
 
-  redirect(redirectTo);
+  const redirectUrl = redirectTo.startsWith('http') ? redirectTo : `${origin}${redirectTo}`;
+
+  return NextResponse.redirect(redirectUrl);
 }
