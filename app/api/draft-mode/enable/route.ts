@@ -51,11 +51,7 @@ export async function GET(request: Request): Promise<Response> {
     return new Response('Invalid secret', {status: 401});
   }
 
-  const draftModeStore = await draftMode();
-
-  if (!draftModeStore.isEnabled) {
-    draftModeStore.enable();
-  }
+  (await draftMode()).enable();
 
   const dev = process.env.NODE_ENV !== 'production';
   const cookieStore = await cookies();

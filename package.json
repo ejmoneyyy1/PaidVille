@@ -21,6 +21,7 @@
     "@sanity/presentation": "^2.0.0",
     "@sanity/ui": "^3.1.14",
     "@sanity/vision": "^3.99.0",
+    "@sanity/visual-editing": "^2.15.4",
     "@stripe/stripe-js": "^4.1.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.8",
