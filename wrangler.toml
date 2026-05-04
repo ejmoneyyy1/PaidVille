@@ -1,7 +1,18 @@
+# OpenNext requires a Workers-style config: `main` + `[assets]` wires `env.ASSETS`
+# so `/_next/static/*` (CSS/JS) is served. `pages_build_output_dir` alone does not
+# create that binding and results in unstyled HTML in production.
 name = "paidville"
+main = ".open-next/worker.js"
 compatibility_date = "2026-05-03"
-compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".open-next"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "paidville"
 
 [vars]
 NEXT_PUBLIC_SANITY_PROJECT_ID = "qxv0mc90"

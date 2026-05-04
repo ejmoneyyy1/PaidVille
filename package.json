@@ -12,7 +12,8 @@
     "pages:build": "npx @opennextjs/cloudflare build",
     "start": "next start",
     "lint": "next lint",
-    "preview": "npm run build:cf && npx wrangler dev"
+    "preview": "npm run build:cf && npx wrangler dev",
+    "deploy": "npx @opennextjs/cloudflare build && npx @opennextjs/cloudflare deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
