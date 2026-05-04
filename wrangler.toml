@@ -1,10 +1,9 @@
-# Cloudflare Pages — OpenNext output: static files under `.open-next/assets`,
-# worker bundle at `.open-next/worker.js` (wired by the OpenNext build).
-# `pages_functions_directory` is not a valid Wrangler key (removed vs older snippets).
+# Deploy the full OpenNext bundle (worker.js + assets/). Using only `.open-next/assets`
+# skips the worker and Cloudflare logs "No functions dir at /functions found".
 name = "paidville"
-compatibility_date = "2024-09-23"
+compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".open-next/assets"
+pages_build_output_dir = ".open-next"
 
 [vars]
 NEXT_PUBLIC_SANITY_PROJECT_ID = "qxv0mc90"
