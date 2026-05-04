@@ -12,11 +12,6 @@ function dataset() {
   return getSanityDataset();
 }
 
-function studioUrlForStega() {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
-  return `${base}/studio`;
-}
-
 /** Read token for draft-mode URL validation and preview API. */
 export function getSanityReadClient(): SanityClient {
   return createClient({
@@ -39,8 +34,8 @@ export async function getSanityClient(): Promise<SanityClient> {
     perspective: isEnabled ? 'previewDrafts' : 'published',
     token: isEnabled ? process.env.SANITY_API_READ_TOKEN : undefined,
     stega: {
-      studioUrl: studioUrlForStega(),
-      enabled: isEnabled,
+      enabled: true,
+      studioUrl: 'https://paidville-studio.sanity.studio',
     },
   });
 }

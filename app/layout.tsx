@@ -52,13 +52,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({children}: {children: React.ReactNode}) {
-  const draft = await draftMode();
+  const {isEnabled} = await draftMode();
 
   return (
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
       <body className="min-h-screen">
         {children}
-        {draft.isEnabled && <VisualEditing />}
+        {isEnabled && <VisualEditing />}
       </body>
     </html>
   );

@@ -9,7 +9,6 @@ import {structure} from './sanity/deskStructure';
 
 const projectId = getSanityProjectId();
 const dataset = getSanityDataset();
-const previewBase = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 export default defineConfig({
   name: 'default',
@@ -21,7 +20,7 @@ export default defineConfig({
     visionTool(),
     presentationTool({
       previewUrl: {
-        initial: previewBase,
+        origin: process.env.NEXT_PUBLIC_SITE_URL || 'https://paidville.eaalobuia.workers.dev',
         previewMode: {
           enable: '/api/draft-mode/enable',
         },
