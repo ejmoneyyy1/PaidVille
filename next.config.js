@@ -1,25 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Default Next.js output is suitable for SSR / OpenNext — do not set `output: 'export'`.
-  experimental: {
-    // Avoid critters-based CSS optimization issues on Cloudflare workerd (unstyled HTML).
-    optimizeCss: false,
-  },
   images: {
     remotePatterns: [
-      {protocol: 'https', hostname: 'cdn.sanity.io'},
-      {protocol: 'https', hostname: 'images.unsplash.com'},
+      { protocol: 'https', hostname: 'cdn.sanity.io' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  // Remove ANY of these if present - they break OpenNext CSS:
+  // output: 'export'
+  // experimental: { optimizeCss: true }
+  // distDir
 };
 
-if (process.env.NODE_ENV === 'development') {
-  try {
-    const {initOpenNextCloudflareForDev} = require('@opennextjs/cloudflare');
-    initOpenNextCloudflareForDev();
-  } catch {
-    // optional during install before @opennextjs/cloudflare is present
-  }
-}
-
-module.exports = nextConfig;
+export default nextConfig;
