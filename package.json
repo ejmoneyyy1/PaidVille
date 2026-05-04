@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "PaidVille – premium local event planning and lifestyle brand website",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
