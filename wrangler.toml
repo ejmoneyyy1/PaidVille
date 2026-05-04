@@ -1,4 +1,7 @@
+# Cloudflare Pages — OpenNext output: static files under `.open-next/assets`,
+# worker bundle at `.open-next/worker.js` (wired by the OpenNext build).
+# `pages_functions_directory` is not a valid Wrangler key (removed vs older snippets).
 name = "paidville"
-compatibility_date = "2025-04-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".vercel/output/static"
+pages_build_output_dir = ".open-next/assets"
