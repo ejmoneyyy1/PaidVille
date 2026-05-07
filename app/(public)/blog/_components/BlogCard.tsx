@@ -1,70 +1,52 @@
 import Link from 'next/link';
-import {Calendar, ArrowUpRight, Play} from 'lucide-react';
+import Image from 'next/image';
 import type {BlogPost} from '@/components/sections/BlogPreview';
+import {urlFor} from '@/lib/sanity';
 
-function buildImageUrl(post: BlogPost) {
-  const ref = post.mainImage?.asset?._ref;
-  const pid = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-  const ds = process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production';
-  if (!ref || !pid) return null;
-  return `https://cdn.sanity.io/images/${pid}/${ds}/${ref.replace('image-', '').replace(/-(\w+)$/, '.$1')}`;
-}
-
-export default function BlogCard({post}: {post: BlogPost}) {
+export default function BlogCard({post, category = 'Editorial'}: {post: BlogPost; category?: string}) {
   const date = new Date(post.publishedAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
-  const imgUrl = buildImageUrl(post);
+  const image = post.mainImage?.asset?._ref
+    ? {
+        src: urlFor(post.mainImage).width(1200).height(800).fit('crop').quality(90).url(),
+        width: 1200,
+        height: 800,
+      }
+    : null;
 
   return (
     <Link
       href={`/blog/${post.slug.current}`}
-      className="group block rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
+      className="group block border border-silver bg-cream"
     >
-      <div className="relative aspect-video bg-silver overflow-hidden">
-        {imgUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imgUrl}
+      <div className="relative aspect-[3/2] overflow-hidden bg-silver">
+        {image ? (
+          <Image
+            src={image.src}
             alt={post.mainImage?.alt ?? post.title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            width={image.width}
+            height={image.height}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-silver">
-            <span className="font-display font-black text-4xl text-brand-red/15">PV</span>
+            <span className="text-5xl font-black text-charcoal/20">PV</span>
           </div>
         )}
-        {post.heroVideoUrl ? (
-          <span
-            className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-brand-red/90 px-2 py-1 text-[10px] font-display font-bold uppercase tracking-wider text-white pointer-events-none"
-            aria-hidden
-          >
-            <Play size={8} fill="white" />
-            Video
-          </span>
-        ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-cream/90 via-transparent to-transparent pointer-events-none" />
       </div>
 
-      <div className="p-6 flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-xs text-charcoal/55">
-          <Calendar size={12} />
-          {date}
-          {post.author && (
-            <>
-              <span className="text-charcoal/25">·</span>
-              <span>{post.author}</span>
-            </>
-          )}
-        </div>
-        <h2 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
+      <div className="p-5">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.3em] text-brand-red">{category}</p>
+        <h2 className="mb-3 text-[20px] font-bold leading-tight text-charcoal decoration-brand-red underline-offset-4 transition-all hover:underline">
           {post.title}
         </h2>
-        <div className="flex items-center gap-1 text-xs font-display font-semibold text-brand-red mt-1">
-          Read article <ArrowUpRight size={13} />
-        </div>
+        <p className="text-[13px] text-charcoal/60">
+          {post.author ? `${post.author} · ${date}` : date}
+        </p>
       </div>
     </Link>
   );
