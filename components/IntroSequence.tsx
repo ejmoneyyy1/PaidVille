@@ -337,13 +337,9 @@ export default function IntroSequence() {
                 preload="auto"
                 onEnded={finishIntro}
               >
-                {/*
-                  Order: Safari prefers native QuickTime (.mov) first for autoplay + best match to
-                  your master file Lights.MOV. MP4 is a high-quality H.264 fallback (CRF 17) for
-                  browsers that do not play this .mov reliably.
-                */}
-                <source src="/videos/lights.mov" type="video/quicktime" />
+                {/* MP4 first — lights.mov is not in repo; missing first source breaks Safari fallback */}
                 <source src="/videos/lights.mp4" type="video/mp4" />
+                <source src="/videos/Lights.MOV" type="video/quicktime" />
               </video>
 
               {/* Skip */}

@@ -6,6 +6,7 @@ import {ArrowDown, Play, Star} from 'lucide-react';
 import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
 import BearEmblemParallax from '@/components/parallax/BearEmblemParallax';
+import ReelModal from '@/components/reel/ReelModal';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
 
 export type HeroStats = {
@@ -32,6 +33,7 @@ export default function Hero({
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [reelOpen, setReelOpen] = useState(false);
 
   const safeStats = stats ?? {rating: 5, ticketsSold: 10000, eventsHosted: 50};
 
@@ -78,6 +80,7 @@ export default function Hero({
   }, []);
 
   return (
+    <>
     <section
       ref={sectionRef}
       className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-cream"
@@ -176,8 +179,8 @@ export default function Hero({
 
           <MagneticButton
             className="btn-secondary text-sm px-10 py-4 flex items-center gap-2"
-            href="/gallery"
             strength={0.28}
+            onClick={() => setReelOpen(true)}
           >
             <span className="flex items-center justify-center w-6 h-6 rounded-full border border-brand-red/40 bg-white">
               <Play size={10} className="text-brand-red" fill="currentColor" />
@@ -224,5 +227,8 @@ export default function Hero({
         />
       </motion.div>
     </section>
+
+    <ReelModal open={reelOpen} onClose={() => setReelOpen(false)} />
+    </>
   );
 }

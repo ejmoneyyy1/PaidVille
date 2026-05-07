@@ -53,7 +53,7 @@ export default function MagneticButton({
         <Tag
           className={className}
           onClick={onClick}
-          {...(href ? { href } : {})}
+          {...(href ? {href} : {type: 'button' as const})}
         >
           {children}
         </Tag>
