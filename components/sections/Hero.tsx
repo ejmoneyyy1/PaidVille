@@ -47,7 +47,34 @@ export default function Hero({
   const rating = Math.min(5, Math.max(0, Math.round(safeStats.rating)));
 
   useEffect(() => {
-    videoRef.current?.play().catch(() => {});
+    const video = videoRef.current;
+    if (!video) return;
+
+    const tryPlay = () => {
+      video.play().catch(() => {});
+    };
+
+    tryPlay();
+    if (video.readyState >= 2) {
+      setVideoLoaded(true);
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryPlay();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    const markReady = () => setVideoLoaded(true);
+    video.addEventListener('loadeddata', markReady);
+    video.addEventListener('canplay', markReady);
+    video.addEventListener('playing', markReady);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      video.removeEventListener('loadeddata', markReady);
+      video.removeEventListener('canplay', markReady);
+      video.removeEventListener('playing', markReady);
+    };
   }, []);
 
   return (
@@ -67,12 +94,11 @@ export default function Hero({
           loop
           playsInline
           autoPlay
-          onCanPlay={() => setVideoLoaded(true)}
+          preload="auto"
         >
-          {/* .mov first (ProRes / QuickTime — often cleaner source); .mp4 fallback for browsers that skip .mov */}
-          <source src="/videos/lights.mov" type="video/quicktime" />
-          <source src="/videos/Lights.MOV" type="video/quicktime" />
+          {/* MP4 first: always present in /public; broken/missing first source can prevent fallback in some browsers */}
           <source src="/videos/lights.mp4" type="video/mp4" />
+          <source src="/videos/Lights.MOV" type="video/quicktime" />
         </video>
 
         <div
@@ -118,7 +144,9 @@ export default function Hero({
             alt="PaidVille"
             fill
             className="object-contain drop-shadow-sm"
+            sizes="(max-width: 768px) 72vw, 420px"
             priority
+            fetchPriority="high"
           />
         </motion.div>
 

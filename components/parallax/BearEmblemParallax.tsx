@@ -2,18 +2,16 @@
 
 import Image from 'next/image';
 import {motion, useScroll, useTransform} from 'framer-motion';
-import {useState} from 'react';
 
-const PRIMARY_SRC = '/images/bear-emblem.png';
-const FALLBACK_SRC = '/images/splashlogo.png';
+/** Same asset as hero lockup — replaces retired bear-emblem art */
+const WATERMARK_SRC = '/images/splashlogo.png';
 
 /**
- * Watermark bear (or logo fallback) — behind hero only, moves at 0.3× page scroll.
+ * Watermark logo — behind hero only, moves at 0.3× page scroll.
  */
 export default function BearEmblemParallax() {
   const {scrollY} = useScroll();
   const y = useTransform(scrollY, (v) => v * 0.3);
-  const [src, setSrc] = useState(PRIMARY_SRC);
 
   return (
     <motion.div
@@ -23,15 +21,12 @@ export default function BearEmblemParallax() {
     >
       <div className="relative w-[min(88vw,520px)] aspect-square opacity-[0.06]">
         <Image
-          src={src}
+          src={WATERMARK_SRC}
           alt=""
           fill
           className="object-contain select-none"
-          sizes="520px"
+          sizes="(max-width: 768px) 88vw, 520px"
           priority={false}
-          onError={() => {
-            if (src !== FALLBACK_SRC) setSrc(FALLBACK_SRC);
-          }}
         />
       </div>
     </motion.div>

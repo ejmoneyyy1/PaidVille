@@ -60,6 +60,7 @@ export default function About() {
                       alt="PaidVille founders at the desk — Take a chance to seize every opportunity. Est. 2018"
                       fill
                       className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                       priority
                     />
                   </div>
