@@ -3,12 +3,18 @@ import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import {draftMode} from 'next/headers';
 import {getSanityClient} from '@/lib/sanity-server';
-import BlogBody from '@/components/portable/BlogBody';
 import {urlFor} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import BlogCard from '../_components/BlogCard';
 import {stockArticles, stockPosts} from '../_data/stock-content';
 import {HeroMotion, PullQuoteMotion, ShareBar} from './_components/ArticleMotion';
+import {
+  EditablePostAuthor,
+  EditablePostBody,
+  EditablePostCategory,
+  EditablePostTitle,
+} from './_components/ArticleAdmin';
+import EditableField from '@/components/admin/EditableField';
 
 export const revalidate = 60;
 
@@ -25,6 +31,8 @@ type BlogDoc = {
   publishedAt: string;
   author?: string;
   body?: unknown;
+  category?: string | null;
+  excerpt?: string | null;
 };
 
 const stockVolumeMap: Record<string, number> = {
@@ -47,7 +55,7 @@ async function getPost(slug: string): Promise<BlogDoc | null> {
       : `_type == "blog" && slug.current == $slug && status == "published"`;
     return await client.fetch<BlogDoc>(
       `*[${filter}][0] {
-        _id, title, slug, mainImage, heroVideoUrl, publishedAt, author, body
+        _id, title, slug, mainImage, heroVideoUrl, publishedAt, author, body, category, excerpt
       }`,
       {slug}
     );
@@ -74,7 +82,9 @@ export default async function BlogPostPage({params}: Params) {
         mainImage,
         heroVideoUrl,
         publishedAt,
-        author
+        author,
+        excerpt,
+        category
       }`,
       {slug}
     );
@@ -89,7 +99,8 @@ export default async function BlogPostPage({params}: Params) {
     publishedAt: stockArticle!.publishedAt,
     author: stockArticle!.author,
   };
-  const category = stockArticle?.category ?? 'EDITORIAL';
+  const cmsId = sanityPost?._id ?? '';
+  const category = sanityPost?.category ?? stockArticle?.category ?? 'EDITORIAL';
   const heroBg = stockArticle?.headerBg ?? '#1A1A1A';
   const isStock = !sanityPost;
 
@@ -165,9 +176,11 @@ export default async function BlogPostPage({params}: Params) {
             <HeroMotion>
               <p className="mb-2 text-[10px] uppercase tracking-[0.34em] text-white/50">{volumeLabel}</p>
               <p className="mb-3 text-[10px] uppercase tracking-[0.34em] text-brand-red">{category}</p>
-              <h1 className="max-w-[680px] text-[clamp(32px,5vw,56px)] font-black leading-[1.0] text-white">
-                {post.title}
-              </h1>
+              <EditablePostTitle documentId={cmsId} title={post.title}>
+                <h1 className="max-w-[680px] text-[clamp(32px,5vw,56px)] font-black leading-[1.0] text-white">
+                  {post.title}
+                </h1>
+              </EditablePostTitle>
               <p className="mt-4 text-[13px] text-white/70">
                 {post.author ? `By ${post.author} · ${date}` : date}
               </p>
@@ -177,11 +190,27 @@ export default async function BlogPostPage({params}: Params) {
       </section>
 
       <div className="border-y border-charcoal/20 py-4">
-        <div className="container-max section-padding flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[13px] font-bold text-charcoal">By {post.author || 'PaidVille'}</p>
-          <p className="text-[13px] text-charcoal/55">
-            {date} · {category}
-          </p>
+        <div className="container-max section-padding flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <EditablePostAuthor documentId={cmsId} author={post.author ?? ''}>
+            <p className="text-[13px] font-bold text-charcoal">By {post.author || 'PaidVille'}</p>
+          </EditablePostAuthor>
+          <EditablePostCategory documentId={cmsId} category={category}>
+            <p className="text-[13px] text-charcoal/55">
+              {date} · {category}
+            </p>
+          </EditablePostCategory>
+          {cmsId ? (
+            <EditableField
+              documentId={cmsId}
+              field="slug"
+              label="URL slug (use lowercase letters, numbers, hyphens)"
+              value={slug}
+              type="text"
+              wrapperClassName="group/edit relative sm:ml-auto"
+            >
+              <p className="font-mono text-[12px] text-charcoal/40">/{slug}</p>
+            </EditableField>
+          ) : null}
         </div>
       </div>
 
@@ -211,9 +240,9 @@ export default async function BlogPostPage({params}: Params) {
               </div>
             ))}
           </>
-        ) : (
-          <BlogBody value={sanityPost?.body} />
-        )}
+        ) : sanityPost ? (
+          <EditablePostBody documentId={cmsId} body={sanityPost.body} />
+        ) : null}
 
         <ShareBar slug={slug} />
       </div>

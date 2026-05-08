@@ -26,7 +26,9 @@ export const blogQuery = `*[_type == "blog" && status == "published"] | order(pu
   mainImage,
   heroVideoUrl,
   publishedAt,
-  author
+  author,
+  excerpt,
+  category
 }`;
 
 export {

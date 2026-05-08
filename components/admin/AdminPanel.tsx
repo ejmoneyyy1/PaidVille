@@ -1,9 +1,12 @@
 'use client';
 
 import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {useAdmin} from '@/contexts/AdminContext';
+import {plainTextToPortableBlocks} from '@/lib/portable-text-admin';
 
 export default function AdminPanel() {
+  const router = useRouter();
   const {activePanel, closePanel, saveField, isSaving} = useAdmin();
   const [draft, setDraft] = useState<string>('');
   const [saveState, setSaveState] = useState<'idle' | 'saved' | 'error'>('idle');
@@ -26,16 +29,24 @@ export default function AdminPanel() {
     setSaveState('idle');
     setErrorMsg('');
     try {
-      let value: string | number = draft;
+      let value: string | number | unknown = draft;
       if (activePanel.type === 'number') {
         value = Number(draft);
         if (Number.isNaN(value)) {
           setErrorMsg('Enter a valid number');
           return;
         }
+      } else if (activePanel.type === 'richtext') {
+        value = plainTextToPortableBlocks(draft);
       }
       await saveField(activePanel.documentId, activePanel.field, value);
       setSaveState('saved');
+      if (activePanel.field === 'slug' && typeof draft === 'string' && draft.trim()) {
+        const next = draft.trim().replace(/^\/+/, '');
+        window.setTimeout(() => {
+          router.push(`/blog/${next}`);
+        }, 400);
+      }
       window.setTimeout(() => {
         closePanel();
         setSaveState('idle');

@@ -3,9 +3,10 @@ import Image from 'next/image';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {urlFor} from '@/lib/sanity';
 import type {StockPost} from '../_data/stock-content';
+import EditableField from '@/components/admin/EditableField';
+import {isSanityBlogPost} from '@/lib/blog-admin';
 
-type DisplayPost = BlogPost &
-  Partial<Pick<StockPost, 'category' | 'excerpt' | 'fallbackBg' | 'fallbackAccent'>>;
+export type DisplayPost = BlogPost & Partial<Pick<StockPost, 'fallbackBg' | 'fallbackAccent'>>;
 
 const noiseTexture =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E\")";
@@ -36,6 +37,9 @@ export default function BlogCard({
   const accent = post.fallbackAccent ?? '#B00000';
   const cardNumber = `${index + 2}`.padStart(2, '0');
   const isDarkFallback = !hasImage;
+  const canEdit = isSanityBlogPost(post);
+  const excerptText =
+    post.excerpt ?? 'No filter, no fluff — the stories shaping PaidVille and the culture around it.';
 
   return (
     <Link
@@ -70,14 +74,46 @@ export default function BlogCard({
       <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.34em]" style={{color: accent}}>
         {category}
       </p>
-      <h3
-        className={`text-[22px] font-extrabold leading-[1.15] transition-colors ${isDarkFallback ? 'text-white group-hover:text-brand-red' : 'text-charcoal group-hover:text-brand-red'}`}
-      >
-        {post.title}
-      </h3>
-      <p className={`mt-3 line-clamp-2 text-sm ${isDarkFallback ? 'text-white/75' : 'text-charcoal/75'}`}>
-        {post.excerpt ?? 'No filter, no fluff — the stories shaping PaidVille and the culture around it.'}
-      </p>
+      {canEdit ? (
+        <EditableField
+          documentId={post._id}
+          field="title"
+          label="Post title"
+          value={post.title}
+          type="textarea"
+          wrapperClassName="group/edit relative block"
+        >
+          <h3
+            className={`text-[22px] font-extrabold leading-[1.15] transition-colors ${isDarkFallback ? 'text-white group-hover:text-brand-red' : 'text-charcoal group-hover:text-brand-red'}`}
+          >
+            {post.title}
+          </h3>
+        </EditableField>
+      ) : (
+        <h3
+          className={`text-[22px] font-extrabold leading-[1.15] transition-colors ${isDarkFallback ? 'text-white group-hover:text-brand-red' : 'text-charcoal group-hover:text-brand-red'}`}
+        >
+          {post.title}
+        </h3>
+      )}
+      {canEdit ? (
+        <EditableField
+          documentId={post._id}
+          field="excerpt"
+          label="Post excerpt"
+          value={excerptText}
+          type="textarea"
+          wrapperClassName="group/edit relative mt-3 block"
+        >
+          <p className={`line-clamp-2 text-sm ${isDarkFallback ? 'text-white/75' : 'text-charcoal/75'}`}>
+            {excerptText}
+          </p>
+        </EditableField>
+      ) : (
+        <p className={`mt-3 line-clamp-2 text-sm ${isDarkFallback ? 'text-white/75' : 'text-charcoal/75'}`}>
+          {excerptText}
+        </p>
+      )}
       <div className="mt-5 flex items-center justify-between">
         <span className={`text-[13px] ${isDarkFallback ? 'text-white/70' : 'text-charcoal/55'}`}>
           {post.author ? `By ${post.author} · ${date}` : date}

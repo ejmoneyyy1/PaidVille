@@ -3,9 +3,9 @@
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
 
-export default function BlogNewPage() {
+export default function GalleryNewPage() {
   const router = useRouter();
-  const [message, setMessage] = useState('Creating your post…');
+  const [message, setMessage] = useState('Adding your photo slot…');
 
   useEffect(() => {
     let cancelled = false;
@@ -14,22 +14,19 @@ export default function BlogNewPage() {
         const res = await fetch('/api/admin/create', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({kind: 'blog'}),
+          body: JSON.stringify({kind: 'galleryItem'}),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (res.status === 401) {
-            router.replace('/admin/login?next=/blog/new');
+            router.replace('/admin/login?next=/gallery/new');
             return;
           }
-          throw new Error(typeof data.error === 'string' ? data.error : 'Could not create post');
+          throw new Error(typeof data.error === 'string' ? data.error : 'Could not create gallery item');
         }
         if (cancelled) return;
-        if (typeof data.slug === 'string') {
-          router.replace(`/blog/${data.slug}`);
-          return;
-        }
-        throw new Error('Invalid response');
+        router.replace('/gallery');
+        router.refresh();
       } catch (e) {
         if (!cancelled) {
           setMessage(e instanceof Error ? e.message : 'Something went wrong');

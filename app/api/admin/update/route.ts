@@ -27,7 +27,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sanityWriteClient.patch(documentId).set({[field]: value}).commit();
+    const payload =
+      field === 'slug' && typeof value === 'string'
+        ? {slug: {_type: 'slug' as const, current: value}}
+        : {[field]: value};
+    await sanityWriteClient.patch(documentId).set(payload).commit();
     return NextResponse.json({ok: true});
   } catch (error) {
     console.error('[admin/update]', error);

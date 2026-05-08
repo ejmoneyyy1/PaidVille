@@ -21,6 +21,8 @@ export interface BlogPost {
   heroVideoUrl?: string | null;
   publishedAt: string;
   author?: string;
+  excerpt?: string | null;
+  category?: string | null;
 }
 
 interface BlogPreviewProps {

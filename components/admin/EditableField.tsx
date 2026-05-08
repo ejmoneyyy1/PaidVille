@@ -33,7 +33,11 @@ export default function EditableField({
       {children}
       <button
         type="button"
-        onClick={() => openPanel({documentId, field, label, value, type})}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openPanel({documentId, field, label, value, type});
+        }}
         className="absolute -right-2 -top-2 z-[1000] flex h-6 w-6 items-center justify-center rounded-full border-0 bg-brand-red text-xs opacity-0 shadow-md transition-opacity duration-150 group-hover/edit:opacity-100"
         title={`Edit ${label}`}
         aria-label={`Edit ${label}`}

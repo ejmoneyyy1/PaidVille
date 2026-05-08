@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {motion} from 'framer-motion';
-import type {BlogPost} from '@/components/sections/BlogPreview';
 import {urlFor} from '@/lib/sanity';
-import type {StockPost} from '../_data/stock-content';
-import BlogCard from './BlogCard';
+import BlogCard, {type DisplayPost} from './BlogCard';
+import EditableField from '@/components/admin/EditableField';
+import {isSanityBlogPost} from '@/lib/blog-admin';
 
 interface BlogIndexClientProps {
-  posts: (BlogPost & Partial<StockPost>)[];
+  posts: DisplayPost[];
 }
 
 const noiseTexture =
@@ -25,6 +25,7 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
         year: 'numeric',
       })
     : '';
+  const featuredEditable = featuredPost ? isSanityBlogPost(featuredPost) : false;
 
   return (
     <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{duration: 0.4}}>
@@ -59,9 +60,24 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
               <p className="mb-3 text-[10px] uppercase tracking-[0.34em] text-brand-red">
                 {featuredPost.category ?? 'EDITORIAL'}
               </p>
-              <h2 className="max-w-[800px] text-[clamp(36px,5vw,64px)] font-black leading-[1.0] text-white">
-                {featuredPost.title}
-              </h2>
+              {featuredEditable ? (
+                <EditableField
+                  documentId={featuredPost._id}
+                  field="title"
+                  label="Post title (featured)"
+                  value={featuredPost.title}
+                  type="textarea"
+                  wrapperClassName="group/edit relative block max-w-[800px]"
+                >
+                  <h2 className="text-[clamp(36px,5vw,64px)] font-black leading-[1.0] text-white">
+                    {featuredPost.title}
+                  </h2>
+                </EditableField>
+              ) : (
+                <h2 className="max-w-[800px] text-[clamp(36px,5vw,64px)] font-black leading-[1.0] text-white">
+                  {featuredPost.title}
+                </h2>
+              )}
               <p className="mt-3 text-[13px] text-white/70">
                 {featuredPost.author ? `By ${featuredPost.author} · ${featuredDate}` : featuredDate}
               </p>

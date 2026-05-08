@@ -1,10 +1,20 @@
 import {getSanityClient} from '@/lib/sanity-server';
 import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
+import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import {stockPosts} from './_data/stock-content';
 import BlogIndexClient from './_components/BlogIndexClient';
+import BlogPageHeader from './_components/BlogPageHeader';
+import type {DisplayPost} from './_components/BlogCard';
 
 export const revalidate = 60;
+
+function sectionString(sections: unknown, key: string, prop: 'heading' | 'subheading'): string | null {
+  if (!Array.isArray(sections)) return null;
+  const block = sections.find((item: {_key?: string}) => item?._key === key) as Record<string, unknown> | undefined;
+  const v = block?.[prop];
+  return typeof v === 'string' ? v : null;
+}
 
 export default async function BlogPage() {
   let sanityPosts: BlogPost[] = [];
@@ -15,23 +25,16 @@ export default async function BlogPage() {
   } catch {
     // Unconfigured Sanity
   }
-  const displayPosts = sanityPosts.length > 0 ? sanityPosts : stockPosts;
+  const displayPosts: DisplayPost[] = sanityPosts.length > 0 ? sanityPosts : stockPosts;
+  const {homepage} = await getSingletonDocs();
+  const sections = homepage?.sections;
+  const blogHeading = sectionString(sections, 'blog-1', 'heading') ?? 'Biased Opinions';
+  const blogSub =
+    sectionString(sections, 'blog-1', 'subheading') ?? 'Editorial by PaidVille';
 
   return (
     <div className="min-h-screen bg-cream pb-24 pt-20">
-      <header className="w-full">
-        <div className="container-max section-padding pb-10 pt-[60px]">
-          <p className="text-right text-[10px] uppercase tracking-[0.44em] text-brand-red">
-            EST. 2018 · FAYETTEVILLE, AR
-          </p>
-          <h1 className="mt-4 text-[clamp(72px,12vw,140px)] font-black uppercase leading-[0.9] text-charcoal">
-            <span className="block">Biased</span>
-            <span className="block">Opinions</span>
-          </h1>
-          <p className="mt-4 text-[11px] uppercase tracking-[0.4em] text-brand-red">Editorial by PaidVille</p>
-        </div>
-        <div className="h-px w-full bg-brand-red" />
-      </header>
+      <BlogPageHeader heading={blogHeading} subheading={blogSub} />
 
       <div className="container-max section-padding pt-10">
         {displayPosts.length === 0 ? (
