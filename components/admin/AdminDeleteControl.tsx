@@ -29,6 +29,7 @@ export default function AdminDeleteControl({
   return (
     <button
       type="button"
+      data-admin-delete="true"
       disabled={busy}
       title={`Remove ${label}`}
       onClick={async (e) => {

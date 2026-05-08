@@ -115,7 +115,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                     documentId={item._id}
                     entityLabel="this gallery item"
                     redirectAfterDelete="/gallery"
-                    className="absolute left-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+                    className="absolute left-3 top-3 z-[80] pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
                   />
                 ) : null}
                 <div className="overflow-hidden rounded-2xl border border-brand-red bg-cream text-left shadow-sm transition-shadow hover:shadow-md">
@@ -125,7 +125,11 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                   className={`relative w-full cursor-pointer bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
                     isTall ? 'aspect-[3/4]' : 'aspect-[5/4]'
                   }`}
-                  onClick={() => setSelected(item)}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest('[data-admin-delete="true"]')) return;
+                    setSelected(item);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
