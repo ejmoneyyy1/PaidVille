@@ -12,6 +12,7 @@ import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import {useAdmin} from '@/contexts/AdminContext';
 
 function isCmsGalleryTile(item: GalleryPageItem): item is SanityGalleryDoc {
   if ('staticSrc' in item && item.staticSrc) return false;
@@ -83,6 +84,7 @@ function toLightboxItem(item: GalleryPageItem): GalleryLightboxItem {
 
 export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) {
   const [selected, setSelected] = useState<GalleryPageItem | null>(null);
+  const {isAdmin} = useAdmin();
 
   return (
     <>
@@ -128,9 +130,11 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                   onClick={(e) => {
                     const target = e.target as HTMLElement;
                     if (target.closest('[data-admin-delete="true"]')) return;
+                    if (isAdmin) return;
                     setSelected(item);
                   }}
                   onKeyDown={(e) => {
+                    if (isAdmin) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       setSelected(item);
@@ -209,7 +213,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
       </div>
 
       <AnimatePresence>
-        {selected ? (
+        {!isAdmin && selected ? (
           <GalleryMediaLightbox key={selected._id} item={toLightboxItem(selected)} onClose={() => setSelected(null)} />
         ) : null}
       </AnimatePresence>

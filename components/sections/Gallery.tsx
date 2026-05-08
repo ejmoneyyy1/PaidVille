@@ -9,6 +9,7 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 import GalleryMediaLightbox from '@/components/gallery/GalleryMediaLightbox';
 import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import {useAdmin} from '@/contexts/AdminContext';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
 import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery-video-play-url';
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
@@ -68,9 +69,11 @@ function LightboxModal({item, onClose}: {item: GalleryItem; onClose: () => void}
 function MasonryGrid({
   items,
   onSelect,
+  disableSelect,
 }: {
   items: GalleryItem[];
   onSelect: (item: GalleryItem) => void;
+  disableSelect: boolean;
 }) {
   const columns = [
     items.filter((_, i) => i % 3 === 0),
@@ -108,6 +111,7 @@ function MasonryGrid({
                     onClick={(e) => {
                       const target = e.target as HTMLElement;
                       if (target.closest('[data-admin-delete="true"]')) return;
+                      if (disableSelect) return;
                       onSelect(item);
                     }}
                     whileHover={{ scale: 1.01 }}
@@ -184,6 +188,7 @@ function MasonryGrid({
 
 export default function GallerySection({ items }: GalleryProps) {
   const [selected, setSelected] = useState<GalleryItem | null>(null);
+  const {isAdmin} = useAdmin();
 
   return (
     <section id="gallery" className="relative py-24 md:py-32 bg-silver overflow-hidden border-t border-brand-red">
@@ -214,12 +219,12 @@ export default function GallerySection({ items }: GalleryProps) {
             Gallery coming soon — connect your Sanity CMS to populate media.
           </div>
         ) : (
-          <MasonryGrid items={items.slice(0, 9)} onSelect={setSelected} />
+          <MasonryGrid items={items.slice(0, 9)} onSelect={setSelected} disableSelect={isAdmin} />
         )}
       </div>
 
       <AnimatePresence>
-        {selected ? (
+        {!isAdmin && selected ? (
           <LightboxModal key={selected._id} item={selected} onClose={() => setSelected(null)} />
         ) : null}
       </AnimatePresence>
