@@ -4,6 +4,8 @@ import Link from 'next/link';
 import {ArrowUpRight, Calendar, Play} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
+import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import {isSanityBlogPost} from '@/lib/blog-admin';
 import {splitHeadingLastWord} from '@/lib/heading-display';
 
 const HOMEPAGE_DOC = 'singleton-homepage';
@@ -36,6 +38,7 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
     day: 'numeric',
     year: 'numeric',
   });
+  const canEdit = isSanityBlogPost(post);
 
   const imgUrl =
     post.mainImage?.asset?._ref && process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
@@ -44,10 +47,18 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
 
   return (
     <ScrollReveal delay={index * 0.1} direction="up">
-      <Link
-        href={`/blog/${post.slug.current}`}
-        className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
-      >
+      <div className="relative h-full">
+        {canEdit ? (
+          <AdminDeleteControl
+            documentId={post._id}
+            entityLabel="this post"
+            className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+          />
+        ) : null}
+        <Link
+          href={`/blog/${post.slug.current}`}
+          className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
+        >
         <div className="relative aspect-video bg-silver overflow-hidden">
           {imgUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -85,9 +96,24 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
             )}
           </div>
 
-          <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
-            {post.title}
-          </h3>
+          {canEdit ? (
+            <EditableField
+              documentId={post._id}
+              field="title"
+              label="Post title"
+              value={post.title}
+              type="textarea"
+              wrapperClassName="group/edit relative mt-1 block"
+            >
+              <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
+                {post.title}
+              </h3>
+            </EditableField>
+          ) : (
+            <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
+              {post.title}
+            </h3>
+          )}
 
           <div className="flex items-center gap-1 text-xs font-display font-semibold text-brand-red mt-1 group-hover:gap-2 transition-all duration-200">
             Read article
@@ -95,6 +121,7 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
           </div>
         </div>
       </Link>
+      </div>
     </ScrollReveal>
   );
 }

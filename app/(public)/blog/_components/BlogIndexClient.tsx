@@ -6,6 +6,7 @@ import {motion} from 'framer-motion';
 import {urlFor} from '@/lib/sanity';
 import BlogCard, {type DisplayPost} from './BlogCard';
 import EditableField from '@/components/admin/EditableField';
+import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import {isSanityBlogPost} from '@/lib/blog-admin';
 
 interface BlogIndexClientProps {
@@ -30,7 +31,15 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
   return (
     <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{duration: 0.4}}>
       {featuredPost ? (
-        <Link href={`/blog/${featuredPost.slug.current}`} className="group mb-10 block">
+        <div className="relative mb-10">
+          {featuredEditable ? (
+            <AdminDeleteControl
+              documentId={featuredPost._id}
+              entityLabel="this post"
+              className="absolute right-6 top-6 z-[30] flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-md backdrop-blur-sm hover:bg-brand-red"
+            />
+          ) : null}
+          <Link href={`/blog/${featuredPost.slug.current}`} className="group block">
           <div
             className="relative min-h-[70vh] w-full overflow-hidden bg-silver"
             style={
@@ -87,6 +96,7 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
             </span>
           </div>
         </Link>
+        </div>
       ) : null}
 
       {remainingPosts.length > 0 ? (

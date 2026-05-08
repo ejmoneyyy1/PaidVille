@@ -15,6 +15,7 @@ import {
   EditablePostTitle,
 } from './_components/ArticleAdmin';
 import EditableField from '@/components/admin/EditableField';
+import ArticleAdminBar from './_components/ArticleAdminBar';
 
 export const revalidate = 60;
 
@@ -142,6 +143,7 @@ export default async function BlogPostPage({params}: Params) {
   return (
     <article className="min-h-screen bg-cream pb-24 pt-20">
       <section className="relative w-full min-h-[500px]">
+        {sanityPost ? <ArticleAdminBar documentId={sanityPost._id} /> : null}
         <Link
           href="/blog"
           className="absolute left-5 top-5 z-20 text-[10px] uppercase tracking-[0.34em] text-white transition-opacity hover:opacity-60"

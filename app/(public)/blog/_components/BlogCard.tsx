@@ -4,6 +4,7 @@ import type {BlogPost} from '@/components/sections/BlogPreview';
 import {urlFor} from '@/lib/sanity';
 import type {StockPost} from '../_data/stock-content';
 import EditableField from '@/components/admin/EditableField';
+import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import {isSanityBlogPost} from '@/lib/blog-admin';
 
 export type DisplayPost = BlogPost & Partial<Pick<StockPost, 'fallbackBg' | 'fallbackAccent'>>;
@@ -42,18 +43,28 @@ export default function BlogCard({
     post.excerpt ?? 'No filter, no fluff — the stories shaping PaidVille and the culture around it.';
 
   return (
-    <Link
-      href={`/blog/${post.slug.current}`}
-      className={`group relative block border p-6 ${isDarkFallback ? 'border-[#333333] text-white' : 'border-silver bg-cream text-charcoal'} ${className}`}
-      style={
-        isDarkFallback
-          ? {
-              backgroundColor: post.fallbackBg ?? '#1A1A1A',
-              backgroundImage: noiseTexture,
-            }
-          : undefined
-      }
-    >
+    <div className={`relative ${className}`}>
+      {canEdit ? (
+        <AdminDeleteControl
+          documentId={post._id}
+          entityLabel="this post"
+          className="absolute right-5 top-5 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal/90 text-white shadow-md hover:bg-brand-red"
+        />
+      ) : null}
+      <Link
+        href={`/blog/${post.slug.current}`}
+        className={`group relative block h-full border p-6 ${
+          isDarkFallback ? 'border-[#333333] text-white' : 'border-silver bg-cream text-charcoal'
+        }`}
+        style={
+          isDarkFallback
+            ? {
+                backgroundColor: post.fallbackBg ?? '#1A1A1A',
+                backgroundImage: noiseTexture,
+              }
+            : undefined
+        }
+      >
       {hasImage && image ? (
         <div className="relative -mx-6 -mt-6 mb-6 aspect-[3/2] overflow-hidden bg-silver">
           <Image
@@ -114,14 +125,15 @@ export default function BlogCard({
           {excerptText}
         </p>
       )}
-      <div className="mt-5 flex items-center justify-between">
-        <span className={`text-[13px] ${isDarkFallback ? 'text-white/70' : 'text-charcoal/55'}`}>
-          {post.author ? `By ${post.author} · ${date}` : date}
-        </span>
-        <p className="text-[11px] uppercase tracking-[0.24em]" style={{color: accent}}>
-          Read More →
-        </p>
-      </div>
-    </Link>
+        <div className="mt-5 flex items-center justify-between">
+          <span className={`text-[13px] ${isDarkFallback ? 'text-white/70' : 'text-charcoal/55'}`}>
+            {post.author ? `By ${post.author} · ${date}` : date}
+          </span>
+          <p className="text-[11px] uppercase tracking-[0.24em]" style={{color: accent}}>
+            Read More →
+          </p>
+        </div>
+      </Link>
+    </div>
   );
 }

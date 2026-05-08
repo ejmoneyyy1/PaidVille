@@ -10,6 +10,13 @@ import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
 import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery-video-play-url';
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
+import EditableField from '@/components/admin/EditableField';
+import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+
+function isCmsGalleryTile(item: GalleryPageItem): item is SanityGalleryDoc {
+  if ('staticSrc' in item && item.staticSrc) return false;
+  return typeof item._id === 'string' && !item._id.startsWith('fallback-');
+}
 
 export type GalleryPageItem =
   | SanityGalleryDoc
@@ -98,20 +105,33 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
               ? item.image.alt
               : item.title;
 
+          const cms = isCmsGalleryTile(item);
+
           return (
             <ScrollReveal key={item._id} delay={index * 0.04} direction="up">
-              <motion.button
-                type="button"
-                className="break-inside-avoid mb-5 w-full text-left rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm
-                  transition-shadow hover:shadow-md cursor-pointer"
-                onClick={() => setSelected(item)}
-                whileHover={{scale: 1.005}}
-                transition={{duration: 0.2}}
-              >
-                <div
-                  className={`relative w-full bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
+              <motion.div className="break-inside-avoid relative mb-5" whileHover={{scale: 1.005}} transition={{duration: 0.2}}>
+                {cms ? (
+                  <AdminDeleteControl
+                    documentId={item._id}
+                    entityLabel="this gallery item"
+                    redirectAfterDelete="/gallery"
+                    className="absolute left-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+                  />
+                ) : null}
+                <div className="overflow-hidden rounded-2xl border border-brand-red bg-cream text-left shadow-sm transition-shadow hover:shadow-md">
+                <motion.div
+                  role="button"
+                  tabIndex={0}
+                  className={`relative w-full cursor-pointer bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
                     isTall ? 'aspect-[3/4]' : 'aspect-[5/4]'
                   }`}
+                  onClick={() => setSelected(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelected(item);
+                    }
+                  }}
                 >
                   {poster ? (
                     <Image
@@ -137,18 +157,48 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                       Video
                     </span>
                   ) : null}
-                </div>
+                </motion.div>
                 <div className="p-4 pt-3 space-y-2">
-                  <h2 className="font-display font-bold text-lg text-charcoal leading-snug line-clamp-2 break-words">
-                    {item.title}
-                  </h2>
+                  {cms ? (
+                    <EditableField
+                      documentId={item._id}
+                      field="title"
+                      label="Gallery item title"
+                      value={item.title}
+                      type="text"
+                      wrapperClassName="group/edit relative block"
+                    >
+                      <h2 className="font-display font-bold text-lg text-charcoal leading-snug line-clamp-2 break-words">
+                        {item.title}
+                      </h2>
+                    </EditableField>
+                  ) : (
+                    <h2 className="font-display font-bold text-lg text-charcoal leading-snug line-clamp-2 break-words">
+                      {item.title}
+                    </h2>
+                  )}
+                  {cms ? (
+                    <EditableField
+                      documentId={item._id}
+                      field="videoUrl"
+                      label="Photo / video URL"
+                      value={('videoUrl' in item ? item.videoUrl : '') ?? ''}
+                      type="text"
+                      wrapperClassName="group/edit relative block"
+                    >
+                      <p className="truncate font-mono text-[11px] text-charcoal/40">
+                        {('videoUrl' in item && item.videoUrl) || 'Paste a media URL (MP4, YouTube, etc.)'}
+                      </p>
+                    </EditableField>
+                  ) : null}
                   {categoryLabel ? (
                     <p className="text-[11px] font-display font-semibold tracking-wide text-brand-red leading-tight">
                       {categoryLabel}
                     </p>
                   ) : null}
                 </div>
-              </motion.button>
+                </div>
+              </motion.div>
             </ScrollReveal>
           );
         })}

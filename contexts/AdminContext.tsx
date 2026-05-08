@@ -19,6 +19,7 @@ interface AdminContextType {
   openPanel: (config: PanelConfig) => void;
   closePanel: () => void;
   saveField: (documentId: string, field: string, value: unknown) => Promise<void>;
+  deleteDocument: (documentId: string, redirectTo?: string) => Promise<void>;
   isSaving: boolean;
 }
 
@@ -65,6 +66,25 @@ export function AdminProvider({
     [router],
   );
 
+  const deleteDocument = useCallback(
+    async (documentId: string, redirectTo?: string) => {
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({documentId}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Delete failed');
+      }
+      if (redirectTo) {
+        router.push(redirectTo);
+      }
+      router.refresh();
+    },
+    [router],
+  );
+
   const value: AdminContextType = {
     isAdmin: initialIsAdmin,
     isEditing,
@@ -73,6 +93,7 @@ export function AdminProvider({
     openPanel: setActivePanel,
     closePanel: () => setActivePanel(null),
     saveField,
+    deleteDocument,
     isSaving,
   };
 
