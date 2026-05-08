@@ -4,11 +4,29 @@ import Image from 'next/image';
 import {motion} from 'framer-motion';
 import {ShoppingBag, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import EditableField from '@/components/admin/EditableField';
 import {formatPrice} from '@/lib/utils';
 import {urlFor} from '@/lib/sanity';
 import type {ShopProductDoc} from '@/lib/sanity';
+import {splitHeadingLastWord} from '@/lib/heading-display';
 
-export default function ShopSection({product}: {product: ShopProductDoc | null}) {
+const HOMEPAGE_DOC = 'singleton-homepage';
+const DEFAULT_SHOP_HEADING = 'Pre-order the drop';
+const DEFAULT_SHOP_SUB =
+  'Pricing and checkout live on Stripe — update your Payment Link in Studio anytime.';
+
+export default function ShopSection({
+  product,
+  homepageShopHeading,
+  homepageShopSubheading,
+}: {
+  product: ShopProductDoc | null;
+  homepageShopHeading?: string | null;
+  homepageShopSubheading?: string | null;
+}) {
+  const heading = homepageShopHeading ?? DEFAULT_SHOP_HEADING;
+  const sub = homepageShopSubheading ?? DEFAULT_SHOP_SUB;
+  const {lead, accent} = splitHeadingLastWord(heading, DEFAULT_SHOP_HEADING);
   return (
     <section id="shop" className="relative py-24 md:py-32 bg-silver overflow-hidden">
       <div
@@ -19,15 +37,37 @@ export default function ShopSection({product}: {product: ShopProductDoc | null})
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="section-label">Members Shop</span>
-            <h2 className="section-title text-charcoal">
-              Pre-order the <span className="text-brand-red">drop</span>
-            </h2>
-            <p className="section-subtitle mt-3 text-charcoal/70 max-w-xl">
-              Pricing and checkout live on Stripe — update your Payment Link in Studio anytime.
-            </p>
+            <EditableField
+              documentId={HOMEPAGE_DOC}
+              field='sections[_key=="shop-1"].heading'
+              label="Shop — section heading"
+              value={heading}
+              type="textarea"
+              wrapperClassName="relative inline-block max-w-xl group/edit"
+            >
+              <h2 className="section-title text-charcoal">
+                {lead ? (
+                  <>
+                    {lead} <span className="text-brand-red">{accent}</span>
+                  </>
+                ) : (
+                  <span className="text-brand-red">{accent}</span>
+                )}
+              </h2>
+            </EditableField>
+            <EditableField
+              documentId={HOMEPAGE_DOC}
+              field='sections[_key=="shop-1"].subheading'
+              label="Shop — section subheading"
+              value={sub}
+              type="textarea"
+              wrapperClassName="relative mt-3 block max-w-xl group/edit"
+            >
+              <p className="section-subtitle text-charcoal/70">{sub}</p>
+            </EditableField>
           </div>
           <a
             href="/shop"

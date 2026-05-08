@@ -5,75 +5,126 @@ import Image from 'next/image';
 import {motion} from 'framer-motion';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {urlFor} from '@/lib/sanity';
+import type {StockPost} from '../_data/stock-content';
 import BlogCard from './BlogCard';
 
 interface BlogIndexClientProps {
-  posts: BlogPost[];
+  posts: (BlogPost & Partial<StockPost>)[];
 }
+
+const noiseTexture =
+  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E\")";
 
 export default function BlogIndexClient({posts}: BlogIndexClientProps) {
   const [featuredPost, ...remainingPosts] = posts;
+  const featuredHasImage = Boolean(featuredPost?.mainImage?.asset?._ref);
+  const featuredDate = featuredPost
+    ? new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : '';
 
   return (
     <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{duration: 0.4}}>
       {featuredPost ? (
         <Link href={`/blog/${featuredPost.slug.current}`} className="group mb-10 block">
-          <div className="relative aspect-video w-full overflow-hidden bg-silver">
-            {featuredPost.mainImage?.asset?._ref ? (
+          <div
+            className="relative min-h-[70vh] w-full overflow-hidden bg-silver"
+            style={
+              !featuredHasImage
+                ? {
+                    backgroundColor: featuredPost.fallbackBg ?? '#1A1A1A',
+                    backgroundImage: noiseTexture,
+                  }
+                : undefined
+            }
+          >
+            {featuredHasImage && featuredPost.mainImage ? (
               <Image
                 src={urlFor(featuredPost.mainImage).width(1920).height(1080).fit('crop').quality(92).url()}
-                alt={featuredPost.mainImage?.alt ?? featuredPost.title}
+                alt={featuredPost.mainImage.alt ?? featuredPost.title}
                 width={1920}
                 height={1080}
                 className="h-full w-full object-cover"
                 sizes="100vw"
                 priority
               />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-7xl font-black text-charcoal/20">
-                PV
-              </div>
-            )}
+            ) : null}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
-            <div className="absolute bottom-0 left-0 p-6 md:p-10">
-              <h2 className="max-w-4xl text-3xl font-bold leading-tight text-white md:text-5xl">
+            <div className="absolute bottom-0 left-0 p-6 md:p-12">
+              <p className="mb-3 text-[10px] uppercase tracking-[0.34em] text-brand-red">
+                {featuredPost.category ?? 'EDITORIAL'}
+              </p>
+              <h2 className="max-w-[800px] text-[clamp(36px,5vw,64px)] font-black leading-[1.0] text-white">
                 {featuredPost.title}
               </h2>
-              <p className="mt-3 text-sm text-white/90">
-                {featuredPost.author
-                  ? `${featuredPost.author} · ${new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}`
-                  : new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+              <p className="mt-3 text-[13px] text-white/70">
+                {featuredPost.author ? `By ${featuredPost.author} · ${featuredDate}` : featuredDate}
               </p>
             </div>
+            <span className="pointer-events-none absolute bottom-0 right-8 text-[200px] font-black leading-none text-white opacity-[0.06]">
+              01
+            </span>
           </div>
         </Link>
       ) : null}
 
       {remainingPosts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {remainingPosts.map((post, index) => (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_1fr]">
+          <motion.div
+            initial={{y: 40, opacity: 0}}
+            whileInView={{y: 0, opacity: 1}}
+            viewport={{once: true}}
+            transition={{duration: 0.5, delay: 0}}
+          >
+            {remainingPosts[0] ? (
+              <BlogCard post={remainingPosts[0]} index={0} className="h-full lg:min-h-[640px]" />
+            ) : null}
+          </motion.div>
+          <div className="grid grid-cols-1 gap-6">
+            {remainingPosts.slice(1, 3).map((post, index) => (
+              <motion.div
+                key={post._id}
+                initial={{y: 40, opacity: 0}}
+                whileInView={{y: 0, opacity: 1}}
+                viewport={{once: true}}
+                transition={{duration: 0.5, delay: (index + 1) * 0.08}}
+              >
+                <BlogCard post={post} index={index + 1} />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {remainingPosts.length > 3 ? (
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {remainingPosts.slice(3).map((post, index) => (
             <motion.div
               key={post._id}
-              initial={{y: 30, opacity: 0}}
+              initial={{y: 40, opacity: 0}}
               whileInView={{y: 0, opacity: 1}}
               viewport={{once: true}}
-              transition={{duration: 0.4, delay: index * 0.1}}
+              transition={{duration: 0.45, delay: index * 0.08}}
             >
-              <BlogCard post={post} />
+              <BlogCard post={post} index={index + 3} />
             </motion.div>
           ))}
         </div>
       ) : null}
+
+      <div className="mt-12 border-y border-brand-red py-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-center">
+          <p className="text-lg font-bold text-charcoal">SUBSCRIBE TO BIASED OPINIONS</p>
+          <p className="text-right text-sm text-charcoal/60">
+            New drops every two weeks — no spam, just culture.
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 }

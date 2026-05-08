@@ -1,43 +1,46 @@
 import {getSanityClient} from '@/lib/sanity-server';
 import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
+import {stockPosts} from './_data/stock-content';
 import BlogIndexClient from './_components/BlogIndexClient';
 
 export const revalidate = 60;
 
 export default async function BlogPage() {
-  let posts: BlogPost[] = [];
+  let sanityPosts: BlogPost[] = [];
   try {
     const client = await getSanityClient();
     const fetchedPosts = await client.fetch<BlogPost[]>(blogQuery);
-    posts = fetchedPosts ?? [];
+    sanityPosts = fetchedPosts ?? [];
   } catch {
     // Unconfigured Sanity
   }
+  const displayPosts = sanityPosts.length > 0 ? sanityPosts : stockPosts;
 
   return (
-    <div className="min-h-screen bg-cream pt-28 pb-24">
-      <header className="w-full border-b border-brand-red/40">
-        <div className="container-max section-padding py-12 md:py-16">
-          <p className="text-[11px] font-medium uppercase tracking-[0.36em] text-brand-red">Editorial</p>
-          <h1 className="mt-3 text-[40px] font-black leading-[0.95] text-charcoal md:text-[72px]">
-            Biased Opinions
-          </h1>
-          <div className="mt-6 h-px w-full bg-brand-red" />
-          <p className="mt-5 max-w-2xl text-base text-charcoal/60">
-            Unfiltered takes on events, culture, and the creative industry
+    <div className="min-h-screen bg-cream pb-24 pt-20">
+      <header className="w-full">
+        <div className="container-max section-padding pb-10 pt-[60px]">
+          <p className="text-right text-[10px] uppercase tracking-[0.44em] text-brand-red">
+            EST. 2018 · FAYETTEVILLE, AR
           </p>
+          <h1 className="mt-4 text-[clamp(72px,12vw,140px)] font-black uppercase leading-[0.9] text-charcoal">
+            <span className="block">Biased</span>
+            <span className="block">Opinions</span>
+          </h1>
+          <p className="mt-4 text-[11px] uppercase tracking-[0.4em] text-brand-red">Editorial by PaidVille</p>
         </div>
+        <div className="h-px w-full bg-brand-red" />
       </header>
 
       <div className="container-max section-padding pt-10">
-        {posts.length === 0 ? (
+        {displayPosts.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-2xl text-charcoal">No posts yet.</p>
             <p className="mt-3 text-base text-charcoal/60">Zay is cooking something up — check back soon.</p>
           </div>
         ) : (
-          <BlogIndexClient posts={posts} />
+          <BlogIndexClient posts={displayPosts} />
         )}
       </div>
     </div>

@@ -3,6 +3,11 @@
 import Link from 'next/link';
 import {ArrowUpRight, Calendar, Play} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import EditableField from '@/components/admin/EditableField';
+import {splitHeadingLastWord} from '@/lib/heading-display';
+
+const HOMEPAGE_DOC = 'singleton-homepage';
+const DEFAULT_BLOG_HEADING = 'Biased Opinions';
 
 export interface BlogPost {
   _id: string;
@@ -20,6 +25,7 @@ export interface BlogPost {
 
 interface BlogPreviewProps {
   posts: BlogPost[];
+  homepageBlogHeading?: string | null;
 }
 
 function BlogCard({post, index}: {post: BlogPost; index: number}) {
@@ -91,7 +97,10 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
   );
 }
 
-export default function BlogPreview({posts}: BlogPreviewProps) {
+export default function BlogPreview({posts, homepageBlogHeading}: BlogPreviewProps) {
+  const blogTitle = homepageBlogHeading ?? DEFAULT_BLOG_HEADING;
+  const {lead, accent} = splitHeadingLastWord(blogTitle, DEFAULT_BLOG_HEADING);
+
   return (
     <section id="blog" className="relative py-24 md:py-32 bg-cream overflow-hidden border-t border-brand-red">
       <div
@@ -102,12 +111,27 @@ export default function BlogPreview({posts}: BlogPreviewProps) {
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="section-label">Editorial</span>
-            <h2 className="section-title text-charcoal">
-              Biased <span className="text-brand-red">Opinions</span>
-            </h2>
+            <EditableField
+              documentId={HOMEPAGE_DOC}
+              field='sections[_key=="blog-1"].heading'
+              label="Blog — section heading"
+              value={blogTitle}
+              type="textarea"
+              wrapperClassName="relative inline-block group/edit"
+            >
+              <h2 className="section-title text-charcoal">
+                {lead ? (
+                  <>
+                    {lead} <span className="text-brand-red">{accent}</span>
+                  </>
+                ) : (
+                  <span className="text-brand-red">{accent}</span>
+                )}
+              </h2>
+            </EditableField>
           </div>
           <Link
             href="/blog"

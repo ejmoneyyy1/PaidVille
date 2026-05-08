@@ -3,6 +3,11 @@ import {Instagram, Twitter, Youtube, Facebook} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
 import FooterLogoStrip from '@/components/brand/FooterLogoStrip';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
+import type {GlobalSettingsDoc} from '@/lib/get-singleton-docs';
+import type {NavItemResolved} from '@/lib/build-nav-items';
+import EditableField from '@/components/admin/EditableField';
+
+const GLOBAL_DOC = 'singleton-global-settings';
 
 function TikTokGlyph({className}: {className?: string}) {
   return (
@@ -15,15 +20,24 @@ function TikTokGlyph({className}: {className?: string}) {
 const socialClass =
   'flex h-9 w-9 items-center justify-center rounded-lg border border-brand-red/40 bg-white/70 text-charcoal/55 transition-all duration-200 hover:border-brand-red hover:bg-white hover:text-brand-red hover:shadow-[0_4px_16px_rgba(176,0,0,0.15)]';
 
-export default function Footer({siteContent}: {siteContent?: SiteContentDoc | null}) {
-  const footerTagline = siteContent?.footerTagline ?? SiteConfig.tagline;
+export default function Footer({
+  siteContent,
+  globalSettings,
+  navItems,
+}: {
+  siteContent?: SiteContentDoc | null;
+  globalSettings?: GlobalSettingsDoc | null;
+  navItems: NavItemResolved[];
+}) {
+  const footerTagline =
+    globalSettings?.footerTagline ?? siteContent?.footerTagline ?? SiteConfig.tagline;
+  const contactEmail = globalSettings?.contactEmail ?? SiteConfig.contact.email;
   const instagramHref = siteContent?.instagramUrl ?? SiteConfig.social.instagram;
   const twitterHref = siteContent?.twitterUrl ?? SiteConfig.social.twitter;
   const tiktokHref = siteContent?.tiktokUrl ?? SiteConfig.social.tiktok;
 
   return (
     <footer className="relative overflow-hidden border-t border-brand-red bg-gradient-to-b from-silver to-cream">
-      {/* Soft vignette */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.45]"
         style={{
@@ -34,30 +48,37 @@ export default function Footer({siteContent}: {siteContent?: SiteContentDoc | nu
       />
 
       <div className="relative container-max section-padding py-9 md:py-10">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-6 lg:items-start">
-          {/* Brand + marks — immersive but compact */}
-          <div className="lg:col-span-5 space-y-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-6">
+          <div className="space-y-3 lg:col-span-5">
             <div className="inline-flex flex-col gap-1">
-              <span className="font-display font-black text-xl tracking-tight text-gradient-brand md:text-2xl">
+              <span className="font-display text-xl font-black tracking-tight text-gradient-brand md:text-2xl">
                 PAID<span className="text-brand-red">VILLE</span>
               </span>
               <span className="h-px w-12 bg-brand-red/80" aria-hidden />
             </div>
-            <p className="max-w-sm text-sm leading-snug text-charcoal/70">{footerTagline}</p>
+            <EditableField
+              documentId={GLOBAL_DOC}
+              field="footerTagline"
+              label="Footer tagline"
+              value={globalSettings?.footerTagline ?? footerTagline}
+              type="textarea"
+              wrapperClassName="relative block max-w-sm group/edit"
+            >
+              <p className="max-w-sm text-sm leading-snug text-charcoal/70">{footerTagline}</p>
+            </EditableField>
             <p className="text-[11px] font-display font-semibold uppercase tracking-[0.18em] text-charcoal/45">
               Est. 2018 — ARK USA · Fayetteville, AR
             </p>
             <FooterLogoStrip />
           </div>
 
-          {/* Navigate — dense 2-col on wide */}
           <div className="lg:col-span-3">
             <p className="mb-3 text-[10px] font-display font-bold uppercase tracking-[0.22em] text-brand-red">
               Navigate
             </p>
             <ul className="columns-2 gap-x-6 gap-y-1.5 text-sm [column-fill:_balance]">
-              {SiteConfig.nav.map((item) => (
-                <li key={item.href} className="break-inside-avoid py-0.5">
+              {navItems.map((item) => (
+                <li key={item._key} className="break-inside-avoid py-0.5">
                   <Link
                     href={item.href}
                     className="text-charcoal/60 transition-colors duration-200 hover:text-brand-red"
@@ -69,17 +90,25 @@ export default function Footer({siteContent}: {siteContent?: SiteContentDoc | nu
             </ul>
           </div>
 
-          {/* Connect */}
           <div className="lg:col-span-4">
             <p className="mb-3 text-[10px] font-display font-bold uppercase tracking-[0.22em] text-brand-red">
               Connect
             </p>
-            <a
-              href={`mailto:${SiteConfig.contact.email}`}
-              className="inline-block text-sm font-medium text-brand-red transition-opacity hover:opacity-80"
+            <EditableField
+              documentId={GLOBAL_DOC}
+              field="contactEmail"
+              label="Contact email"
+              value={contactEmail}
+              type="text"
+              wrapperClassName="relative inline-block group/edit"
             >
-              {SiteConfig.contact.email}
-            </a>
+              <a
+                href={`mailto:${contactEmail}`}
+                className="inline-block text-sm font-medium text-brand-red transition-opacity hover:opacity-80"
+              >
+                {contactEmail}
+              </a>
+            </EditableField>
             <div className="mt-4 flex flex-wrap gap-2">
               <a href={instagramHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Instagram">
                 <Instagram size={16} />

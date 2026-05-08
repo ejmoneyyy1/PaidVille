@@ -1,18 +1,32 @@
+import {cookies} from 'next/headers';
 import IntroSequence from '@/components/IntroSequence';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { InquiryProvider } from '@/components/inquiry/InquiryProvider';
+import {InquiryProvider} from '@/components/inquiry/InquiryProvider';
+import {AdminProvider} from '@/contexts/AdminContext';
+import AdminToolbar from '@/components/admin/AdminToolbar';
+import AdminPanel from '@/components/admin/AdminPanel';
 import {getSiteContent} from '@/lib/get-site-content';
+import {getSingletonDocs} from '@/lib/get-singleton-docs';
+import {buildNavItems} from '@/lib/build-nav-items';
 
 export default async function PublicLayout({children}: {children: React.ReactNode}) {
   const siteContent = await getSiteContent();
+  const cookieStore = await cookies();
+  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
+  const {navigation, globalSettings} = await getSingletonDocs();
+  const navItems = buildNavItems(navigation);
 
   return (
     <InquiryProvider>
-      <IntroSequence />
-      <Navbar />
-      <main className="relative">{children}</main>
-      <Footer siteContent={siteContent} />
+      <AdminProvider isAdmin={isAdmin}>
+        <IntroSequence />
+        <Navbar navItems={navItems} />
+        <main className="relative">{children}</main>
+        <Footer siteContent={siteContent} globalSettings={globalSettings} navItems={navItems} />
+        <AdminToolbar />
+        <AdminPanel />
+      </AdminProvider>
     </InquiryProvider>
   );
 }

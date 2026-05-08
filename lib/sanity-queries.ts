@@ -1,6 +1,7 @@
 /** GROQ queries for Sanity documents */
 
 export const siteContentQuery = `*[_type == "siteContent"][0]{
+  _id,
   heroTagline, heroSubtext,
   eventsTitle, eventsDescription, eventsImage,
   brandingTitle, brandingDescription, brandingImage,
@@ -89,6 +90,7 @@ export const galleryEventsMediaQuery = `*[_type in ["gallery", "galleryItem"] &&
 }`;
 
 export type SiteContentDoc = {
+  _id?: string;
   heroTagline?: string | null;
   heroSubtext?: string | null;
   eventsTitle?: string | null;

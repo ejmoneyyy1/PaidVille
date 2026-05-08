@@ -4,8 +4,15 @@ import Image from 'next/image';
 import {motion} from 'framer-motion';
 import {Calendar, MapPin, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import EditableField from '@/components/admin/EditableField';
 import {urlFor} from '@/lib/sanity';
 import type {SanityEventDoc} from '@/lib/sanity';
+import {splitHeadingLastWord} from '@/lib/heading-display';
+
+const HOMEPAGE_DOC = 'singleton-homepage';
+const DEFAULT_EVENTS_TITLE = 'Upcoming Events';
+const DEFAULT_EVENTS_SUB =
+  'New shows land here first — each card opens your Eventbrite listing.';
 
 function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
   const dateLabel = new Date(event.date).toLocaleString('en-US', {
@@ -77,7 +84,19 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
   );
 }
 
-export default function Events({events}: {events: SanityEventDoc[]}) {
+export default function Events({
+  events,
+  homepageEventsHeading,
+  homepageEventsSubheading,
+}: {
+  events: SanityEventDoc[];
+  homepageEventsHeading?: string | null;
+  homepageEventsSubheading?: string | null;
+}) {
+  const title = homepageEventsHeading ?? DEFAULT_EVENTS_TITLE;
+  const sub = homepageEventsSubheading ?? DEFAULT_EVENTS_SUB;
+  const {lead, accent} = splitHeadingLastWord(title, DEFAULT_EVENTS_TITLE);
+
   return (
     <section id="events" className="relative py-24 md:py-32 bg-cream overflow-hidden">
       <div
@@ -88,14 +107,36 @@ export default function Events({events}: {events: SanityEventDoc[]}) {
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="text-center mb-14">
+        <ScrollReveal className="mb-14 text-center">
           <span className="section-label justify-center">What&apos;s Coming Up</span>
-          <h2 className="section-title text-charcoal">
-            Upcoming <span className="text-brand-red">Events</span>
-          </h2>
-          <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/70">
-            New shows land here first — each card opens your Eventbrite listing.
-          </p>
+          <EditableField
+            documentId={HOMEPAGE_DOC}
+            field='sections[_key=="events-1"].heading'
+            label="Events — section heading"
+            value={title}
+            type="textarea"
+            wrapperClassName="relative mx-auto inline-block max-w-4xl group/edit"
+          >
+            <h2 className="section-title text-charcoal">
+              {lead ? (
+                <>
+                  {lead} <span className="text-brand-red">{accent}</span>
+                </>
+              ) : (
+                <span className="text-brand-red">{accent}</span>
+              )}
+            </h2>
+          </EditableField>
+          <EditableField
+            documentId={HOMEPAGE_DOC}
+            field='sections[_key=="events-1"].subheading'
+            label="Events — section subheading"
+            value={sub}
+            type="textarea"
+            wrapperClassName="relative mx-auto mt-4 block max-w-3xl group/edit"
+          >
+            <p className="section-subtitle mx-auto text-center text-charcoal/70">{sub}</p>
+          </EditableField>
         </ScrollReveal>
 
         {events.length === 0 ? (

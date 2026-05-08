@@ -7,7 +7,10 @@ import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
 import BearEmblemParallax from '@/components/parallax/BearEmblemParallax';
 import ReelModal from '@/components/reel/ReelModal';
+import EditableField from '@/components/admin/EditableField';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
+
+const SITE_STATS_ID = 'siteStats';
 
 export type HeroStats = {
   ticketsSold: number;
@@ -36,6 +39,7 @@ export default function Hero({
   const [reelOpen, setReelOpen] = useState(false);
 
   const safeStats = stats ?? {rating: 5, ticketsSold: 10000, eventsHosted: 50};
+  const siteDocId = siteContent?._id ?? '';
 
   const {scrollYProgress} = useScroll({
     target: sectionRef,
@@ -130,9 +134,18 @@ export default function Hero({
           className="flex items-center gap-3"
         >
           <span className="h-px w-10 bg-brand-red" />
-          <span className="section-label text-[11px] text-charcoal/80">
-            {siteContent?.heroSubtext ?? FALLBACK_HERO_SUBTEXT}
-          </span>
+          <EditableField
+            documentId={siteDocId}
+            field="heroSubtext"
+            label="Hero subtext"
+            value={siteContent?.heroSubtext ?? FALLBACK_HERO_SUBTEXT}
+            type="text"
+            wrapperClassName="relative inline-block group/edit"
+          >
+            <span className="section-label text-[11px] text-charcoal/80">
+              {siteContent?.heroSubtext ?? FALLBACK_HERO_SUBTEXT}
+            </span>
+          </EditableField>
           <span className="h-px w-10 bg-brand-red" />
         </motion.div>
 
@@ -153,14 +166,25 @@ export default function Hero({
           />
         </motion.div>
 
-        <motion.p
+        <motion.div
           initial={{opacity: 0}}
           animate={{opacity: 1}}
           transition={{duration: 0.7, delay: 0.55}}
-          className="mt-1 text-[clamp(0.8rem,1.9vw,1.05rem)] font-display font-medium tracking-[0.22em] uppercase text-charcoal/55"
+          className="mt-1"
         >
-          {siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
-        </motion.p>
+          <EditableField
+            documentId={siteDocId}
+            field="heroTagline"
+            label="Hero tagline"
+            value={siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
+            type="text"
+            wrapperClassName="relative inline-block group/edit"
+          >
+            <p className="text-[clamp(0.8rem,1.9vw,1.05rem)] font-display font-medium tracking-[0.22em] uppercase text-charcoal/55">
+              {siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
+            </p>
+          </EditableField>
+        </motion.div>
 
         <motion.div
           initial={{opacity: 0, y: 14}}
@@ -196,18 +220,45 @@ export default function Hero({
           className="flex flex-wrap items-center justify-center gap-10 mt-2 pt-6 border-t border-brand-red"
         >
           <div className="text-center min-w-[140px]">
-            <div className="flex justify-center gap-0.5 mb-1">
-              {Array.from({length: rating}).map((_, i) => (
-                <Star key={i} size={18} className="fill-amber-400 text-amber-500" aria-hidden />
-              ))}
-            </div>
-            <p className="text-xs font-display font-semibold tracking-wide text-charcoal/70">5 Star Rating</p>
+            <EditableField
+              documentId={SITE_STATS_ID}
+              field="rating"
+              label="Star rating (1–5)"
+              value={safeStats.rating}
+              type="number"
+              wrapperClassName="relative inline-block group/edit"
+            >
+              <div className="flex justify-center gap-0.5 mb-1">
+                {Array.from({length: rating}).map((_, i) => (
+                  <Star key={i} size={18} className="fill-amber-400 text-amber-500" aria-hidden />
+                ))}
+              </div>
+              <p className="text-xs font-display font-semibold tracking-wide text-charcoal/70">5 Star Rating</p>
+            </EditableField>
           </div>
           <div className="text-center min-w-[140px]">
-            <p className="font-display font-black text-xl text-charcoal">{formatTicketsLabel(safeStats.ticketsSold)}</p>
+            <EditableField
+              documentId={SITE_STATS_ID}
+              field="ticketsSold"
+              label="Tickets sold (number)"
+              value={safeStats.ticketsSold}
+              type="number"
+              wrapperClassName="relative inline-block group/edit"
+            >
+              <p className="font-display font-black text-xl text-charcoal">{formatTicketsLabel(safeStats.ticketsSold)}</p>
+            </EditableField>
           </div>
           <div className="text-center min-w-[140px]">
-            <p className="font-display font-black text-xl text-charcoal">{safeStats.eventsHosted}+ Events Hosted</p>
+            <EditableField
+              documentId={SITE_STATS_ID}
+              field="eventsHosted"
+              label="Events hosted (number)"
+              value={safeStats.eventsHosted}
+              type="number"
+              wrapperClassName="relative inline-block group/edit"
+            >
+              <p className="font-display font-black text-xl text-charcoal">{safeStats.eventsHosted}+ Events Hosted</p>
+            </EditableField>
           </div>
         </motion.div>
       </motion.div>

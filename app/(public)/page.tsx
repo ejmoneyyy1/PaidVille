@@ -17,6 +17,7 @@ import {
   type ShopProductDoc,
 } from '@/lib/sanity';
 import {getSiteContent} from '@/lib/get-site-content';
+import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import type {GalleryItem} from '@/components/sections/Gallery';
 
@@ -74,18 +75,39 @@ async function getData() {
   return {posts, galleryItems, stats, events, shopProduct, siteContent};
 }
 
+function sectionString(sections: unknown, key: string, prop: 'heading' | 'subheading'): string | null {
+  if (!Array.isArray(sections)) return null;
+  const block = sections.find((item: {_key?: string}) => item?._key === key) as Record<string, unknown> | undefined;
+  const v = block?.[prop];
+  return typeof v === 'string' ? v : null;
+}
+
 export default async function HomePage() {
   const {posts, galleryItems, stats, events, shopProduct, siteContent} = await getData();
+  const {homepage} = await getSingletonDocs();
+  const sections = homepage?.sections;
 
   return (
     <>
       <Hero stats={stats} siteContent={siteContent} />
-      <Services siteContent={siteContent} />
-      <Events events={events} />
+      <Services
+        siteContent={siteContent}
+        homepageServicesHeading={sectionString(sections, 'services-1', 'heading')}
+        homepageServicesSubheading={sectionString(sections, 'services-1', 'subheading')}
+      />
+      <Events
+        events={events}
+        homepageEventsHeading={sectionString(sections, 'events-1', 'heading')}
+        homepageEventsSubheading={sectionString(sections, 'events-1', 'subheading')}
+      />
       <About />
       <GallerySection items={galleryItems} />
-      <ShopSection product={shopProduct} />
-      <BlogPreview posts={posts} />
+      <ShopSection
+        product={shopProduct}
+        homepageShopHeading={sectionString(sections, 'shop-1', 'heading')}
+        homepageShopSubheading={sectionString(sections, 'shop-1', 'subheading')}
+      />
+      <BlogPreview posts={posts} homepageBlogHeading={sectionString(sections, 'blog-1', 'heading')} />
     </>
   );
 }

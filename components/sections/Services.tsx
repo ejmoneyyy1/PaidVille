@@ -7,6 +7,7 @@ import {Zap, Camera, ShoppingBag, Users} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import EditableField from '@/components/admin/EditableField';
 import {cn} from '@/lib/utils';
 import {useInquiry} from '@/components/inquiry/InquiryProvider';
 
@@ -22,6 +23,18 @@ type ServiceRow = (typeof SiteConfig.services)[number];
 type DisplayService = Omit<ServiceRow, 'title' | 'description'> & {
   title: string;
   description: string;
+};
+
+const HOMEPAGE_DOC = 'singleton-homepage';
+
+const SITE_FIELD_BY_ID: Record<
+  string,
+  {title: string; description: string} | undefined
+> = {
+  events: {title: 'eventsTitle', description: 'eventsDescription'},
+  branding: {title: 'brandingTitle', description: 'brandingDescription'},
+  shop: {title: 'clothingTitle', description: 'clothingDescription'},
+  community: {title: 'communityTitle', description: 'communityDescription'},
 };
 
 function mergeServiceCopy(siteContent: SiteContentDoc | null | undefined, service: ServiceRow): DisplayService {
@@ -55,12 +68,56 @@ function mergeServiceCopy(siteContent: SiteContentDoc | null | undefined, servic
   }
 }
 
+function ServiceTitleDescription({
+  service,
+  siteContentId,
+}: {
+  service: DisplayService;
+  siteContentId: string;
+}) {
+  const fields = SITE_FIELD_BY_ID[service.id];
+  if (!fields || !siteContentId) {
+    return (
+      <>
+        <h3 className="font-display font-bold text-xl text-charcoal leading-snug">{service.title}</h3>
+        <p className="text-sm text-charcoal/65 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
+      </>
+    );
+  }
+  return (
+    <>
+      <EditableField
+        documentId={siteContentId}
+        field={fields.title}
+        label={`${service.id} — title`}
+        value={service.title}
+        type="text"
+        wrapperClassName="relative block group/edit"
+      >
+        <h3 className="font-display font-bold text-xl text-charcoal leading-snug">{service.title}</h3>
+      </EditableField>
+      <EditableField
+        documentId={siteContentId}
+        field={fields.description}
+        label={`${service.id} — description`}
+        value={service.description}
+        type="textarea"
+        wrapperClassName="relative block group/edit"
+      >
+        <p className="text-sm text-charcoal/65 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
+      </EditableField>
+    </>
+  );
+}
+
 function TiltCard({
   service,
   index,
+  siteContentId,
 }: {
   service: DisplayService;
   index: number;
+  siteContentId: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -138,10 +195,10 @@ function TiltCard({
           </motion.div>
 
           <div className="relative z-10 flex flex-col gap-3 flex-1">
-            <h3 className="font-display font-bold text-xl text-charcoal leading-snug">{service.title}</h3>
-            <p className="text-sm text-charcoal/65 leading-relaxed flex-1 whitespace-pre-line">
-              {service.description}
-            </p>
+            <ServiceTitleDescription
+              service={service}
+              siteContentId={siteContentId}
+            />
           </div>
 
           {service.id === 'shop' ? (
@@ -176,8 +233,24 @@ function TiltCard({
   );
 }
 
-export default function Services({siteContent}: {siteContent?: SiteContentDoc | null}) {
+const DEFAULT_SERVICES_HEADING = 'Services Built for the Culture';
+const DEFAULT_SERVICES_SUB =
+  'From the stage to the street — immersive strategy, production, and brand elevation.';
+
+export default function Services({
+  siteContent,
+  homepageServicesHeading,
+  homepageServicesSubheading,
+}: {
+  siteContent?: SiteContentDoc | null;
+  homepageServicesHeading?: string | null;
+  homepageServicesSubheading?: string | null;
+}) {
   const services = SiteConfig.services.map((s) => mergeServiceCopy(siteContent, s));
+  const siteContentId = siteContent?._id ?? '';
+  const heading = homepageServicesHeading ?? DEFAULT_SERVICES_HEADING;
+  const subheading = homepageServicesSubheading ?? DEFAULT_SERVICES_SUB;
+  const breakIdx = heading.lastIndexOf(' the ');
 
   return (
     <section id="services" className="relative py-24 md:py-32 bg-silver overflow-hidden">
@@ -189,21 +262,43 @@ export default function Services({siteContent}: {siteContent?: SiteContentDoc | 
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal direction="up" className="text-center mb-16">
+        <ScrollReveal direction="up" className="mb-16 text-center">
           <span className="section-label justify-center">What We Do</span>
-          <h2 className="section-title text-charcoal">
-            Services Built for
-            <br />
-            <span className="text-brand-red">the Culture</span>
-          </h2>
-          <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/70">
-            From the stage to the street — immersive strategy, production, and brand elevation.
-          </p>
+          <EditableField
+            documentId={HOMEPAGE_DOC}
+            field='sections[_key=="services-1"].heading'
+            label="Services — section heading"
+            value={heading}
+            type="textarea"
+            wrapperClassName="relative mx-auto inline-block max-w-4xl group/edit"
+          >
+            <h2 className="section-title text-charcoal">
+              {breakIdx !== -1 ? (
+                <>
+                  {heading.slice(0, breakIdx)}
+                  <br />
+                  <span className="text-brand-red">{heading.slice(breakIdx + 1).trim()}</span>
+                </>
+              ) : (
+                heading
+              )}
+            </h2>
+          </EditableField>
+          <EditableField
+            documentId={HOMEPAGE_DOC}
+            field='sections[_key=="services-1"].subheading'
+            label="Services — section subheading"
+            value={subheading}
+            type="textarea"
+            wrapperClassName="relative mx-auto mt-4 block max-w-3xl group/edit"
+          >
+            <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/70">{subheading}</p>
+          </EditableField>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((service, index) => (
-            <TiltCard key={service.id} service={service} index={index} />
+            <TiltCard key={service.id} service={service} index={index} siteContentId={siteContentId} />
           ))}
         </div>
       </div>
