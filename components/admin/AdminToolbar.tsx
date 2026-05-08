@@ -44,21 +44,21 @@ export default function AdminToolbar() {
         <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 sm:gap-2">
           <button
             type="button"
-            onClick={() => router.push('/blog/new')}
+            onClick={() => router.push('/blog/new?admin=true')}
             className="rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-brand-red"
           >
             + Post
           </button>
           <button
             type="button"
-            onClick={() => router.push('/events/new')}
+            onClick={() => router.push('/events/new?admin=true')}
             className="rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-brand-red"
           >
             + Event
           </button>
           <button
             type="button"
-            onClick={() => router.push('/gallery/new')}
+            onClick={() => router.push('/gallery/new?admin=true')}
             className="rounded px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90 transition-colors hover:text-brand-red"
           >
             + Photo

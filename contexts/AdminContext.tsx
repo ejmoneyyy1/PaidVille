@@ -77,8 +77,9 @@ export function AdminProvider({
       if (!res.ok) {
         throw new Error(typeof data.error === 'string' ? data.error : 'Delete failed');
       }
-      if (redirectTo) {
-        router.push(redirectTo);
+      if (typeof window !== 'undefined' && redirectTo) {
+        window.location.assign(redirectTo);
+        return;
       }
       router.refresh();
     },

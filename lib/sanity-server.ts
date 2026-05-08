@@ -23,9 +23,10 @@ export function getSanityReadClient(): SanityClient {
   });
 }
 
-/** Published or preview drafts + stega overlays when draft mode is on. */
+/** Published reads are clean; preview/draft-mode only enables Presentation stega. */
 export async function getSanityClient(): Promise<SanityClient> {
   const {isEnabled} = await draftMode();
+  const studioUrl = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? 'https://paidville-studio.sanity.studio';
   return createClient({
     projectId: projectId(),
     dataset: dataset(),
@@ -34,8 +35,8 @@ export async function getSanityClient(): Promise<SanityClient> {
     perspective: isEnabled ? 'previewDrafts' : 'published',
     token: isEnabled ? process.env.SANITY_API_READ_TOKEN : undefined,
     stega: {
-      enabled: true,
-      studioUrl: 'https://paidville-studio.sanity.studio',
+      enabled: isEnabled,
+      studioUrl,
     },
   });
 }

@@ -51,7 +51,7 @@ export default function BlogNewPage() {
         return;
       }
       if (typeof data.slug === 'string') {
-        router.push(`/blog/${data.slug}?admin=true`);
+        window.location.assign(`/blog/${encodeURIComponent(data.slug)}?admin=true`);
         return;
       }
       setError('Unexpected response');

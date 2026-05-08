@@ -18,10 +18,11 @@ export default function AdminDeleteControl({
   onDeleted?: () => void;
   redirectAfterDelete?: string;
 }) {
-  const {isAdmin, isEditing, deleteDocument} = useAdmin();
+  const {isAdmin, deleteDocument} = useAdmin();
   const [busy, setBusy] = useState(false);
 
-  if (!isAdmin || !isEditing || !documentId) return null;
+  /** Logged-in site admin sees delete anytime (pencils still require Editing On). */
+  if (!isAdmin || !documentId) return null;
 
   const label = entityLabel ?? 'this item';
 

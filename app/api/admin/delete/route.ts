@@ -1,5 +1,6 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
+import {revalidatePath} from 'next/cache';
 import {sanityWriteClient} from '@/lib/sanity-write';
 
 export async function POST(request: Request) {
@@ -33,6 +34,10 @@ export async function POST(request: Request) {
 
   try {
     await sanityWriteClient.delete(documentId);
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/gallery');
+    revalidatePath('/events');
     return NextResponse.json({ok: true});
   } catch (error) {
     console.error('[admin/delete]', error);

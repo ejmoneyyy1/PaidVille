@@ -53,8 +53,7 @@ export default function EventsNewPage() {
         setError(typeof data.error === 'string' ? data.error : 'Could not create event');
         return;
       }
-      router.push('/events?admin=true');
-      router.refresh();
+      window.location.assign('/events?admin=true');
     } finally {
       setBusy(false);
     }

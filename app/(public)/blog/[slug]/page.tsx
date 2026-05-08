@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
-import {draftMode} from 'next/headers';
+import {cookies, draftMode} from 'next/headers';
 import {getSanityClient} from '@/lib/sanity-server';
 import {urlFor} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
@@ -16,8 +16,10 @@ import {
 } from './_components/ArticleAdmin';
 import EditableField from '@/components/admin/EditableField';
 import ArticleAdminBar from './_components/ArticleAdminBar';
+import PendingBlogPost from './_components/PendingBlogPost';
 
-export const revalidate = 60;
+/** New posts must not briefly resolve as stale 404 in the CDN/app cache. */
+export const dynamic = 'force-dynamic';
 
 interface Params {
   params: Promise<{slug: string}>;
@@ -69,7 +71,13 @@ export default async function BlogPostPage({params}: Params) {
   const {slug} = await params;
   const sanityPost = await getPost(slug);
   const stockArticle = stockArticles[slug];
-  if (!sanityPost && !stockArticle) notFound();
+  if (!sanityPost && !stockArticle) {
+    const isAdminPv = (await cookies()).get('pv_admin')?.value === 'true';
+    if (isAdminPv) {
+      return <PendingBlogPost slug={slug} />;
+    }
+    notFound();
+  }
   let morePosts: BlogPost[] = [];
   let volumeLabel = formatVolume(stockVolumeMap[slug] ?? 1);
 

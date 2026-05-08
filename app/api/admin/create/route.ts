@@ -1,5 +1,6 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
+import {revalidatePath} from 'next/cache';
 import {sanityWriteClient} from '@/lib/sanity-write';
 import {plainTextToPortableBlocks} from '@/lib/portable-text-admin';
 import {isValidBlogSlug, slugifyTitle} from '@/lib/slugify';
@@ -98,6 +99,9 @@ export async function POST(request: Request) {
       };
       try {
         const created = await sanityWriteClient.create(doc);
+        revalidatePath('/');
+        revalidatePath('/blog');
+        revalidatePath(`/blog/${slugCurrent}`);
         return NextResponse.json({ok: true, kind, _id: created._id, slug: slugCurrent});
       } catch (err: unknown) {
         const msg = err && typeof err === 'object' && 'message' in err ? String(err.message) : '';
@@ -145,6 +149,8 @@ export async function POST(request: Request) {
         isFeatured: false,
       };
       const created = await sanityWriteClient.create(doc);
+      revalidatePath('/');
+      revalidatePath('/events');
       return NextResponse.json({ok: true, kind, _id: created._id});
     }
 
@@ -185,6 +191,8 @@ export async function POST(request: Request) {
     }
 
     const created = await sanityWriteClient.create(doc);
+    revalidatePath('/');
+    revalidatePath('/gallery');
     return NextResponse.json({ok: true, kind, _id: created._id});
   } catch (error) {
     console.error('[admin/create]', error);
