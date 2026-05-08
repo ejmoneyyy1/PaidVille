@@ -24,6 +24,18 @@ export const blogType = defineType({
       title: 'Author',
     }),
     defineField({
+      name: 'category',
+      type: 'string',
+      title: 'Category',
+      description: 'Editorial category label (e.g. CULTURE, EVENTS).',
+    }),
+    defineField({
+      name: 'excerpt',
+      type: 'text',
+      title: 'Excerpt',
+      rows: 3,
+    }),
+    defineField({
       name: 'mainImage',
       type: 'image',
       title: 'Main image / video poster',

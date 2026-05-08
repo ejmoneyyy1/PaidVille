@@ -1,7 +1,8 @@
-import {createClient} from '@sanity/client';
-import * as dotenv from 'dotenv';
+import {createClient} from '@sanity/client'
+import * as dotenv from 'dotenv'
+import path from 'path'
 
-dotenv.config({path: '.env.local'});
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
 const globalSettings = {
   _id: 'singleton-global-settings',
@@ -11,9 +12,8 @@ const globalSettings = {
   footerTagline: 'Est. 2018 — ARK USA | Fayetteville, AR',
   footerDescription: 'Premium events. Elevated lifestyle. Based in Fayetteville, AR.',
   defaultSeoTitle: 'PaidVille — Premium Events. Elevated Lifestyle.',
-  defaultSeoDescription:
-    'PaidVille is a creative agency based in Fayetteville, AR specializing in premium events, branding, and community engagement.',
-};
+  defaultSeoDescription: 'PaidVille is a creative agency based in Fayetteville, AR specializing in premium events, branding, and community engagement.',
+}
 
 const navigation = {
   _id: 'singleton-navigation',
@@ -27,7 +27,7 @@ const navigation = {
     {_key: 'nav-blog', label: 'Blog', path: '/blog'},
     {_key: 'nav-shop', label: 'Shop', path: '/shop'},
   ],
-};
+}
 
 const homepage = {
   _id: 'singleton-homepage',
@@ -60,8 +60,7 @@ const homepage = {
         {
           _key: 'svc-1',
           title: 'Events & Entertainment',
-          description:
-            'FROM INTIMATE GATHERINGS TO LARGE SCALE PRODUCTIONS, LET US CRAFT YOUR NEXT UNFORGETTABLE EXPERIENCE',
+          description: 'FROM INTIMATE GATHERINGS TO LARGE SCALE PRODUCTIONS, LET US CRAFT YOUR NEXT UNFORGETTABLE EXPERIENCE',
           buttonText: 'Experience Now',
           buttonAction: 'events',
           icon: 'events',
@@ -69,8 +68,7 @@ const homepage = {
         {
           _key: 'svc-2',
           title: 'Branding',
-          description:
-            'Your brand is priceless. With our professional approach, spanning marketing and analytics, we will amplify your brand story.',
+          description: 'Your brand is priceless. With our professional approach, spanning marketing and analytics, we will amplify your brand story.',
           buttonText: 'Elevate Now',
           buttonAction: 'branding',
           icon: 'branding',
@@ -122,7 +120,7 @@ const homepage = {
       maxPosts: 3,
     },
   ],
-};
+}
 
 const eventsPage = {
   _id: 'page-events',
@@ -135,7 +133,6 @@ const eventsPage = {
       _type: 'ctaBannerBlock',
       _key: 'events-hero',
       text: 'UPCOMING EVENTS',
-      buttonText: null,
       backgroundColor: 'dark',
     },
     {
@@ -146,7 +143,7 @@ const eventsPage = {
       maxEvents: 24,
     },
   ],
-};
+}
 
 const galleryPage = {
   _id: 'page-gallery',
@@ -159,7 +156,6 @@ const galleryPage = {
       _type: 'ctaBannerBlock',
       _key: 'gallery-hero',
       text: 'THE GALLERY',
-      buttonText: null,
       backgroundColor: 'dark',
     },
     {
@@ -170,7 +166,7 @@ const galleryPage = {
       maxPhotos: 50,
     },
   ],
-};
+}
 
 const shopPage = {
   _id: 'page-shop',
@@ -187,37 +183,128 @@ const shopPage = {
       buttonText: 'View All',
     },
   ],
-};
+}
 
-const client = createClient({
-  projectId: 'qxv0mc90',
-  dataset: 'production',
-  apiVersion: '2024-01-01',
-  token: process.env.SANITY_API_WRITE_TOKEN,
-  useCdn: false,
-});
+/** Minimal portable text body from excerpt so posts render in Studio / site */
+function excerptBody(text: string, key: string) {
+  return [
+    {
+      _type: 'block',
+      _key: `${key}-p1`,
+      style: 'normal',
+      markDefs: [],
+      children: [{_type: 'span', _key: `${key}-s1`, marks: [], text}],
+    },
+  ]
+}
+
+const blogPosts = [
+  {
+    _id: 'stock-blog-1',
+    _type: 'blog',
+    title: 'PaidVille Is Here — Welcome to Biased Opinions',
+    slug: {_type: 'slug', current: 'welcome-to-biased-opinions'},
+    author: 'PaidVille',
+    publishedAt: '2024-01-15T12:00:00.000Z',
+    category: 'CULTURE',
+    excerpt:
+      'No filter, no fluff — real takes on events, culture, branding, and building something from the ground up in Arkansas.',
+    status: 'published',
+    body: excerptBody(
+      'No filter, no fluff — real takes on events, culture, branding, and building something from the ground up in Arkansas.',
+      'b1',
+    ),
+  },
+  {
+    _id: 'stock-blog-2',
+    _type: 'blog',
+    title: 'What Makes an Unforgettable Event?',
+    slug: {_type: 'slug', current: 'what-makes-an-unforgettable-event'},
+    author: 'PaidVille',
+    publishedAt: '2024-02-01T12:00:00.000Z',
+    category: 'EVENTS',
+    excerpt:
+      'From 50-person gatherings to 500-person productions — the elements that make people talk for years.',
+    status: 'published',
+    body: excerptBody(
+      'From 50-person gatherings to 500-person productions — the elements that make people talk for years.',
+      'b2',
+    ),
+  },
+  {
+    _id: 'stock-blog-3',
+    _type: 'blog',
+    title: "Your Brand Is Priceless. Stop Treating It Like It Isn't.",
+    slug: {_type: 'slug', current: 'your-brand-is-priceless'},
+    author: 'PaidVille',
+    publishedAt: '2024-02-20T12:00:00.000Z',
+    category: 'BRANDING',
+    excerpt:
+      "Most creatives have already built something remarkable. Here's how PaidVille approaches brand identity.",
+    status: 'published',
+    body: excerptBody(
+      "Most creatives have already built something remarkable. Here's how PaidVille approaches brand identity.",
+      'b3',
+    ),
+  },
+  {
+    _id: 'stock-blog-4',
+    _type: 'blog',
+    title: "Fayetteville's Creative Scene Is Bigger Than You Think",
+    slug: {_type: 'slug', current: 'fayetteville-creative-scene'},
+    author: 'PaidVille',
+    publishedAt: '2024-03-05T12:00:00.000Z',
+    category: 'COMMUNITY',
+    excerpt:
+      'ARK USA is sleeping on its own talent. We spotlight the creatives putting Fayetteville on the map.',
+    status: 'published',
+    body: excerptBody(
+      'ARK USA is sleeping on its own talent. We spotlight the creatives putting Fayetteville on the map.',
+      'b4',
+    ),
+  },
+]
 
 async function seedAll() {
   if (!process.env.SANITY_API_WRITE_TOKEN) {
-    console.error('Missing SANITY_API_WRITE_TOKEN in .env.local');
-    process.exit(1);
+    console.error('❌ Missing SANITY_API_WRITE_TOKEN in .env.local')
+    process.exit(1)
   }
 
-  const documents = [globalSettings, navigation, homepage, eventsPage, galleryPage, shopPage];
+  const client = createClient({
+    projectId: 'qxv0mc90',
+    dataset: 'production',
+    apiVersion: '2024-01-01',
+    token: process.env.SANITY_API_WRITE_TOKEN,
+    useCdn: false,
+  })
+
+  const documents: any[] = [
+    globalSettings,
+    navigation,
+    homepage,
+    eventsPage,
+    galleryPage,
+    shopPage,
+    ...blogPosts,
+  ]
+
+  console.log('Seeding PaidVille content to Sanity...\n')
 
   for (const doc of documents) {
-    await client.createOrReplace(doc);
-    console.log(`✅ Seeded: ${doc._id}`);
+    try {
+      await client.createOrReplace(doc)
+      console.log(`✅ Seeded: ${doc._id}`)
+    } catch (err) {
+      console.error(`❌ Failed to seed ${doc._id}:`, err)
+      process.exit(1)
+    }
   }
 
-  console.log('');
-  console.log('All documents seeded successfully!');
-  console.log('Go to paidville-studio.sanity.studio');
-  console.log('All pages are ready with clean IDs');
-  console.log('On-site dashboard will target these IDs directly');
+  console.log('\n🎉 All documents seeded successfully!')
+  console.log('📍 Go to paidville-studio.sanity.studio')
+  console.log('📄 Pages → Homepage → Publish to activate page builder')
+  console.log('🎯 On-site dashboard will target these IDs directly')
 }
 
-seedAll().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+seedAll().catch(console.error)
