@@ -10,14 +10,10 @@ import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
 import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery-video-play-url';
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
+import {isDeletableSanityGalleryEntry} from '@/lib/gallery-deletable';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import {useAdmin} from '@/contexts/AdminContext';
-
-function isCmsGalleryTile(item: GalleryPageItem): item is SanityGalleryDoc {
-  if ('staticSrc' in item && item.staticSrc) return false;
-  return typeof item._id === 'string' && !item._id.startsWith('fallback-');
-}
 
 export type GalleryPageItem =
   | SanityGalleryDoc
@@ -107,19 +103,11 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
               ? item.image.alt
               : item.title;
 
-          const cms = isCmsGalleryTile(item);
+          const cms = isDeletableSanityGalleryEntry(item);
 
           return (
             <ScrollReveal key={item._id} delay={index * 0.04} direction="up">
               <motion.div className="break-inside-avoid relative mb-5" whileHover={{scale: 1.005}} transition={{duration: 0.2}}>
-                {cms ? (
-                  <AdminDeleteControl
-                    documentId={item._id}
-                    entityLabel="this gallery item"
-                    redirectAfterDelete="/gallery"
-                    className="absolute left-3 top-3 z-[80] pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
-                  />
-                ) : null}
                 <div className="overflow-hidden rounded-2xl border border-brand-red bg-cream text-left shadow-sm transition-shadow hover:shadow-md">
                 <motion.div
                   role="button"
@@ -204,6 +192,27 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                       {categoryLabel}
                     </p>
                   ) : null}
+                  {isAdmin && cms ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-charcoal/10 pt-3">
+                      <AdminDeleteControl
+                        appearance="text"
+                        documentId={item._id}
+                        entityLabel="this gallery item"
+                        redirectAfterDelete="/gallery"
+                      />
+                      <button
+                        type="button"
+                        className="text-xs font-display font-bold uppercase tracking-wide text-charcoal/50 underline-offset-2 hover:text-charcoal hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelected(item);
+                        }}
+                      >
+                        Preview
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
                 </div>
               </motion.div>
@@ -213,7 +222,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
       </div>
 
       <AnimatePresence>
-        {!isAdmin && selected ? (
+        {selected ? (
           <GalleryMediaLightbox key={selected._id} item={toLightboxItem(selected)} onClose={() => setSelected(null)} />
         ) : null}
       </AnimatePresence>

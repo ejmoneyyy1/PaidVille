@@ -44,6 +44,7 @@ const channelsResolved = `select((defined(channels) && count(channels) > 0) => c
 /** Full gallery route — only rows that include the `gallery_page` channel. */
 export const galleryQuery = `*[_type in ["gallery", "galleryItem"] && ('gallery_page' in ${channelsResolved})] | order(coalesce(order, _createdAt) asc) {
   _id,
+  _type,
   title,
   "category": coalesce(category, tags[0]),
   "mediaType": coalesce(mediaType, "photo"),
@@ -56,6 +57,7 @@ export const galleryQuery = `*[_type in ["gallery", "galleryItem"] && ('gallery_
 /** Homepage strip — only rows that include the `homepage_gallery` channel. */
 export const galleryItemsQuery = `*[_type in ["gallery", "galleryItem"] && ('homepage_gallery' in ${channelsResolved})] | order(coalesce(order, _createdAt) asc) {
   _id,
+  _type,
   title,
   "mediaType": coalesce(mediaType, "photo"),
   videoUrl,
@@ -114,6 +116,7 @@ export type SiteContentDoc = {
 
 export type SanityGalleryDoc = {
   _id: string;
+  _type?: 'gallery' | 'galleryItem' | string;
   title: string;
   mediaType?: 'photo' | 'video' | string;
   videoUrl?: string | null;

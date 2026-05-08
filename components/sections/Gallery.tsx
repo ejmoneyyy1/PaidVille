@@ -10,12 +10,15 @@ import GalleryMediaLightbox from '@/components/gallery/GalleryMediaLightbox';
 import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import {useAdmin} from '@/contexts/AdminContext';
+import {isDeletableSanityGalleryEntry} from '@/lib/gallery-deletable';
+import {cn} from '@/lib/utils';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
 import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery-video-play-url';
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
 
 export interface GalleryItem {
   _id: string;
+  _type?: string;
   title: string;
   image?: {
     _type?: string;
@@ -40,11 +43,6 @@ function resolveGalleryItemSrc(item: GalleryItem): string | null {
 
 interface GalleryProps {
   items: GalleryItem[];
-}
-
-function isCmsGalleryTile(item: GalleryItem): boolean {
-  if (item.staticSrc) return false;
-  return typeof item._id === 'string' && !item._id.startsWith('fallback-');
 }
 
 function LightboxModal({item, onClose}: {item: GalleryItem; onClose: () => void}) {
@@ -73,6 +71,7 @@ function MasonryGrid({
 }: {
   items: GalleryItem[];
   onSelect: (item: GalleryItem) => void;
+  /** When true (site admin), card does not open lightbox — use Preview under the card */
   disableSelect: boolean;
 }) {
   const columns = [
@@ -88,7 +87,7 @@ function MasonryGrid({
           {col.map((item, itemIdx) => {
             /* Alternate tall vs short cards for masonry feel */
             const isTall = (colIdx + itemIdx) % 3 === 0;
-            const cms = isCmsGalleryTile(item);
+            const cms = isDeletableSanityGalleryEntry(item);
 
             return (
               <ScrollReveal
@@ -97,13 +96,6 @@ function MasonryGrid({
                 direction="up"
               >
                 <div className="relative">
-                  {cms ? (
-                    <AdminDeleteControl
-                      documentId={item._id}
-                      entityLabel={item.title || 'this gallery item'}
-                      className="absolute left-3 top-3 z-[80] pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
-                    />
-                  ) : null}
                   <motion.button
                     className={`relative w-full rounded-2xl overflow-hidden cursor-pointer group
                       ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-cream
@@ -147,9 +139,12 @@ function MasonryGrid({
                     );
                   })()}
 
-                  {/* Hover overlay */}
+                  {/* Hover overlay — ignore pointer while admin so the card is not a fake "zoom" hit target */}
                   <motion.div
-                    className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3"
+                    className={cn(
+                      'absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3',
+                      disableSelect && 'pointer-events-none',
+                    )}
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
                     transition={{ duration: 0.25 }}
@@ -176,6 +171,26 @@ function MasonryGrid({
                     </span>
                   ) : null}
                   </motion.button>
+                  {disableSelect && cms ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-4">
+                      <AdminDeleteControl
+                        appearance="text"
+                        documentId={item._id}
+                        entityLabel={item.title || 'this gallery item'}
+                      />
+                      <button
+                        type="button"
+                        className="text-xs font-display font-bold uppercase tracking-wide text-charcoal/50 underline-offset-2 hover:text-charcoal hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelect(item);
+                        }}
+                      >
+                        Preview
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </ScrollReveal>
             );
@@ -224,7 +239,7 @@ export default function GallerySection({ items }: GalleryProps) {
       </div>
 
       <AnimatePresence>
-        {!isAdmin && selected ? (
+        {selected ? (
           <LightboxModal key={selected._id} item={selected} onClose={() => setSelected(null)} />
         ) : null}
       </AnimatePresence>

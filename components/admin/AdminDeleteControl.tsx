@@ -3,6 +3,13 @@
 import {useState} from 'react';
 import {useAdmin} from '@/contexts/AdminContext';
 import {Trash2} from 'lucide-react';
+import {cn} from '@/lib/utils';
+
+const iconButtonClass =
+  'absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal text-white shadow-md transition-opacity hover:bg-brand-red hover:border-brand-red disabled:opacity-60';
+
+const textLinkClass =
+  'inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wide text-brand-red hover:underline disabled:opacity-60';
 
 export default function AdminDeleteControl({
   documentId,
@@ -10,13 +17,16 @@ export default function AdminDeleteControl({
   className,
   onDeleted,
   redirectAfterDelete,
+  /** `text` = inline row (footer bar); default = floating icon button */
+  appearance = 'icon',
 }: {
   documentId: string;
   entityLabel?: string;
-  /** e.g. "absolute left-3 top-3 z-[20]" — parent should be relative */
+  /** Merged with default for `icon` or `text` appearance */
   className?: string;
   onDeleted?: () => void;
   redirectAfterDelete?: string;
+  appearance?: 'icon' | 'text';
 }) {
   const {isAdmin, deleteDocument} = useAdmin();
   const [busy, setBusy] = useState(false);
@@ -25,6 +35,8 @@ export default function AdminDeleteControl({
   if (!isAdmin || !documentId) return null;
 
   const label = entityLabel ?? 'this item';
+
+  const mergedClass = cn(appearance === 'text' ? textLinkClass : iconButtonClass, className);
 
   return (
     <button
@@ -46,13 +58,17 @@ export default function AdminDeleteControl({
           setBusy(false);
         }
       }}
-      className={
-        className ??
-        'absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal text-white shadow-md transition-opacity hover:bg-brand-red hover:border-brand-red disabled:opacity-60'
-      }
+      className={mergedClass}
       aria-label={`Delete ${label}`}
     >
-      <Trash2 size={15} strokeWidth={2} />
+      {appearance === 'text' ? (
+        <>
+          <Trash2 size={14} strokeWidth={2} />
+          Delete
+        </>
+      ) : (
+        <Trash2 size={15} strokeWidth={2} />
+      )}
     </button>
   );
 }
