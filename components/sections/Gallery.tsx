@@ -8,6 +8,7 @@ import {Play, ZoomIn, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import GalleryMediaLightbox from '@/components/gallery/GalleryMediaLightbox';
 import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
+import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
 import {hasGalleryPlayableVideo, resolveGalleryVideoPlayUrl} from '@/lib/gallery-video-play-url';
 import type {SanityGalleryDoc} from '@/lib/sanity-queries';
@@ -38,6 +39,11 @@ function resolveGalleryItemSrc(item: GalleryItem): string | null {
 
 interface GalleryProps {
   items: GalleryItem[];
+}
+
+function isCmsGalleryTile(item: GalleryItem): boolean {
+  if (item.staticSrc) return false;
+  return typeof item._id === 'string' && !item._id.startsWith('fallback-');
 }
 
 function LightboxModal({item, onClose}: {item: GalleryItem; onClose: () => void}) {
@@ -79,6 +85,7 @@ function MasonryGrid({
           {col.map((item, itemIdx) => {
             /* Alternate tall vs short cards for masonry feel */
             const isTall = (colIdx + itemIdx) % 3 === 0;
+            const cms = isCmsGalleryTile(item);
 
             return (
               <ScrollReveal
@@ -86,14 +93,26 @@ function MasonryGrid({
                 delay={(colIdx * 0.1) + (itemIdx * 0.07)}
                 direction="up"
               >
-                <motion.button
-                  className={`relative w-full rounded-2xl overflow-hidden cursor-pointer group
-                    ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-cream
-                    border border-brand-red hover:border-brand-red-dark transition-colors duration-300`}
-                  onClick={() => onSelect(item)}
-                  whileHover={{ scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="relative">
+                  {cms ? (
+                    <AdminDeleteControl
+                      documentId={item._id}
+                      entityLabel={item.title || 'this gallery item'}
+                      className="absolute left-3 top-3 z-[80] pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/15 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+                    />
+                  ) : null}
+                  <motion.button
+                    className={`relative w-full rounded-2xl overflow-hidden cursor-pointer group
+                      ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-cream
+                      border border-brand-red hover:border-brand-red-dark transition-colors duration-300`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[data-admin-delete="true"]')) return;
+                      onSelect(item);
+                    }}
+                    whileHover={{ scale: 1.01 }}
+                    transition={{ duration: 0.2 }}
+                  >
                   {/* Image, video first-frame preview, or placeholder */}
                   {(() => {
                     const src = resolveGalleryItemSrc(item);
@@ -152,7 +171,8 @@ function MasonryGrid({
                       Video
                     </span>
                   ) : null}
-                </motion.button>
+                  </motion.button>
+                </div>
               </ScrollReveal>
             );
           })}
