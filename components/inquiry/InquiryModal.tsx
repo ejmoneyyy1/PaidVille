@@ -84,8 +84,9 @@ const MODE_META: Record<
   },
   community: {
     label: 'Community',
-    title: 'Community engagement',
-    subtitle: 'Partner with us on outreach, activations, and community programs.',
+    title: 'Plan a community event',
+    subtitle:
+      'Share your program details — same planning info we need for events — and we will follow up within 24 hours.',
   },
 };
 

@@ -29,8 +29,10 @@ export default function Footer({
   globalSettings?: GlobalSettingsDoc | null;
   navItems: NavItemResolved[];
 }) {
-  const footerTagline =
+  const rawFooterTagline =
     globalSettings?.footerTagline ?? siteContent?.footerTagline ?? SiteConfig.tagline;
+  /** Hide legacy CMS copy that duplicated the Carpe Diem motto in the tagline slot. */
+  const footerTagline = /carpe\s*diem/i.test(rawFooterTagline) ? SiteConfig.tagline : rawFooterTagline;
   const contactEmail = globalSettings?.contactEmail ?? SiteConfig.contact.email;
   const instagramHref = siteContent?.instagramUrl ?? SiteConfig.social.instagram;
   const twitterHref = siteContent?.twitterUrl ?? SiteConfig.social.twitter;
@@ -59,7 +61,7 @@ export default function Footer({
             <EditableField
               documentId={GLOBAL_DOC}
               field="footerTagline"
-              label="Footer tagline"
+              label="Footer tagline (short site description)"
               value={globalSettings?.footerTagline ?? footerTagline}
               type="textarea"
               wrapperClassName="relative block max-w-sm group/edit"

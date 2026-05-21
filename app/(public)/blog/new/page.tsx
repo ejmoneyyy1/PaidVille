@@ -17,6 +17,10 @@ export default function BlogNewPage() {
   const [category, setCategory] = useState('EDITORIAL');
   const [excerpt, setExcerpt] = useState('');
   const [body, setBody] = useState('');
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverImageAlt, setCoverImageAlt] = useState('');
+  const [heroVideoUrl, setHeroVideoUrl] = useState('');
+  const [heroVideoFile, setHeroVideoFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,21 +30,19 @@ export default function BlogNewPage() {
     setError('');
     setBusy(true);
     try {
-      const res = await fetch('/api/admin/create', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          kind: 'blog',
-          data: {
-            title: title.trim(),
-            slug: slugManual.trim() || undefined,
-            author: author.trim(),
-            category: category.trim(),
-            excerpt: excerpt.trim(),
-            body: body.trim(),
-          },
-        }),
-      });
+      const fd = new FormData();
+      fd.append('title', title.trim());
+      fd.append('excerpt', excerpt.trim());
+      if (slugManual.trim()) fd.append('slug', slugManual.trim());
+      if (author.trim()) fd.append('author', author.trim());
+      if (category.trim()) fd.append('category', category.trim());
+      if (body.trim()) fd.append('body', body.trim());
+      if (coverImageAlt.trim()) fd.append('coverImageAlt', coverImageAlt.trim());
+      if (coverImage && coverImage.size > 0) fd.append('coverImage', coverImage);
+      if (heroVideoUrl.trim()) fd.append('heroVideoUrl', heroVideoUrl.trim());
+      if (heroVideoFile && heroVideoFile.size > 0) fd.append('heroVideo', heroVideoFile);
+
+      const res = await fetch('/api/admin/blog', {method: 'POST', body: fd});
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
         router.replace('/admin/login?next=/blog/new');
@@ -75,7 +77,9 @@ export default function BlogNewPage() {
             <Image src="/images/splashlogo.png" alt="" fill className="object-contain" />
           </div>
           <p className="mt-6 font-display text-xl font-black tracking-[0.12em] text-white">NEW POST</p>
-          <p className="mt-2 text-center text-[13px] text-white/50">Fill everything below, then publish to the blog.</p>
+          <p className="mt-2 text-center text-[13px] text-white/50">
+            Add a cover image and/or hero video, plus your article text.
+          </p>
         </div>
 
         <div className="mt-12 space-y-4">
@@ -120,6 +124,58 @@ export default function BlogNewPage() {
 
           <label className="block">
             <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+              Cover image (optional)
+            </span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className={inputCls}
+              onChange={(e) => setCoverImage(e.target.files?.[0] ?? null)}
+            />
+            {coverImage ? <p className="mt-1 text-[11px] text-white/45">{coverImage.name}</p> : null}
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+              Cover alt text (optional)
+            </span>
+            <input
+              type="text"
+              value={coverImageAlt}
+              onChange={(e) => setCoverImageAlt(e.target.value)}
+              className={inputCls}
+              placeholder="Describe the cover for accessibility"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+              Hero video file (optional)
+            </span>
+            <input
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+              className={inputCls}
+              onChange={(e) => setHeroVideoFile(e.target.files?.[0] ?? null)}
+            />
+            {heroVideoFile ? <p className="mt-1 text-[11px] text-white/45">{heroVideoFile.name}</p> : null}
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+              Or hero video URL (optional)
+            </span>
+            <input
+              type="url"
+              value={heroVideoUrl}
+              onChange={(e) => setHeroVideoUrl(e.target.value)}
+              className={inputCls}
+              placeholder="https://… direct MP4 or hosted link"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
               Short excerpt *
             </span>
             <textarea
@@ -141,7 +197,7 @@ export default function BlogNewPage() {
               value={body}
               onChange={(e) => setBody(e.target.value)}
               className={inputCls}
-              placeholder={'Paragraphs separated by blank lines.'}
+              placeholder="Paragraphs separated by blank lines."
             />
           </label>
         </div>

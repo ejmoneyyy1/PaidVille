@@ -23,6 +23,7 @@ export default function EventsNewPage() {
   const [location, setLocation] = useState('');
   const [eventbriteUrl, setEventbriteUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,19 +31,17 @@ export default function EventsNewPage() {
     setError('');
     setBusy(true);
     try {
-      const res = await fetch('/api/admin/create', {
+      const fd = new FormData();
+      fd.append('eventName', eventName.trim());
+      fd.append('date', date);
+      fd.append('location', location.trim());
+      fd.append('eventbriteUrl', eventbriteUrl.trim());
+      if (description.trim()) fd.append('description', description.trim());
+      if (imageFile && imageFile.size > 0) fd.append('image', imageFile);
+
+      const res = await fetch('/api/admin/event', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          kind: 'event',
-          data: {
-            eventName: eventName.trim(),
-            date,
-            location: location.trim(),
-            eventbriteUrl: eventbriteUrl.trim(),
-            description: description.trim(),
-          },
-        }),
+        body: fd,
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
@@ -75,7 +74,7 @@ export default function EventsNewPage() {
           </div>
           <p className="mt-6 font-display text-xl font-black tracking-[0.12em] text-white">NEW EVENT</p>
           <p className="mt-2 text-center text-[13px] text-white/50">
-            Needs a name, location, schedule, and a ticket or RSVP URL.
+            Name, schedule, ticket link, and optional event photo (JPG, PNG, WebP, GIF).
           </p>
         </div>
 
@@ -123,6 +122,21 @@ export default function EventsNewPage() {
               placeholder="https://…"
               required
             />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
+              Event photo (optional)
+            </span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className={inputCls}
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+            {imageFile ? (
+              <p className="mt-1 text-[11px] text-white/45">{imageFile.name}</p>
+            ) : null}
           </label>
 
           <label className="block">

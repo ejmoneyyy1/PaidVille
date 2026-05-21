@@ -1,68 +1,81 @@
 'use client';
 
+import {motion} from 'framer-motion';
 import {useInquiry} from '@/components/inquiry/InquiryProvider';
-
-const STORY = [
-  `PaidVille didn't start in a boardroom or from a viral post. It started with three young men who shared a vision to make the most out of an opportunity — where we're from, people would only dream of these opportunities. Late Nights, early mornings, balling on a budget, grinding, believing in something bigger than ourselves & it would turn out to be much bigger. That founding energy is still the DNA of everything we do — Carpe Diem 'seize the day'`,
-  `What started as a grassroots events crew in Fayetteville has grown into a full-service lifestyle brand — touching entertainment, consulting, fashion, and community. Every event, every drop, every frame of content carries the same mission we started with: uplift our community, provide memorable experiences, and stay paid.`,
-];
-
-const MISSION =
-  'Building premium experiences that elevate individuals through authentic culture and community engagement';
-
-const STATS = [
-  {label: '100+ Events'},
-  {label: '10K+ Tickets'},
-  {label: 'Est. 2018'},
-  {label: 'Fayetteville AR'},
-];
+import ScrollReveal from '@/components/ui/ScrollReveal';
+import AboutStoryContent, {AboutMissionBanner} from '@/components/about/AboutStoryContent';
+import {ABOUT_STATS} from '@/lib/about-content';
 
 export default function AboutStoryPage() {
   const {openEvent} = useInquiry();
 
   return (
     <div className="min-h-screen bg-cream">
-      <section className="relative flex min-h-screen items-center justify-center bg-charcoal px-6">
-        <div className="text-center">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-charcoal px-6">
+        <motion.div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              'linear-gradient(#B00000 1px, transparent 1px), linear-gradient(to right, #B00000 1px, transparent 1px)',
+            backgroundSize: '64px 64px',
+          }}
+          animate={{opacity: [0.15, 0.28, 0.15]}}
+          transition={{repeat: Infinity, duration: 8, ease: 'easeInOut'}}
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(176,0,0,0.2) 0%, transparent 60%)',
+          }}
+        />
+        <motion.div
+          className="relative z-10 text-center"
+          initial={{opacity: 0, y: 24}}
+          animate={{opacity: 1, y: 0}}
+          transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+        >
           <p className="mb-4 text-xs font-display font-bold uppercase tracking-[0.35em] text-brand-red">
             EST. 2018 · FAYETTEVILLE, AR
           </p>
           <h1 className="font-display text-[clamp(3.5rem,14vw,9rem)] font-black uppercase leading-[0.9] tracking-tight text-white">
             OUR STORY
           </h1>
-        </div>
+        </motion.div>
       </section>
 
-      <section className="section-padding py-20 md:py-28">
-        <div className="mx-auto max-w-[800px] space-y-8 text-[20px] leading-[1.8] text-charcoal/85">
-          {STORY.map((paragraph) => (
-            <p key={paragraph.slice(0, 40)}>{paragraph}</p>
-          ))}
-        </div>
+      <section className="bg-silver">
+        <AboutStoryContent variant="page" />
       </section>
 
-      <section className="bg-[#B00000] px-6 py-16 md:py-20">
-        <p className="mx-auto max-w-4xl text-center font-display text-xl italic leading-relaxed text-white md:text-2xl lg:text-3xl">
-          {MISSION}
-        </p>
-      </section>
+      <AboutMissionBanner />
 
-      <section className="border-t border-brand-red/20 bg-cream py-14">
+      <section className="border-t border-brand-red/15 bg-cream py-14 md:py-16">
         <div className="container-max section-padding">
+          <ScrollReveal className="mb-10 text-center">
+            <span className="section-label justify-center">By the Numbers</span>
+          </ScrollReveal>
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {STATS.map((stat) => (
-              <p key={stat.label} className="text-center font-display text-lg font-black text-charcoal md:text-xl">
-                {stat.label}
-              </p>
+            {ABOUT_STATS.map((stat, i) => (
+              <ScrollReveal key={stat.label} delay={i * 0.08} direction="up">
+                <motion.p
+                  className="text-center font-display text-lg font-black text-charcoal md:text-xl"
+                  whileHover={{scale: 1.04}}
+                  transition={{duration: 0.2}}
+                >
+                  {stat.label}
+                </motion.p>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-padding pb-24 pt-8 text-center">
-        <button type="button" onClick={() => openEvent()} className="btn-primary px-10 py-4 text-sm">
-          Work With Us
-        </button>
+      <section className="section-padding border-t border-brand-red/10 pb-28 pt-12 text-center">
+        <ScrollReveal direction="up">
+          <button type="button" onClick={() => openEvent()} className="btn-primary px-10 py-4 text-sm">
+            Work With Us
+          </button>
+        </ScrollReveal>
       </section>
     </div>
   );

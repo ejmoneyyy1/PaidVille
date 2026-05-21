@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type {BlogPost} from '@/components/sections/BlogPreview';
-import {urlFor} from '@/lib/sanity';
+import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
 import type {StockPost} from '../_data/stock-content';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
 import {isSanityBlogPost} from '@/lib/blog-admin';
 
 export type DisplayPost = BlogPost & Partial<Pick<StockPost, 'fallbackBg' | 'fallbackAccent'>>;
@@ -26,14 +27,9 @@ export default function BlogCard({
     day: 'numeric',
     year: 'numeric',
   });
-  const hasImage = Boolean(post.mainImage?.asset?._ref);
-  const image = post.mainImage?.asset?._ref
-    ? {
-        src: urlFor(post.mainImage).width(1200).height(800).fit('crop').quality(90).url(),
-        width: 1200,
-        height: 800,
-      }
-    : null;
+  const hasImage = blogHasImage(post.mainImage);
+  const imageSrc = blogImageUrl(post.mainImage, 1200, 800);
+  const image = imageSrc ? {src: imageSrc, width: 1200, height: 800} : null;
   const category = post.category ?? 'EDITORIAL';
   const accent = post.fallbackAccent ?? '#B00000';
   const cardNumber = `${index + 2}`.padStart(2, '0');
@@ -45,11 +41,20 @@ export default function BlogCard({
   return (
     <div className={`relative ${className}`}>
       {canEdit ? (
-        <AdminDeleteControl
-          documentId={post._id}
-          entityLabel="this post"
-          className="absolute right-5 top-5 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal/90 text-white shadow-md hover:bg-brand-red"
-        />
+        <>
+          <AdminDeleteControl
+            documentId={post._id}
+            entityLabel="this post"
+            className="absolute right-5 top-5 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal/90 text-white shadow-md hover:bg-brand-red"
+          />
+          <BlogPostMediaUpload
+            documentId={post._id}
+            slug={post.slug.current}
+            hasCover={hasImage}
+            hasVideo={Boolean(post.heroVideoUrl)}
+            variant="card"
+          />
+        </>
       ) : null}
       <Link
         href={`/blog/${post.slug.current}`}

@@ -5,7 +5,9 @@ import {ArrowUpRight, Calendar, Play} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
 import {isSanityBlogPost} from '@/lib/blog-admin';
+import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
 import {splitHeadingLastWord} from '@/lib/heading-display';
 
 const HOMEPAGE_DOC = 'singleton-homepage';
@@ -39,21 +41,27 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
     year: 'numeric',
   });
   const canEdit = isSanityBlogPost(post);
-
-  const imgUrl =
-    post.mainImage?.asset?._ref && process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
-      ? `https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production'}/${post.mainImage.asset._ref.replace('image-', '').replace(/-(\w+)$/, '.$1')}`
-      : null;
+  const hasCover = blogHasImage(post.mainImage);
+  const imgUrl = blogImageUrl(post.mainImage, 800, 500);
 
   return (
     <ScrollReveal delay={index * 0.1} direction="up">
       <div className="relative h-full">
         {canEdit ? (
-          <AdminDeleteControl
-            documentId={post._id}
-            entityLabel="this post"
-            className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
-          />
+          <>
+            <AdminDeleteControl
+              documentId={post._id}
+              entityLabel="this post"
+              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+            />
+            <BlogPostMediaUpload
+              documentId={post._id}
+              slug={post.slug.current}
+              hasCover={hasCover}
+              hasVideo={Boolean(post.heroVideoUrl)}
+              variant="card"
+            />
+          </>
         ) : null}
         <Link
           href={`/blog/${post.slug.current}`}

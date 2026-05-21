@@ -1,9 +1,11 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import {cookies, draftMode} from 'next/headers';
 import {getSanityClient} from '@/lib/sanity-server';
-import {urlFor} from '@/lib/sanity';
+import {blogMainImageProjection} from '@/lib/blog-image-projection';
+import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
+import ArticleHeroMedia from '@/components/blog/ArticleHeroMedia';
+import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import BlogCard from '../_components/BlogCard';
 import {stockArticles, stockPosts} from '../_data/stock-content';
@@ -29,7 +31,7 @@ type BlogDoc = {
   _id: string;
   title: string;
   slug: {current: string};
-  mainImage?: {asset: {_ref: string}; alt?: string};
+  mainImage?: {asset?: {_ref?: string; _id?: string; url?: string}; alt?: string};
   heroVideoUrl?: string | null;
   publishedAt: string;
   author?: string;
@@ -58,7 +60,7 @@ async function getPost(slug: string): Promise<BlogDoc | null> {
       : `_type == "blog" && slug.current == $slug && status == "published"`;
     return await client.fetch<BlogDoc>(
       `*[${filter}][0] {
-        _id, title, slug, mainImage, heroVideoUrl, publishedAt, author, body, category, excerpt
+        _id, title, slug, ${blogMainImageProjection}, heroVideoUrl, publishedAt, author, body, category, excerpt
       }`,
       {slug}
     );
@@ -88,7 +90,7 @@ export default async function BlogPostPage({params}: Params) {
         _id,
         title,
         slug,
-        mainImage,
+        ${blogMainImageProjection},
         heroVideoUrl,
         publishedAt,
         author,
@@ -135,15 +137,10 @@ export default async function BlogPostPage({params}: Params) {
     year: 'numeric',
   });
 
-  let posterUrl: string | null = null;
-  if (post.mainImage?.asset?._ref) {
-    try {
-      posterUrl = urlFor(post.mainImage).width(1600).quality(88).url();
-    } catch {
-      posterUrl = null;
-    }
-  }
-  const showNoiseHero = !posterUrl;
+  const posterUrl = blogImageUrl(post.mainImage, 1600, 900);
+  const heroVideoUrl = sanityPost?.heroVideoUrl ?? null;
+  const noiseTexture =
+    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E\")";
   const relatedPosts =
     morePosts.length > 0 ? morePosts : stockPosts.filter((item) => item.slug.current !== slug).slice(0, 3);
   const pullQuote = isStock ? stockArticle?.body?.[2] : null;
@@ -152,35 +149,29 @@ export default async function BlogPostPage({params}: Params) {
     <article className="min-h-screen bg-cream pb-24 pt-20">
       <section className="relative w-full min-h-[500px]">
         {sanityPost ? <ArticleAdminBar documentId={sanityPost._id} /> : null}
+        {sanityPost ? (
+          <BlogPostMediaUpload
+            documentId={sanityPost._id}
+            slug={slug}
+            hasCover={blogHasImage(post.mainImage)}
+            hasVideo={Boolean(heroVideoUrl)}
+            variant="hero"
+          />
+        ) : null}
         <Link
           href="/blog"
           className="absolute left-5 top-5 z-20 text-[10px] uppercase tracking-[0.34em] text-white transition-opacity hover:opacity-60"
         >
           ← Biased Opinions
         </Link>
-        <div
-          className="relative min-h-[500px] w-full overflow-hidden"
-          style={
-            showNoiseHero
-              ? {
-                  backgroundColor: heroBg,
-                  backgroundImage:
-                    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E\")",
-                }
-              : undefined
-          }
-        >
-          {posterUrl ? (
-            <Image
-              src={posterUrl}
-              alt={post.mainImage?.alt ?? post.title}
-              fill
-              className="object-cover"
-              sizes="100vw"
-              priority
-            />
-          ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+        <ArticleHeroMedia
+          title={post.title}
+          posterUrl={posterUrl}
+          heroVideoUrl={heroVideoUrl}
+          alt={post.mainImage?.alt ?? post.title}
+          fallbackBg={heroBg}
+          noiseTexture={noiseTexture}
+        />
 
           <div className="absolute bottom-0 left-0 z-10 p-6 md:p-12">
             <HeroMotion>
@@ -196,7 +187,6 @@ export default async function BlogPostPage({params}: Params) {
               </p>
             </HeroMotion>
           </div>
-        </div>
       </section>
 
       <div className="border-y border-charcoal/20 py-4">

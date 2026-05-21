@@ -212,13 +212,9 @@ function TiltCard({
             >
               {service.cta}
             </Link>
-          ) : service.id === 'community' ? (
-            <button type="button" onClick={handleCta} className="relative z-10 btn-primary text-xs py-3 w-full">
-              {service.cta}
-            </button>
           ) : (
             <button type="button" onClick={handleCta} className="relative z-10 btn-primary text-xs py-3 w-full">
-              {service.cta}
+              {resolveServiceCta(service)}
             </button>
           )}
 
@@ -234,8 +230,19 @@ function TiltCard({
 }
 
 const DEFAULT_SERVICES_HEADING = 'Services Built to Build';
+const LEGACY_SERVICES_HEADING = 'Services Built for the Culture';
 const DEFAULT_SERVICES_SUB =
   'From the stage to the street — immersive strategy, production, and brand elevation.';
+
+function resolveServicesHeading(raw: string | null | undefined): string {
+  const trimmed = raw?.trim();
+  if (!trimmed || trimmed === LEGACY_SERVICES_HEADING) return DEFAULT_SERVICES_HEADING;
+  return trimmed;
+}
+
+function resolveServiceCta(service: DisplayService): string {
+  return service.cta;
+}
 
 export default function Services({
   siteContent,
@@ -248,7 +255,7 @@ export default function Services({
 }) {
   const services = SiteConfig.services.map((s) => mergeServiceCopy(siteContent, s));
   const siteContentId = siteContent?._id ?? '';
-  const heading = homepageServicesHeading ?? DEFAULT_SERVICES_HEADING;
+  const heading = resolveServicesHeading(homepageServicesHeading);
   const subheading = homepageServicesSubheading ?? DEFAULT_SERVICES_SUB;
   const breakIdx = heading.lastIndexOf(' the ');
 

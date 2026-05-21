@@ -6,6 +6,7 @@ import {Calendar, MapPin, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import EventImageUpload from '@/components/events/EventImageUpload';
 import {SiteConfig} from '@/lib/config';
 import {urlFor} from '@/lib/sanity';
 import type {SanityEventDoc, SanityEventImage} from '@/lib/sanity';
@@ -16,7 +17,12 @@ function resolveEventImage(event: SanityEventDoc): SanityEventImage | null | und
 }
 
 function eventImageRef(img: SanityEventImage | null | undefined): string | undefined {
-  return img?.asset?._ref ?? img?.asset?._id;
+  return img?.asset?._ref ?? img?.asset?._id ?? (img?.asset?.url ? img.asset.url : undefined);
+}
+
+function eventImageUrl(img: SanityEventImage, eventName: string): string {
+  if (img.asset?.url) return img.asset.url;
+  return urlFor(img).width(800).height(450).url();
 }
 
 const HOMEPAGE_DOC = 'singleton-homepage';
@@ -45,6 +51,7 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
         className="relative rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
       >
         <AdminDeleteControl documentId={id} entityLabel={event.eventName} className="absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white" />
+        <EventImageUpload documentId={id} hasImage={Boolean(eventImageRef(resolveEventImage(event)))} />
         <div className="h-1 w-full bg-brand-red" />
 
         {(() => {
@@ -54,7 +61,7 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
             return (
               <div className="relative aspect-video w-full bg-charcoal">
                 <Image
-                  src={urlFor(img).width(800).height(450).url()}
+                  src={eventImageUrl(img, event.eventName)}
                   alt={img.alt ?? event.eventName}
                   fill
                   className="object-cover"

@@ -84,9 +84,9 @@ const homepage = {
         {
           _key: 'svc-4',
           title: 'Community Engagement',
-          description: 'Giving back to the community that built us.',
-          buttonText: 'Give Now',
-          buttonAction: 'donate',
+          description: 'Giving back to the community that built us. How can we be of service?',
+          buttonText: 'Plan Now',
+          buttonAction: 'community',
           icon: 'community',
         },
       ],

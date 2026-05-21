@@ -31,8 +31,6 @@ export const SiteConfig = {
     location: 'Fayetteville, AR',
   },
 
-  communityGiveUrl: 'https://www.paypal.com/donate',
-
   nav: [
     {label: 'Services', href: '#services'},
     {label: 'Events', href: '#events'},
@@ -74,9 +72,9 @@ export const SiteConfig = {
       id: 'community',
       title: 'Community Engagement',
       description:
-        'Building lasting bonds through outreach, partnerships, and grassroots activations that elevate the people around us.',
+        'Giving back to the community that built us. How can we be of service?',
       icon: 'Users',
-      cta: 'Give Now',
+      cta: 'Plan Now',
       inquiryMode: 'community' as const,
     },
   ],

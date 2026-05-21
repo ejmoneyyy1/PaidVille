@@ -2,6 +2,7 @@ import {createClient} from 'next-sanity';
 import imageUrlBuilder from '@sanity/image-url';
 import type {SanityImageSource} from '@sanity/image-url/lib/types/types';
 import {getSanityDataset, getSanityProjectId} from '@/lib/sanity-env';
+import {blogMainImageProjection} from '@/lib/blog-image-projection';
 
 const apiVersion = '2024-07-01';
 
@@ -23,7 +24,7 @@ export const blogQuery = `*[_type == "blog" && status == "published"] | order(pu
   _id,
   title,
   slug,
-  mainImage,
+  ${blogMainImageProjection},
   heroVideoUrl,
   publishedAt,
   author,
@@ -49,13 +50,23 @@ export const siteStatsQuery = `*[_type == "siteStats" && _id == "siteStats"][0]{
   rating
 }`;
 
+const eventImageProjection = `{
+  _type,
+  alt,
+  asset->{
+    _id,
+    _ref,
+    url
+  }
+}`;
+
 export const eventsQuery = `*[_type == "event"] | order(date asc) {
   _id,
   eventName,
   date,
   location,
-  mainImage,
-  image,
+  "mainImage": mainImage ${eventImageProjection},
+  "image": image ${eventImageProjection},
   eventbriteUrl,
   description,
   isFeatured

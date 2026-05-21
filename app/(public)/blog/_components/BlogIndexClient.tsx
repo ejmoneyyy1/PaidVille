@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {motion} from 'framer-motion';
-import {urlFor} from '@/lib/sanity';
+import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
 import BlogCard, {type DisplayPost} from './BlogCard';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
 import {isSanityBlogPost} from '@/lib/blog-admin';
 
 interface BlogIndexClientProps {
@@ -18,7 +19,8 @@ const noiseTexture =
 
 export default function BlogIndexClient({posts}: BlogIndexClientProps) {
   const [featuredPost, ...remainingPosts] = posts;
-  const featuredHasImage = Boolean(featuredPost?.mainImage?.asset?._ref);
+  const featuredHasImage = blogHasImage(featuredPost?.mainImage);
+  const featuredImageUrl = blogImageUrl(featuredPost?.mainImage, 1920, 1080);
   const featuredDate = featuredPost
     ? new Date(featuredPost.publishedAt).toLocaleDateString('en-US', {
         month: 'short',
@@ -33,11 +35,20 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
       {featuredPost ? (
         <div className="relative mb-10">
           {featuredEditable ? (
-            <AdminDeleteControl
-              documentId={featuredPost._id}
-              entityLabel="this post"
-              className="absolute right-6 top-6 z-[30] flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-md backdrop-blur-sm hover:bg-brand-red"
-            />
+            <>
+              <AdminDeleteControl
+                documentId={featuredPost._id}
+                entityLabel="this post"
+                className="absolute right-6 top-6 z-[30] flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-md backdrop-blur-sm hover:bg-brand-red"
+              />
+              <BlogPostMediaUpload
+                documentId={featuredPost._id}
+                slug={featuredPost.slug.current}
+                hasCover={featuredHasImage}
+                hasVideo={Boolean(featuredPost.heroVideoUrl)}
+                variant="card"
+              />
+            </>
           ) : null}
           <Link href={`/blog/${featuredPost.slug.current}`} className="group block">
           <div
@@ -51,10 +62,10 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
                 : undefined
             }
           >
-            {featuredHasImage && featuredPost.mainImage ? (
+            {featuredHasImage && featuredImageUrl ? (
               <Image
-                src={urlFor(featuredPost.mainImage).width(1920).height(1080).fit('crop').quality(92).url()}
-                alt={featuredPost.mainImage.alt ?? featuredPost.title}
+                src={featuredImageUrl}
+                alt={featuredPost.mainImage?.alt ?? featuredPost.title}
                 width={1920}
                 height={1080}
                 className="h-full w-full object-cover"
