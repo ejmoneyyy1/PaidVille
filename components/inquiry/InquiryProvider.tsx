@@ -3,9 +3,12 @@
 import {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import InquiryModal from '@/components/inquiry/InquiryModal';
 
+export type InquiryMode = 'event' | 'branding' | 'community';
+
 type InquiryContextValue = {
   openEvent: () => void;
   openBranding: () => void;
+  openCommunity: () => void;
 };
 
 const InquiryContext = createContext<InquiryContextValue | null>(null);
@@ -20,7 +23,7 @@ export function useInquiry() {
 
 export function InquiryProvider({children}: {children: React.ReactNode}) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'event' | 'branding'>('event');
+  const [mode, setMode] = useState<InquiryMode>('event');
 
   const openEvent = useCallback(() => {
     setMode('event');
@@ -32,7 +35,15 @@ export function InquiryProvider({children}: {children: React.ReactNode}) {
     setOpen(true);
   }, []);
 
-  const value = useMemo(() => ({openEvent, openBranding}), [openEvent, openBranding]);
+  const openCommunity = useCallback(() => {
+    setMode('community');
+    setOpen(true);
+  }, []);
+
+  const value = useMemo(
+    () => ({openEvent, openBranding, openCommunity}),
+    [openEvent, openBranding, openCommunity],
+  );
 
   return (
     <InquiryContext.Provider value={value}>

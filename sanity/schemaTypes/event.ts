@@ -24,10 +24,17 @@ export const eventType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'mainImage',
+      type: 'image',
+      title: 'Main image',
+      options: {hotspot: true},
+    }),
+    defineField({
       name: 'image',
       type: 'image',
-      title: 'Image',
+      title: 'Image (legacy)',
       options: {hotspot: true},
+      hidden: ({document}) => Boolean(document?.mainImage),
     }),
     defineField({
       name: 'eventbriteUrl',
@@ -49,12 +56,12 @@ export const eventType = defineType({
     }),
   ],
   preview: {
-    select: {title: 'eventName', media: 'image', date: 'date'},
-    prepare({title, media, date}) {
+    select: {title: 'eventName', media: 'mainImage', fallback: 'image', date: 'date'},
+    prepare({title, media, fallback, date}) {
       return {
         title: title ?? 'Event',
         subtitle: date ? new Date(date).toLocaleString() : '',
-        media,
+        media: media ?? fallback,
       };
     },
   },

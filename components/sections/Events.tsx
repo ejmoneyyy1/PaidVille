@@ -6,9 +6,18 @@ import {Calendar, MapPin, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
+import {SiteConfig} from '@/lib/config';
 import {urlFor} from '@/lib/sanity';
-import type {SanityEventDoc} from '@/lib/sanity';
+import type {SanityEventDoc, SanityEventImage} from '@/lib/sanity';
 import {splitHeadingLastWord} from '@/lib/heading-display';
+
+function resolveEventImage(event: SanityEventDoc): SanityEventImage | null | undefined {
+  return event.mainImage ?? event.image;
+}
+
+function eventImageRef(img: SanityEventImage | null | undefined): string | undefined {
+  return img?.asset?._ref ?? img?.asset?._id;
+}
 
 const HOMEPAGE_DOC = 'singleton-homepage';
 const DEFAULT_EVENTS_TITLE = 'Upcoming Events';
@@ -36,21 +45,28 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
         <AdminDeleteControl documentId={id} entityLabel={event.eventName} className="absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white" />
         <div className="h-1 w-full bg-brand-red" />
 
-        {event.image?.asset?._ref ? (
-          <div className="relative aspect-[16/10] w-full bg-silver">
-            <Image
-              src={urlFor(event.image).width(800).height(500).url()}
-              alt={event.image.alt ?? event.eventName}
-              fill
-              className="object-cover"
-              sizes="(max-width:768px) 100vw, 33vw"
-            />
-          </div>
-        ) : (
-          <div className="aspect-[16/10] bg-silver flex items-center justify-center">
-            <span className="font-display font-black text-4xl text-brand-red/15">PV</span>
-          </div>
-        )}
+        {(() => {
+          const img = resolveEventImage(event);
+          const ref = eventImageRef(img);
+          if (ref && img) {
+            return (
+              <div className="relative aspect-video w-full bg-charcoal">
+                <Image
+                  src={urlFor(img).width(800).height(450).url()}
+                  alt={img.alt ?? event.eventName}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width:768px) 100vw, 33vw"
+                />
+              </div>
+            );
+          }
+          return (
+            <div className="flex aspect-video items-center justify-center bg-charcoal">
+              <span className="font-display font-black text-4xl text-brand-red/25">PV</span>
+            </div>
+          );
+        })()}
 
         <div className="p-6 flex flex-col gap-3">
           {event.isFeatured && (
@@ -206,8 +222,8 @@ export default function Events({
           <p className="text-xs text-charcoal/50">
             Tickets and RSVPs are handled on{' '}
             <span className="text-charcoal/70 font-medium">Eventbrite</span>. Questions?{' '}
-            <a href="mailto:hello@paidville.com" className="text-brand-red hover:underline">
-              hello@paidville.com
+            <a href={`mailto:${SiteConfig.contact.email}`} className="text-brand-red hover:underline">
+              {SiteConfig.contact.email}
             </a>
           </p>
         </ScrollReveal>

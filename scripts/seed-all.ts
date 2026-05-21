@@ -8,7 +8,7 @@ const globalSettings = {
   _id: 'singleton-global-settings',
   _type: 'globalSettings',
   siteName: 'PaidVille',
-  contactEmail: 'hello@paidville.com',
+  contactEmail: 'hstoneco@outlook.com',
   footerTagline: 'Est. 2018 — ARK USA | Fayetteville, AR',
   footerDescription: 'Premium events. Elevated lifestyle. Based in Fayetteville, AR.',
   defaultSeoTitle: 'PaidVille — Premium Events. Elevated Lifestyle.',
@@ -54,7 +54,7 @@ const homepage = {
     {
       _type: 'servicesBlock',
       _key: 'services-1',
-      heading: 'Services Built for the Culture',
+      heading: 'Services Built to Build',
       subheading: 'From the stage to the street — immersive strategy, production, and brand elevation.',
       services: [
         {

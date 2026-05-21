@@ -5,10 +5,9 @@ const NAV_KEYS = ['nav-services', 'nav-events', 'nav-about', 'nav-gallery', 'nav
 
 export type NavItemResolved = {href: string; label: string; _key: string};
 
-/** Align CMS paths with real routes / homepage sections (About lives on `/` as `#about`). */
+/** Align hash-only paths to homepage anchors (e.g. `#services` → `/#services`). */
 export function normalizeNavHref(path: string): string {
   if (path.startsWith('#')) return `/${path}`;
-  if (path === '/about') return '/#about';
   return path;
 }
 

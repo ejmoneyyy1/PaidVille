@@ -32,7 +32,7 @@ const STATIC_GALLERY: GalleryItem[] = [
   {_id: 'g5', title: 'Gallery V', staticSrc: '/images/gallery5.jpg', mediaType: 'photo'},
 ];
 
-const DEFAULT_STATS: HeroStats = {ticketsSold: 10000, eventsHosted: 50, rating: 5};
+const DEFAULT_STATS: HeroStats = {ticketsSold: 10000, eventsHosted: 100, rating: 5};
 
 async function getData() {
   let posts: BlogPost[] = [];

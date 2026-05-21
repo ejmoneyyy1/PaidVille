@@ -23,6 +23,11 @@ function formatTicketsLabel(n: number) {
   return `${n}+ Tickets Sold`;
 }
 
+function formatEventsHostedLabel(n: number) {
+  if (n >= 100) return '100+ Events Hosted';
+  return `${n}+ Events Hosted`;
+}
+
 const FALLBACK_HERO_TAGLINE = 'PREMIUM EVENTS. ELEVATED LIFESTYLE.';
 const FALLBACK_HERO_SUBTEXT = 'CREATIVE AGENCY · FAYETTEVILLE';
 
@@ -38,7 +43,7 @@ export default function Hero({
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [reelOpen, setReelOpen] = useState(false);
 
-  const safeStats = stats ?? {rating: 5, ticketsSold: 10000, eventsHosted: 50};
+  const safeStats = stats ?? {rating: 5, ticketsSold: 10000, eventsHosted: 100};
   const siteDocId = siteContent?._id ?? '';
 
   const {scrollYProgress} = useScroll({
@@ -257,7 +262,9 @@ export default function Hero({
               type="number"
               wrapperClassName="relative inline-block group/edit"
             >
-              <p className="font-display font-black text-xl text-charcoal">{safeStats.eventsHosted}+ Events Hosted</p>
+              <p className="font-display font-black text-xl text-charcoal">
+                {formatEventsHostedLabel(safeStats.eventsHosted)}
+              </p>
             </EditableField>
           </div>
         </motion.div>

@@ -14,6 +14,7 @@ export const inquirySubmissionType = defineType({
         list: [
           {title: 'Event', value: 'event'},
           {title: 'Branding', value: 'branding'},
+          {title: 'Community', value: 'community'},
         ],
         layout: 'radio',
       },

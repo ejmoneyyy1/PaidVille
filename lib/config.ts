@@ -26,7 +26,7 @@ export const SiteConfig = {
   },
 
   contact: {
-    email: 'hello@paidville.com',
+    email: 'hstoneco@outlook.com',
     phone: '',
     location: 'Fayetteville, AR',
   },
@@ -36,7 +36,7 @@ export const SiteConfig = {
   nav: [
     {label: 'Services', href: '#services'},
     {label: 'Events', href: '#events'},
-    {label: 'About', href: '#about'},
+    {label: 'About', href: '/about'},
     {label: 'Gallery', href: '/gallery'},
     {label: 'Blog', href: '/blog'},
     {label: 'Shop', href: '/shop'},

@@ -54,6 +54,7 @@ export const eventsQuery = `*[_type == "event"] | order(date asc) {
   eventName,
   date,
   location,
+  mainImage,
   image,
   eventbriteUrl,
   description,
@@ -86,12 +87,18 @@ export type SiteStatsDoc = {
   rating: number;
 };
 
+export type SanityEventImage = {
+  asset?: {_ref?: string; _id?: string; url?: string};
+  alt?: string;
+};
+
 export type SanityEventDoc = {
   _id: string;
   eventName: string;
   date: string;
   location: string;
-  image?: {asset: {_ref: string}; alt?: string};
+  mainImage?: SanityEventImage | null;
+  image?: SanityEventImage | null;
   eventbriteUrl: string;
   description?: string;
   isFeatured?: boolean;

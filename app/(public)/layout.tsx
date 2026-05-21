@@ -9,6 +9,7 @@ import AdminPanel from '@/components/admin/AdminPanel';
 import {getSiteContent} from '@/lib/get-site-content';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import {buildNavItems} from '@/lib/build-nav-items';
+import FloatingJoinButton from '@/components/ui/FloatingJoinButton';
 
 export default async function PublicLayout({children}: {children: React.ReactNode}) {
   const siteContent = await getSiteContent();
@@ -24,6 +25,7 @@ export default async function PublicLayout({children}: {children: React.ReactNod
         <Navbar navItems={navItems} />
         <main className="relative">{children}</main>
         <Footer siteContent={siteContent} globalSettings={globalSettings} navItems={navItems} />
+        <FloatingJoinButton />
         <AdminToolbar />
         <AdminPanel />
       </AdminProvider>

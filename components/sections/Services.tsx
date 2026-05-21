@@ -121,7 +121,7 @@ function TiltCard({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
-  const {openEvent, openBranding} = useInquiry();
+  const {openEvent, openBranding, openCommunity} = useInquiry();
 
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
@@ -150,7 +150,7 @@ function TiltCard({
     else if (service.id === 'shop') {
       document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'});
     } else if (service.id === 'community') {
-      window.open(SiteConfig.communityGiveUrl, '_blank', 'noopener,noreferrer');
+      openCommunity();
     }
   }
 
@@ -233,7 +233,7 @@ function TiltCard({
   );
 }
 
-const DEFAULT_SERVICES_HEADING = 'Services Built for the Culture';
+const DEFAULT_SERVICES_HEADING = 'Services Built to Build';
 const DEFAULT_SERVICES_SUB =
   'From the stage to the street — immersive strategy, production, and brand elevation.';
 

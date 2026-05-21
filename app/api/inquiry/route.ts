@@ -4,7 +4,7 @@ import {getSanityWriteClient} from '@/lib/sanity-write';
 
 export const runtime = 'nodejs';
 
-type SubmissionType = 'event' | 'branding';
+type SubmissionType = 'event' | 'branding' | 'community';
 
 function plainTextBlock(title: string, data: Record<string, unknown>) {
   const lines = Object.entries(data)
@@ -47,7 +47,12 @@ export async function POST(request: Request) {
     const to = process.env.RESEND_TO_EMAIL;
     if (resendKey && to) {
       const resend = new Resend(resendKey);
-      const label = submissionType === 'event' ? 'Event' : 'Branding';
+      const label =
+        submissionType === 'event'
+          ? 'Event'
+          : submissionType === 'branding'
+            ? 'Branding'
+            : 'Community';
       const textBody =
         plainTextBlock('Contact', {name, email, phone, submittedAt}) +
         '\n' +
