@@ -25,14 +25,16 @@ const DEFAULT_EVENTS_SUB =
   'New shows land here first — each card opens your Eventbrite listing.';
 
 function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
-  const dateLabel = new Date(event.date).toLocaleString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  const dateLabel = event.date
+    ? new Date(event.date).toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : 'Date TBD';
   const id = event._id;
 
   return (
@@ -95,7 +97,7 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
                 type="text"
                 wrapperClassName="group/edit relative inline"
               >
-                <span>{dateLabel}</span>
+                <span suppressHydrationWarning>{dateLabel}</span>
               </EditableField>
             </div>
             <div className="flex items-center gap-2">
