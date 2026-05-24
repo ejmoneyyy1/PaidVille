@@ -103,11 +103,6 @@ export default function IntroSequence() {
         const el = videoRef.current;
         el.muted = true;
         el.volume = 0;
-        try {
-          if (el.currentTime === 0) el.currentTime = 0.001;
-        } catch {
-          /* ignore */
-        }
         el.play()
           .then(() => {
             playAttempts = 0;
@@ -170,8 +165,12 @@ export default function IntroSequence() {
     if (videoTimeoutRef.current) clearTimeout(videoTimeoutRef.current);
     const video = videoRef.current;
     if (video) {
-      video.pause();
-      video.src = ''; /* Release the resource */
+      try {
+        video.pause();
+      } catch {
+        /* Safari can throw when tearing down media state */
+      }
+      /* Do not set video.src = '' — WebKit throws ReferenceError: EmptyRanges while the node is still mounted */
     }
     setExiting(true);
     setTimeout(() => {
@@ -334,13 +333,10 @@ export default function IntroSequence() {
                 playsInline
                 autoPlay
                 muted
-                preload="auto"
+                preload="metadata"
+                src="/videos/lights.mp4"
                 onEnded={finishIntro}
-              >
-                {/* MP4 first — lights.mov is not in repo; missing first source breaks Safari fallback */}
-                <source src="/videos/lights.mp4" type="video/mp4" />
-                <source src="/videos/Lights.MOV" type="video/quicktime" />
-              </video>
+              />
 
               {/* Skip */}
               <motion.button

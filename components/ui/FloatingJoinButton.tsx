@@ -3,17 +3,21 @@
 import {useInquiry} from '@/components/inquiry/InquiryProvider';
 
 export default function FloatingJoinButton() {
-  const {openEvent} = useInquiry();
+  const {openJoin} = useInquiry();
 
   return (
     <button
       type="button"
-      onClick={() => openEvent()}
-      className="fixed right-0 top-1/2 z-[100] -translate-y-1/2 cursor-pointer rounded-l border-0 bg-[#B00000] px-[10px] py-4 text-[11px] font-bold uppercase tracking-[3px] text-white shadow-[-2px_0_12px_rgba(176,0,0,0.3)] transition-all duration-200 ease-in-out hover:-translate-x-1 hover:bg-[#900000]"
-      style={{writingMode: 'vertical-rl'}}
-      aria-label="Join now — open inquiry form"
+      onClick={() => openJoin()}
+      className="fixed right-0 top-1/2 z-[100] flex min-h-[148px] w-[58px] -translate-y-1/2 cursor-pointer flex-col items-center justify-center rounded-l-[4px] border-0 px-2 py-5 text-white shadow-[-4px_0_20px_rgba(176,0,0,0.45)] transition-transform duration-200 ease-in-out hover:-translate-x-1"
+      style={{
+        backgroundColor: '#B00000',
+        writingMode: 'vertical-rl',
+        textOrientation: 'mixed',
+      }}
+      aria-label="Join now — join the PaidVille family"
     >
-      JOIN NOW
+      <span className="text-[11px] font-bold uppercase tracking-[3px]">JOIN NOW</span>
     </button>
   );
 }

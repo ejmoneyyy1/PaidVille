@@ -3,9 +3,10 @@
 import {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import InquiryModal from '@/components/inquiry/InquiryModal';
 
-export type InquiryMode = 'event' | 'branding' | 'community';
+export type InquiryMode = 'join' | 'event' | 'branding' | 'community';
 
 type InquiryContextValue = {
+  openJoin: () => void;
   openEvent: () => void;
   openBranding: () => void;
   openCommunity: () => void;
@@ -23,7 +24,12 @@ export function useInquiry() {
 
 export function InquiryProvider({children}: {children: React.ReactNode}) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<InquiryMode>('event');
+  const [mode, setMode] = useState<InquiryMode>('join');
+
+  const openJoin = useCallback(() => {
+    setMode('join');
+    setOpen(true);
+  }, []);
 
   const openEvent = useCallback(() => {
     setMode('event');
@@ -41,8 +47,8 @@ export function InquiryProvider({children}: {children: React.ReactNode}) {
   }, []);
 
   const value = useMemo(
-    () => ({openEvent, openBranding, openCommunity}),
-    [openEvent, openBranding, openCommunity],
+    () => ({openJoin, openEvent, openBranding, openCommunity}),
+    [openJoin, openEvent, openBranding, openCommunity],
   );
 
   return (

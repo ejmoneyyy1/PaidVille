@@ -14,5 +14,6 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem('shopProduct').title('Shop / Pre-Order'),
       S.divider(),
       S.documentTypeListItem('inquirySubmission').title('Inquiry Submissions'),
+      S.documentTypeListItem('review').title('Reviews'),
       S.documentTypeListItem('gallery').title('Gallery'),
     ]);

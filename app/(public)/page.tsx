@@ -3,6 +3,7 @@ import Services from '@/components/sections/Services';
 import Events from '@/components/sections/Events';
 import About from '@/components/sections/About';
 import BlogPreview from '@/components/sections/BlogPreview';
+import ReviewsCarousel from '@/components/sections/ReviewsCarousel';
 import GallerySection from '@/components/sections/Gallery';
 import ShopSection from '@/components/sections/Shop';
 import {getSanityClient} from '@/lib/sanity-server';
@@ -15,7 +16,9 @@ import {
   type SiteStatsDoc,
   type SanityEventDoc,
   type ShopProductDoc,
+  publishedReviewsQuery,
 } from '@/lib/sanity';
+import type {Review} from '@/lib/reviews';
 import {getSiteContent} from '@/lib/get-site-content';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import type {BlogPost} from '@/components/sections/BlogPreview';
@@ -40,17 +43,20 @@ async function getData() {
   let stats: HeroStats = DEFAULT_STATS;
   let events: SanityEventDoc[] = [];
   let shopProduct: ShopProductDoc | null = null;
+  let reviews: Review[] = [];
 
   const siteContent = await getSiteContent();
 
   try {
     const client = await getSanityClient();
-    const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedShop] = await Promise.all([
+    const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedShop, fetchedReviews] =
+      await Promise.all([
       client.fetch<BlogPost[]>(blogQuery),
       client.fetch<GalleryItem[]>(galleryItemsQuery),
       client.fetch<SiteStatsDoc | null>(siteStatsQuery),
       client.fetch<SanityEventDoc[]>(eventsQuery),
       client.fetch<ShopProductDoc | null>(shopFeaturedQuery),
+      client.fetch<Review[]>(publishedReviewsQuery),
     ]);
     posts = fetchedPosts ?? [];
     if (fetchedGallery?.length) {
@@ -68,11 +74,12 @@ async function getData() {
     }
     events = fetchedEvents ?? [];
     shopProduct = fetchedShop ?? null;
+    reviews = fetchedReviews ?? [];
   } catch {
     // Sanity not configured or fetch error — fall back to static defaults
   }
 
-  return {posts, galleryItems, stats, events, shopProduct, siteContent};
+  return {posts, galleryItems, stats, events, shopProduct, reviews, siteContent};
 }
 
 function sectionString(sections: unknown, key: string, prop: 'heading' | 'subheading'): string | null {
@@ -83,7 +90,7 @@ function sectionString(sections: unknown, key: string, prop: 'heading' | 'subhea
 }
 
 export default async function HomePage() {
-  const {posts, galleryItems, stats, events, shopProduct, siteContent} = await getData();
+  const {posts, galleryItems, stats, events, shopProduct, reviews, siteContent} = await getData();
   const {homepage} = await getSingletonDocs();
   const sections = homepage?.sections;
 
@@ -108,6 +115,7 @@ export default async function HomePage() {
         homepageShopSubheading={sectionString(sections, 'shop-1', 'subheading')}
       />
       <BlogPreview posts={posts} homepageBlogHeading={sectionString(sections, 'blog-1', 'heading')} />
+      <ReviewsCarousel reviews={reviews} />
     </>
   );
 }

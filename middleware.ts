@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (isLoginPage && isAdminCookie) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/?admin=true', request.url));
   }
 
   return NextResponse.next();

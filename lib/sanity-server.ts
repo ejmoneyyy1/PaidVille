@@ -31,7 +31,7 @@ export async function getSanityClient(): Promise<SanityClient> {
     projectId: projectId(),
     dataset: dataset(),
     apiVersion,
-    useCdn: !isEnabled,
+    useCdn: false,
     perspective: isEnabled ? 'previewDrafts' : 'published',
     token: isEnabled ? process.env.SANITY_API_READ_TOKEN : undefined,
     stega: {

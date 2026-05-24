@@ -7,7 +7,7 @@ import AboutStoryContent, {AboutMissionBanner} from '@/components/about/AboutSto
 import {ABOUT_STATS} from '@/lib/about-content';
 
 export default function AboutStoryPage() {
-  const {openEvent} = useInquiry();
+  const {openJoin} = useInquiry();
 
   return (
     <div className="min-h-screen bg-cream">
@@ -72,7 +72,7 @@ export default function AboutStoryPage() {
 
       <section className="section-padding border-t border-brand-red/10 pb-28 pt-12 text-center">
         <ScrollReveal direction="up">
-          <button type="button" onClick={() => openEvent()} className="btn-primary px-10 py-4 text-sm">
+          <button type="button" onClick={() => openJoin()} className="btn-primary px-10 py-4 text-sm">
             Work With Us
           </button>
         </ScrollReveal>

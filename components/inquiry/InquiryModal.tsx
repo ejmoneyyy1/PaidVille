@@ -27,6 +27,13 @@ const communityEventTypes = [
   'Other',
 ] as const;
 
+const joinSchema = z.object({
+  name: z.string().min(2, 'Full name is required'),
+  phone: z.string().min(7, 'Phone number is required'),
+  email: z.string().email('Valid email required'),
+  message: z.string().optional(),
+});
+
 const eventSchema = z.object({
   name: z.string().min(2, 'Full name is required'),
   phone: z.string().min(7, 'Phone number is required'),
@@ -64,6 +71,7 @@ export type InquiryModalProps = {
   onClose: () => void;
 };
 
+type JoinForm = z.infer<typeof joinSchema>;
 type EventForm = z.infer<typeof eventSchema>;
 type BrandingForm = z.infer<typeof brandingSchema>;
 type CommunityForm = z.infer<typeof communitySchema>;
@@ -72,9 +80,14 @@ const MODE_META: Record<
   InquiryMode,
   {label: string; title: string; subtitle: string}
 > = {
+  join: {
+    label: 'PaidVille',
+    title: 'Join the family',
+    subtitle: 'Tell us a little about yourself — we will follow up within 24 hours.',
+  },
   event: {
     label: 'Events',
-    title: 'Experience inquiry',
+    title: 'Event inquiry',
     subtitle: 'Tell us about your event — we will follow up within 24 hours.',
   },
   branding: {
@@ -95,8 +108,18 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeMode = mode ?? 'event';
+  const activeMode = mode ?? 'join';
   const meta = MODE_META[activeMode];
+
+  const joinForm = useForm<JoinForm>({
+    resolver: zodResolver(joinSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+      message: '',
+    },
+  });
 
   const eventForm = useForm<EventForm>({
     resolver: zodResolver(eventSchema),
@@ -142,11 +165,12 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
     if (!open) {
       setDone(false);
       setError(null);
+      joinForm.reset();
       eventForm.reset();
       brandingForm.reset();
       communityForm.reset();
     }
-  }, [open, eventForm, brandingForm, communityForm]);
+  }, [open, joinForm, eventForm, brandingForm, communityForm]);
 
   useEffect(() => {
     if (!open) return;
@@ -156,6 +180,15 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
+
+  async function submitJoin() {
+    const ok = await joinForm.trigger();
+    if (!ok) return;
+    const v = joinForm.getValues();
+    await postInquiry('join', v.name, v.email, v.phone, {
+      message: v.message ?? '',
+    });
+  }
 
   async function submitEvent() {
     const ok = await eventForm.trigger();
@@ -219,6 +252,7 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
   }
 
   function handleSubmit() {
+    if (activeMode === 'join') return submitJoin();
     if (activeMode === 'event') return submitEvent();
     if (activeMode === 'branding') return submitBranding();
     return submitCommunity();
@@ -279,6 +313,33 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
                     Close
                   </button>
                 </motion.div>
+              ) : activeMode === 'join' ? (
+                <form
+                  className="space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void handleSubmit();
+                  }}
+                >
+                  <Field label="Full Name" error={joinForm.formState.errors.name?.message}>
+                    <input className="inquiry-input" {...joinForm.register('name')} />
+                  </Field>
+                  <Field label="Phone Number" error={joinForm.formState.errors.phone?.message}>
+                    <input className="inquiry-input" type="tel" {...joinForm.register('phone')} />
+                  </Field>
+                  <Field label="Email" error={joinForm.formState.errors.email?.message}>
+                    <input className="inquiry-input" type="email" {...joinForm.register('email')} />
+                  </Field>
+                  <Field label="How can we connect?">
+                    <textarea
+                      className="inquiry-input min-h-[100px] resize-y"
+                      placeholder="Tell us what brought you here or how you'd like to get involved."
+                      {...joinForm.register('message')}
+                    />
+                  </Field>
+                  {error && <p className="text-sm text-red-600">{error}</p>}
+                  <SubmitRow submitting={submitting} />
+                </form>
               ) : activeMode === 'event' ? (
                 <form
                   className="space-y-4"

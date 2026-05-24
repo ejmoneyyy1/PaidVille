@@ -106,12 +106,9 @@ export default function Hero({
           loop
           playsInline
           autoPlay
-          preload="auto"
-        >
-          {/* MP4 first: always present in /public; broken/missing first source can prevent fallback in some browsers */}
-          <source src="/videos/lights.mp4" type="video/mp4" />
-          <source src="/videos/Lights.MOV" type="video/quicktime" />
-        </video>
+          preload="metadata"
+          src="/videos/lights.mp4"
+        />
 
         <div
           className={`absolute inset-0 bg-cream transition-opacity duration-1000 ${

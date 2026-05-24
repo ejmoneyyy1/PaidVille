@@ -24,9 +24,7 @@ export default function AdminLoginForm() {
       if (res.ok) {
         const next = searchParams.get('next');
         const safe =
-          next && next.startsWith('/') && !next.startsWith('//')
-            ? `${next.split('?')[0]}?admin=true`
-            : '/?admin=true';
+          next && next.startsWith('/') && !next.startsWith('//') ? next : '/?admin=true';
         router.push(safe);
         router.refresh();
         return;
@@ -44,7 +42,7 @@ export default function AdminLoginForm() {
         <Image src="/images/splashlogo.png" alt="PaidVille" fill className="object-contain" priority />
       </div>
       <p className="mt-6 font-display text-2xl font-black tracking-[0.15em] text-white">PAIDVILLE</p>
-      <p className="mt-1 text-[13px] text-white/60">Admin Dashboard</p>
+      <p className="mt-1 text-[13px] text-white/60">Admin sign-in</p>
 
       <input
         type="password"
@@ -62,7 +60,7 @@ export default function AdminLoginForm() {
         disabled={loading}
         className="mt-3 w-full rounded-[2px] bg-brand-red py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#900000] disabled:opacity-60"
       >
-        {loading ? '…' : 'Access Dashboard'}
+        {loading ? '…' : 'Sign in'}
       </button>
 
       {error ? <p className="mt-3 text-[13px] text-brand-red">{error}</p> : null}

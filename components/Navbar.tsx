@@ -16,7 +16,7 @@ function NavLink({href, children}: {href: string; children: React.ReactNode}) {
     <li>
       <Link
         href={href}
-        className="group relative block px-3.5 py-2.5 font-display text-[11px] font-bold tracking-[0.16em] uppercase text-charcoal/65 transition-colors duration-200 hover:text-charcoal md:px-4"
+        className="group relative block whitespace-nowrap px-2.5 py-2 font-display text-[10px] font-bold tracking-[0.12em] uppercase text-charcoal/65 transition-colors duration-200 hover:text-charcoal lg:px-3 lg:text-[11px] lg:tracking-[0.14em]"
       >
         <span className="relative z-10">{children}</span>
         <span
@@ -64,11 +64,11 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
         aria-hidden
       />
 
-      <nav className="container-max section-padding flex items-center justify-between gap-4">
-        <Link href="/" className="flex min-w-0 items-center gap-3.5 md:gap-4 group">
+      <nav className="container-max section-padding flex items-center justify-between gap-3 md:grid md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-5 lg:gap-6">
+        <Link href="/" className="flex min-w-0 shrink items-center gap-2.5 sm:gap-3.5 md:max-w-[13.5rem] md:gap-4 lg:max-w-[15rem] xl:max-w-none group">
           <RotatingLogoMark />
           <div className="flex min-w-0 flex-col leading-none">
-            <span className="font-display font-black text-[1.35rem] tracking-tight text-gradient-brand transition-transform duration-300 group-hover:translate-x-0.5 sm:text-2xl md:text-[1.75rem]">
+            <span className="truncate font-display font-black text-[1.2rem] tracking-tight text-gradient-brand transition-transform duration-300 group-hover:translate-x-0.5 sm:text-2xl md:text-[1.65rem] lg:text-[1.75rem]">
               PAID<span className="text-brand-red">VILLE</span>
             </span>
             <span className="mt-0.5 hidden font-display text-[9px] font-bold uppercase tracking-[0.28em] text-charcoal/40 sm:block">
@@ -77,10 +77,10 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
           </div>
         </Link>
 
-        <div className="hidden flex-1 justify-center px-4 md:flex">
+        <div className="hidden min-w-0 md:flex md:justify-center md:px-1 lg:px-2">
           <motion.ul
             layout
-            className="flex items-center gap-0.5 rounded-2xl border border-brand-red/35 bg-white/55 px-1.5 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)] backdrop-blur-md"
+            className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border border-brand-red/35 bg-white/55 px-1 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)] backdrop-blur-md"
           >
             {navItems.map((item) => (
               <NavLink key={item._key} href={item.href}>
@@ -99,25 +99,15 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
           </motion.ul>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2.5 md:gap-3">
-          <Link
-            href="/shop"
-            className="hidden items-center gap-2 rounded-full border border-brand-red bg-brand-red px-5 py-2.5 text-xs font-display font-bold uppercase tracking-[0.14em] text-white shadow-[0_6px_24px_rgba(176,0,0,0.35)] transition-all duration-300 hover:bg-brand-red-light hover:shadow-[0_10px_32px_rgba(176,0,0,0.45)] hover:-translate-y-0.5 active:translate-y-0 md:inline-flex"
-          >
-            <ShoppingBag size={16} strokeWidth={2.2} />
-            Shop
-          </Link>
-
-          <button
+        <button
             type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-brand-red bg-white/90 text-charcoal shadow-sm transition-all duration-200 hover:bg-white active:scale-95 md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-red bg-white/90 text-charcoal shadow-sm transition-all duration-200 hover:bg-white active:scale-95 md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
+        </button>
       </nav>
 
       <AnimatePresence>

@@ -12,6 +12,7 @@ export const inquirySubmissionType = defineType({
       readOnly: true,
       options: {
         list: [
+          {title: 'Join', value: 'join'},
           {title: 'Event', value: 'event'},
           {title: 'Branding', value: 'branding'},
           {title: 'Community', value: 'community'},

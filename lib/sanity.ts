@@ -20,6 +20,13 @@ export function urlFor(source: SanityImageSource) {
   return builder.image(source);
 }
 
+export const publishedReviewsQuery = `*[_type == "review" && status == "published"] | order(submittedAt desc) {
+  _id,
+  name,
+  rating,
+  comment
+}`;
+
 export const blogQuery = `*[_type == "blog" && status == "published"] | order(publishedAt desc) {
   _id,
   title,
