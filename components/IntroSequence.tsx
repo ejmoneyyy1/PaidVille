@@ -86,9 +86,6 @@ export default function IntroSequence() {
         return;
       }
 
-      /* Safari: explicit mute + inline before play() */
-      video.muted = true;
-      video.defaultMuted = true;
       video.setAttribute('playsinline', '');
       video.setAttribute('webkit-playsinline', 'true');
 
@@ -98,21 +95,36 @@ export default function IntroSequence() {
 
       let playAttempts = 0;
 
+      const tryEnableAudio = (el: HTMLVideoElement) => {
+        el.muted = false;
+        el.volume = 1;
+        return el.play().catch(() => {
+          /* Autoplay policy may block sound until user interacts — keep video playing muted */
+          el.muted = true;
+        });
+      };
+
       const tryPlay = () => {
         if (cancelled || !videoRef.current) return;
         const el = videoRef.current;
+
+        const playMutedThenUnmute = () =>
+          el
+            .play()
+            .then(() => tryEnableAudio(el))
+            .then(() => {
+              playAttempts = 0;
+            });
+
+        /* Browsers allow autoplay only when muted — start muted, then restore audio */
         el.muted = true;
-        el.volume = 0;
-        el.play()
-          .then(() => {
-            playAttempts = 0;
-          })
-          .catch(() => {
-            if (cancelled) return;
-            playAttempts += 1;
-            const delay = Math.min(250 + playAttempts * 80, 2000);
-            window.setTimeout(tryPlay, delay);
-          });
+        el.volume = 1;
+        playMutedThenUnmute().catch(() => {
+          if (cancelled) return;
+          playAttempts += 1;
+          const delay = Math.min(250 + playAttempts * 80, 2000);
+          window.setTimeout(tryPlay, delay);
+        });
       };
 
       let readyFired = false;
@@ -332,10 +344,16 @@ export default function IntroSequence() {
                 className="w-full h-full object-cover"
                 playsInline
                 autoPlay
-                muted
-                preload="metadata"
+                preload="auto"
                 src="/videos/lights.mp4"
                 onEnded={finishIntro}
+                onClick={(e) => {
+                  const el = e.currentTarget;
+                  if (!el.muted) return;
+                  el.muted = false;
+                  el.volume = 1;
+                  void el.play();
+                }}
               />
 
               {/* Skip */}
