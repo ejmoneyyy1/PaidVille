@@ -3,6 +3,9 @@
 import {useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
+import Image from 'next/image';
+import {formatPrice} from '@/lib/utils';
+import type {ShopProduct} from '@/lib/shop-storage';
 import type {
   AdminBlogRow,
   AdminEventRow,
@@ -11,7 +14,7 @@ import type {
   AdminReviewRow,
 } from '@/lib/admin-dashboard-queries';
 
-type Tab = 'reviews' | 'inquiries' | 'content';
+type Tab = 'reviews' | 'inquiries' | 'content' | 'shop';
 
 export default function AdminDashboardClient({
   reviews,
@@ -19,16 +22,20 @@ export default function AdminDashboardClient({
   blogs,
   events,
   gallery,
+  shopProducts,
 }: {
   reviews: AdminReviewRow[];
   inquiries: AdminInquiryRow[];
   blogs: AdminBlogRow[];
   events: AdminEventRow[];
   gallery: AdminGalleryRow[];
+  shopProducts: ShopProduct[];
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('reviews');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [editingShopProduct, setEditingShopProduct] = useState<ShopProduct | null>(null);
 
   const pendingReviews = reviews.filter((r) => r.status === 'pending');
   const publishedReviews = reviews.filter((r) => r.status === 'published');
@@ -80,9 +87,39 @@ export default function AdminDashboardClient({
     window.location.href = '/admin/login';
   }
 
+  async function deleteShopProduct(productId: string) {
+    if (!window.confirm('Delete this product permanently?')) return;
+    setBusyId(productId);
+    try {
+      const res = await fetch('/api/admin/shop', {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({productId}),
+      });
+      if (!res.ok) {
+        alert('Could not delete product');
+        return;
+      }
+      router.refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function openShopModal(product?: ShopProduct) {
+    setEditingShopProduct(product ?? null);
+    setShowShopModal(true);
+  }
+
+  function closeShopModal() {
+    setShowShopModal(false);
+    setEditingShopProduct(null);
+  }
+
   const tabs: {id: Tab; label: string; count?: number}[] = [
     {id: 'reviews', label: 'Reviews', count: pendingReviews.length},
     {id: 'inquiries', label: 'Inquiries', count: inquiries.length},
+    {id: 'shop', label: 'Shop', count: shopProducts.length},
     {id: 'content', label: 'Content'},
   ];
 
@@ -111,7 +148,13 @@ export default function AdminDashboardClient({
           <QuickAction href="/blog/new?admin=true" label="+ New blog post" />
           <QuickAction href="/events/new?admin=true" label="+ New event" />
           <QuickAction href="/gallery/new?admin=true" label="+ Gallery item" />
-          <QuickAction href="/?admin=true" label="Edit on live site" hint="Turn Editing On in the toolbar" />
+          <button
+            type="button"
+            onClick={() => openShopModal()}
+            className="block rounded-lg border border-[#333] bg-[#222] px-4 py-4 transition-colors hover:border-brand-red text-left"
+          >
+            <p className="text-sm font-semibold text-white">+ New shop product</p>
+          </button>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2 border-b border-[#333] pb-2">
@@ -182,6 +225,85 @@ export default function AdminDashboardClient({
           </div>
         ) : null}
 
+        {tab === 'shop' ? (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-white/70">
+                Shop Products ({shopProducts.length})
+              </h2>
+              <button
+                type="button"
+                onClick={() => openShopModal()}
+                className="rounded bg-brand-red px-4 py-2 text-xs font-semibold uppercase text-white hover:bg-[#900000]"
+              >
+                + Add Product
+              </button>
+            </div>
+            {shopProducts.length === 0 ? (
+              <p className="text-sm text-white/50">No products yet.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {shopProducts.map((product) => (
+                  <div key={product.id} className="rounded-lg border border-[#333] bg-[#222] p-4">
+                    {product.imagePath ? (
+                      <div className="relative aspect-square mb-3 rounded overflow-hidden bg-white">
+                        <Image
+                          src={product.imagePath}
+                          alt={product.productName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-square mb-3 rounded bg-[#333] flex items-center justify-center">
+                        <span className="text-white/30 text-xs">No image</span>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-white text-sm">{product.productName}</h3>
+                        <span className="font-bold text-brand-red text-sm whitespace-nowrap">
+                          {formatPrice(product.price)}
+                        </span>
+                      </div>
+                      {product.description && (
+                        <p className="text-xs text-white/60 line-clamp-2">{product.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 pt-2">
+                        <span
+                          className={`text-[10px] font-semibold uppercase px-2 py-1 rounded ${
+                            product.isAvailable ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
+                          }`}
+                        >
+                          {product.isAvailable ? 'Available' : 'Unavailable'}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => openShopModal(product)}
+                          disabled={busyId === product.id}
+                          className="flex-1 rounded border border-[#555] px-3 py-1.5 text-xs font-semibold uppercase text-white/80 hover:border-brand-red disabled:opacity-50"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteShopProduct(product.id)}
+                          disabled={busyId === product.id}
+                          className="flex-1 rounded border border-[#555] px-3 py-1.5 text-xs font-semibold uppercase text-white/60 hover:text-red-400 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {tab === 'content' ? (
           <div className="grid gap-8 lg:grid-cols-3">
             <ContentList title="Blog posts" empty="No posts." items={blogs.map((b) => ({id: b._id, primary: b.title, secondary: b.slug, href: `/blog/${b.slug}?admin=true`, badge: b.status}))} />
@@ -190,6 +312,17 @@ export default function AdminDashboardClient({
           </div>
         ) : null}
       </div>
+
+      {showShopModal && (
+        <ShopProductModal
+          product={editingShopProduct}
+          onClose={closeShopModal}
+          onSuccess={() => {
+            closeShopModal();
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -314,4 +447,177 @@ function formatInquiryJson(json: string): string {
   } catch {
     return json;
   }
+}
+
+function ShopProductModal({
+  product,
+  onClose,
+  onSuccess,
+}: {
+  product: ShopProduct | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      
+      if (product?.id) {
+        formData.append('productId', product.id);
+      }
+
+      const res = await fetch('/api/admin/shop', {
+        method: product?.id ? 'PATCH' : 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(typeof data.error === 'string' ? data.error : 'Failed to save product');
+        return;
+      }
+
+      onSuccess();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-lg rounded-lg bg-[#1A1A1A] border border-[#333]">
+        <div className="border-b border-[#333] px-6 py-4">
+          <h2 className="text-lg font-bold text-white">
+            {product ? 'Edit Product' : 'Add New Product'}
+          </h2>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label htmlFor="productName" className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Product Name *
+            </label>
+            <input
+              type="text"
+              id="productName"
+              name="productName"
+              defaultValue={product?.productName ?? ''}
+              required
+              className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+              placeholder="e.g., PaidVille Summer Tee"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              defaultValue={product?.description ?? ''}
+              rows={3}
+              className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+              placeholder="Brief product description"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="price" className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Price (USD) *
+            </label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              defaultValue={product?.price ? (product.price / 100).toFixed(2) : ''}
+              required
+              min="0"
+              step="0.01"
+              className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+              placeholder="29.99"
+            />
+            <p className="mt-1 text-xs text-white/40">Enter in dollars (e.g., 45.00)</p>
+          </div>
+
+          <div>
+            <label htmlFor="paymentLink" className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Payment Link *
+            </label>
+            <input
+              type="url"
+              id="paymentLink"
+              name="paymentLink"
+              defaultValue={product?.paymentLink ?? ''}
+              required
+              className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+              placeholder="https://buy.stripe.com/..."
+            />
+            <p className="mt-1 text-xs text-white/40">Stripe, PayPal, or any checkout link</p>
+          </div>
+
+          <div>
+            <label htmlFor="image" className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Product Image {!product && '*'}
+            </label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              accept="image/*"
+              required={!product}
+              className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white file:mr-4 file:rounded file:border-0 file:bg-brand-red file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white file:uppercase hover:file:bg-[#900000] focus:border-brand-red focus:outline-none"
+            />
+            {product?.imagePath && (
+              <p className="mt-1 text-xs text-white/50">Leave empty to keep current image</p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isAvailable"
+              name="isAvailable"
+              defaultChecked={product?.isAvailable ?? true}
+              value="true"
+              className="h-4 w-4 rounded border-[#444] bg-[#222] text-brand-red focus:ring-brand-red"
+            />
+            <label htmlFor="isAvailable" className="text-sm text-white">
+              Available for purchase
+            </label>
+          </div>
+
+          {error && (
+            <div className="rounded border border-red-900 bg-red-900/20 px-3 py-2 text-xs text-red-400">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="flex-1 rounded border border-[#555] px-4 py-2 text-sm font-semibold uppercase text-white/80 hover:border-white disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 rounded bg-brand-red px-4 py-2 text-sm font-semibold uppercase text-white hover:bg-[#900000] disabled:opacity-50"
+            >
+              {submitting ? 'Saving...' : product ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

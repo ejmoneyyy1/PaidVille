@@ -5,14 +5,13 @@ import {motion} from 'framer-motion';
 import {ShoppingBag} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import {formatPrice} from '@/lib/utils';
-import {urlFor} from '@/lib/sanity';
-import type {ShopProductDoc} from '@/lib/sanity';
+import type {ShopProduct} from '@/lib/shop-storage';
 
-export default function ShopCatalog({products}: {products: ShopProductDoc[]}) {
+export default function ShopCatalog({products}: {products: ShopProduct[]}) {
   if (products.length === 0) {
     return (
       <div className="container-max section-padding py-16 text-center text-charcoal/55 font-display">
-        No products yet — add items in Sanity under Shop / Pre-Order.
+        No products available yet — check back soon!
       </div>
     );
   }
@@ -21,16 +20,16 @@ export default function ShopCatalog({products}: {products: ShopProductDoc[]}) {
     <div className="container-max section-padding pb-24">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product, index) => (
-          <ScrollReveal key={product._id} delay={index * 0.06} direction="up">
+          <ScrollReveal key={product.id} delay={index * 0.06} direction="up">
             <motion.div
               whileHover={{y: -3}}
               className="rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col h-full"
             >
               <div className="relative aspect-square bg-white">
-                {product.productImage?.asset?._ref ? (
+                {product.imagePath ? (
                   <Image
-                    src={urlFor(product.productImage).width(700).height(700).url()}
-                    alt={product.productImage.alt ?? product.productName}
+                    src={product.imagePath}
+                    alt={product.productName}
                     fill
                     className="object-cover"
                     sizes="(max-width:768px) 100vw, 33vw"
@@ -50,7 +49,7 @@ export default function ShopCatalog({products}: {products: ShopProductDoc[]}) {
                   <p className="text-sm text-charcoal/65 leading-relaxed flex-1">{product.description}</p>
                 )}
                 <a
-                  href={product.stripePaymentLink}
+                  href={product.paymentLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary w-full justify-center py-3 text-xs mt-auto"

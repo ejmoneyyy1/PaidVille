@@ -1,17 +1,10 @@
+import {getAvailableProducts} from '@/lib/shop-storage';
 import ShopCatalog from '@/components/sections/ShopCatalog';
-import {getSanityClient} from '@/lib/sanity-server';
-import {shopProductsQuery, type ShopProductDoc} from '@/lib/sanity';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
-export default async function ShopPage() {
-  let products: ShopProductDoc[] = [];
-  try {
-    const client = await getSanityClient();
-    products = await client.fetch<ShopProductDoc[]>(shopProductsQuery);
-  } catch {
-    // ignore
-  }
+export default function ShopPage() {
+  const products = getAvailableProducts();
 
   return (
     <div className="min-h-screen pt-32 pb-0 bg-cream">
@@ -21,7 +14,7 @@ export default async function ShopPage() {
           Pre-order <span className="text-brand-red">drops</span>
         </h1>
         <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/65">
-          Checkout is hosted on Stripe via your Payment Links — no code changes when prices update.
+          Summer collection — fresh drops, exclusive vibes.
         </p>
       </div>
       <ShopCatalog products={products} />

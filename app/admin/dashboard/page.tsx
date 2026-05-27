@@ -1,3 +1,5 @@
+import {getAllProducts} from '@/lib/shop-storage';
+import type {ShopProduct} from '@/lib/shop-storage';
 import {getSanityClient} from '@/lib/sanity-server';
 import {
   adminBlogListQuery,
@@ -18,12 +20,15 @@ export const metadata = {
   robots: 'noindex',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage() {
   let reviews: AdminReviewRow[] = [];
   let inquiries: AdminInquiryRow[] = [];
   let blogs: AdminBlogRow[] = [];
   let events: AdminEventRow[] = [];
   let gallery: AdminGalleryRow[] = [];
+  let shopProducts: ShopProduct[] = [];
 
   try {
     const client = await getSanityClient();
@@ -38,6 +43,13 @@ export default async function AdminDashboardPage() {
     console.error('[admin/dashboard]', e);
   }
 
+  // Get shop products from local storage (not Sanity)
+  try {
+    shopProducts = getAllProducts();
+  } catch (e) {
+    console.error('[admin/dashboard shop]', e);
+  }
+
   return (
     <AdminDashboardClient
       reviews={reviews ?? []}
@@ -45,6 +57,7 @@ export default async function AdminDashboardPage() {
       blogs={blogs ?? []}
       events={events ?? []}
       gallery={gallery ?? []}
+      shopProducts={shopProducts ?? []}
     />
   );
 }

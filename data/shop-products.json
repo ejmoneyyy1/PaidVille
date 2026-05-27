@@ -1,0 +1,46 @@
+[
+  {
+    "productName": "ASC WOMEN'S SET",
+    "description": "",
+    "price": 5299,
+    "paymentLink": "https://buy.stripe.com/3cI4gz4kwc3a26d7AhbjW04",
+    "imagePath": "/shop/1779902293851-IMG_0850.jpeg",
+    "isAvailable": true,
+    "id": "shop-1779902293852-dgpl72r",
+    "createdAt": "2026-05-27T17:18:13.852Z",
+    "updatedAt": "2026-05-27T17:18:24.253Z"
+  },
+  {
+    "productName": "ASC TEE CREAM- S26",
+    "description": "",
+    "price": 3599,
+    "paymentLink": "https://buy.stripe.com/7sY00j6sEffm26d2fXbjW02",
+    "imagePath": "/shop/1779902412782-IMG_0809.png",
+    "isAvailable": true,
+    "id": "shop-1779902412784-79boivl",
+    "createdAt": "2026-05-27T17:20:12.784Z",
+    "updatedAt": "2026-05-27T17:20:12.784Z"
+  },
+  {
+    "productName": "ECONOMICS GRAPHIC TEE WHITE - S26",
+    "description": "",
+    "price": 3199,
+    "paymentLink": "https://buy.stripe.com/5kQeVd8AM3wE3ahg6NbjW01",
+    "imagePath": "/shop/1779902481973-IMG_0805.png",
+    "isAvailable": true,
+    "id": "shop-1779902481975-p983exa",
+    "createdAt": "2026-05-27T17:21:21.975Z",
+    "updatedAt": "2026-05-27T17:21:21.976Z"
+  },
+  {
+    "productName": "ECONOMICS GRAPHIC TEE BLACK- S26",
+    "description": "",
+    "price": 3199,
+    "paymentLink": "https://buy.stripe.com/fZu9ATaIU7MU4el6wdbjW00",
+    "imagePath": "/shop/1779902530435-IMG_0806.png",
+    "isAvailable": true,
+    "id": "shop-1779902530436-xd7fx8n",
+    "createdAt": "2026-05-27T17:22:10.436Z",
+    "updatedAt": "2026-05-27T17:22:10.436Z"
+  }
+]
