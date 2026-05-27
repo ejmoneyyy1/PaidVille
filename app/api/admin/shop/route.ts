@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       price: priceInCents,
       paymentLink: paymentLink.trim(),
       imagePath,
+      galleryImages: [],
       isAvailable,
     });
 
