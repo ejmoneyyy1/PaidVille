@@ -1,0 +1,26 @@
+[
+  {
+    "id": "collection-initial-1",
+    "title": "Collection I",
+    "description": "Summer vibes",
+    "imagePath": "/images/ShopCollection1.png",
+    "createdAt": "2026-05-27T00:00:00.000Z",
+    "updatedAt": "2026-05-27T00:00:00.000Z"
+  },
+  {
+    "id": "collection-initial-2",
+    "title": "Collection II",
+    "description": "Fresh drops",
+    "imagePath": "/images/ShopCollection2.png",
+    "createdAt": "2026-05-27T00:00:00.000Z",
+    "updatedAt": "2026-05-27T00:00:00.000Z"
+  },
+  {
+    "id": "collection-initial-3",
+    "title": "Collection III",
+    "description": "Exclusive vibes",
+    "imagePath": "/images/ShopCollection3.png",
+    "createdAt": "2026-05-27T00:00:00.000Z",
+    "updatedAt": "2026-05-27T00:00:00.000Z"
+  }
+]

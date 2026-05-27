@@ -5,19 +5,18 @@ import About from '@/components/sections/About';
 import BlogPreview from '@/components/sections/BlogPreview';
 import ReviewsCarousel from '@/components/sections/ReviewsCarousel';
 import GallerySection from '@/components/sections/Gallery';
-import ShopSection from '@/components/sections/Shop';
+import ShopSectionHome from '@/components/sections/ShopSectionHome';
 import {getSanityClient} from '@/lib/sanity-server';
 import {
   blogQuery,
   galleryItemsQuery,
   siteStatsQuery,
   eventsQuery,
-  shopFeaturedQuery,
   type SiteStatsDoc,
   type SanityEventDoc,
-  type ShopProductDoc,
   publishedReviewsQuery,
 } from '@/lib/sanity';
+import {getAvailableProducts} from '@/lib/shop-storage';
 import type {Review} from '@/lib/reviews';
 import {getSiteContent} from '@/lib/get-site-content';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
@@ -42,20 +41,18 @@ async function getData() {
   let galleryItems: GalleryItem[] = STATIC_GALLERY;
   let stats: HeroStats = DEFAULT_STATS;
   let events: SanityEventDoc[] = [];
-  let shopProduct: ShopProductDoc | null = null;
   let reviews: Review[] = [];
 
   const siteContent = await getSiteContent();
 
   try {
     const client = await getSanityClient();
-    const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedShop, fetchedReviews] =
+    const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedReviews] =
       await Promise.all([
       client.fetch<BlogPost[]>(blogQuery),
       client.fetch<GalleryItem[]>(galleryItemsQuery),
       client.fetch<SiteStatsDoc | null>(siteStatsQuery),
       client.fetch<SanityEventDoc[]>(eventsQuery),
-      client.fetch<ShopProductDoc | null>(shopFeaturedQuery),
       client.fetch<Review[]>(publishedReviewsQuery),
     ]);
     posts = fetchedPosts ?? [];
@@ -73,13 +70,15 @@ async function getData() {
       };
     }
     events = fetchedEvents ?? [];
-    shopProduct = fetchedShop ?? null;
     reviews = fetchedReviews ?? [];
   } catch {
     // Sanity not configured or fetch error — fall back to static defaults
   }
 
-  return {posts, galleryItems, stats, events, shopProduct, reviews, siteContent};
+  // Get shop products from local storage
+  const shopProducts = getAvailableProducts();
+
+  return {posts, galleryItems, stats, events, reviews, siteContent, shopProducts};
 }
 
 function sectionString(sections: unknown, key: string, prop: 'heading' | 'subheading'): string | null {
@@ -90,7 +89,7 @@ function sectionString(sections: unknown, key: string, prop: 'heading' | 'subhea
 }
 
 export default async function HomePage() {
-  const {posts, galleryItems, stats, events, shopProduct, reviews, siteContent} = await getData();
+  const {posts, galleryItems, stats, events, reviews, siteContent, shopProducts} = await getData();
   const {homepage} = await getSingletonDocs();
   const sections = homepage?.sections;
 
@@ -109,11 +108,7 @@ export default async function HomePage() {
       />
       <About />
       <GallerySection items={galleryItems} />
-      <ShopSection
-        product={shopProduct}
-        homepageShopHeading={sectionString(sections, 'shop-1', 'heading')}
-        homepageShopSubheading={sectionString(sections, 'shop-1', 'subheading')}
-      />
+      <ShopSectionHome products={shopProducts} />
       <BlogPreview posts={posts} homepageBlogHeading={sectionString(sections, 'blog-1', 'heading')} />
       <ReviewsCarousel reviews={reviews} />
     </>

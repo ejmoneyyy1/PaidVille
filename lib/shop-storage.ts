@@ -10,7 +10,8 @@ export type ShopProduct = {
   description: string;
   price: number; // Stored in cents (e.g., 4500 for $45.00)
   paymentLink: string;
-  imagePath: string;
+  imagePath: string; // Main product image
+  galleryImages: string[]; // Additional product angles/images
   isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
@@ -58,6 +59,7 @@ export function createProduct(data: Omit<ShopProduct, 'id' | 'createdAt' | 'upda
   const products = readProducts();
   const newProduct: ShopProduct = {
     ...data,
+    galleryImages: data.galleryImages || [],
     id: `shop-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
