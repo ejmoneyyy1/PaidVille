@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {Instagram, Twitter, Youtube, Facebook} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
 import FooterLogoStrip from '@/components/brand/FooterLogoStrip';
-import type {SiteContentDoc} from '@/lib/sanity-queries';
+import type {SiteContentDoc} from '@/lib/site-content-types';
 import type {GlobalSettingsDoc} from '@/lib/get-singleton-docs';
 import type {NavItemResolved} from '@/lib/build-nav-items';
 import EditableField from '@/components/admin/EditableField';

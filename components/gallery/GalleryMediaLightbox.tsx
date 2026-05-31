@@ -3,22 +3,12 @@
 import {motion} from 'framer-motion';
 import Image from 'next/image';
 import {X, Play} from 'lucide-react';
-import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
-import type {GalleryImageFields} from '@/lib/gallery-image-url';
+import type {GalleryItem} from '@/lib/gallery-storage';
 
-export type GalleryLightboxItem = {
-  _id: string;
-  title: string;
-  mediaType: 'photo' | 'video';
-  videoUrl?: string | null;
-  image?: GalleryImageFields;
-  staticSrc?: string | null;
-  tags?: string[];
-};
-
-function posterSrc(item: GalleryLightboxItem): string | null {
-  return resolveGalleryImageUrl(item.image, item.staticSrc ?? undefined);
-}
+export type GalleryLightboxItem = Pick<
+  GalleryItem,
+  'id' | 'title' | 'mediaType' | 'imagePath' | 'videoPath' | 'posterPath'
+>;
 
 type Props = {
   item: GalleryLightboxItem;
@@ -26,8 +16,8 @@ type Props = {
 };
 
 export default function GalleryMediaLightbox({item, onClose}: Props) {
-  const src = posterSrc(item);
-  const isVideo = item.mediaType === 'video' && item.videoUrl;
+  const isVideo = item.mediaType === 'video' && !!item.videoPath;
+  const poster = item.posterPath ?? item.imagePath ?? null;
 
   return (
     <motion.div
@@ -57,24 +47,20 @@ export default function GalleryMediaLightbox({item, onClose}: Props) {
         {isVideo ? (
           <div className="relative aspect-video w-full bg-black">
             <video
-              src={item.videoUrl!}
+              src={item.videoPath!}
               controls
               autoPlay
               playsInline
               className="h-full w-full rounded-t-2xl"
-              poster={src ?? undefined}
+              poster={poster ?? undefined}
             />
           </div>
         ) : (
           <div className="relative aspect-video bg-brand-card-surface">
-            {src ? (
+            {item.imagePath ? (
               <Image
-                src={src}
-                alt={
-                  item.image && typeof item.image === 'object' && 'alt' in item.image && item.image.alt
-                    ? item.image.alt
-                    : item.title
-                }
+                src={item.imagePath}
+                alt={item.title}
                 fill
                 className="object-contain"
                 sizes="(max-width: 1024px) 100vw, 896px"
@@ -94,24 +80,6 @@ export default function GalleryMediaLightbox({item, onClose}: Props) {
             ) : null}
             <p className="font-display font-semibold text-white">{item.title}</p>
           </div>
-          {item.tags && item.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-2.5 py-1 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/20"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          {item.mediaType === 'video' && !item.videoUrl ? (
-            <p className="text-xs text-white/60 mt-2">
-              Upload a video file in Studio (Gallery → Video file). Add Image / poster for a custom thumbnail in
-              grids.
-            </p>
-          ) : null}
         </div>
       </motion.div>
     </motion.div>

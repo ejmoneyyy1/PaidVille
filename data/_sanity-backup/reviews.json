@@ -1,0 +1,1 @@
+{"query":"*[_type==\"review\"]{_id,name,rating,comment,status,submittedAt,_createdAt}","result":[],"syncTags":["s1:8xmX8Q"],"ms":3}

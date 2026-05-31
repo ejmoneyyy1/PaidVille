@@ -40,7 +40,8 @@ export async function POST(request: Request) {
     const price = formData.get('price') as string;
     const paymentLink = formData.get('paymentLink') as string;
     const isAvailable = formData.get('isAvailable') === 'true';
-    const imageFile = formData.get('image') as File | null;
+    const imageFile = formData.get('image') as File;
+    const galleryImageFiles = formData.getAll('galleryImages') as File[];
 
     if (!productName?.trim()) {
       return NextResponse.json({error: 'Product name is required'}, {status: 400});
@@ -64,7 +65,6 @@ export async function POST(request: Request) {
       return NextResponse.json({error: 'Valid price required'}, {status: 400});
     }
 
-    // Convert dollars to cents for storage (e.g., 45.00 -> 4500)
     const priceInCents = Math.round(priceNum * 100);
 
     if (!imageFile || imageFile.size === 0) {
@@ -81,13 +81,28 @@ export async function POST(request: Request) {
 
     const imagePath = await saveUploadedImage(imageFile);
 
+    // Handle gallery images (front/back views)
+    const galleryImages: string[] = [];
+    for (const file of galleryImageFiles) {
+      if (file && file.size > 0) {
+        if (file.size > 12 * 1024 * 1024) {
+          return NextResponse.json({error: 'Gallery image file too large (max 12MB)'}, {status: 400});
+        }
+        if (!file.type.startsWith('image/')) {
+          continue; // Skip non-image files
+        }
+        const galleryPath = await saveUploadedImage(file);
+        galleryImages.push(galleryPath);
+      }
+    }
+
     const product = createProduct({
       productName: productName.trim(),
       description: description?.trim() || '',
       price: priceInCents,
       paymentLink: paymentLink.trim(),
       imagePath,
-      galleryImages: [],
+      galleryImages,
       isAvailable,
     });
 
@@ -115,6 +130,8 @@ export async function PATCH(request: Request) {
     const paymentLink = formData.get('paymentLink') as string;
     const isAvailable = formData.get('isAvailable') === 'true';
     const imageFile = formData.get('image') as File | null;
+    const galleryImageFiles = formData.getAll('galleryImages') as File[];
+    const keepGalleryImagesStr = formData.get('keepGalleryImages') as string;
 
     if (!productId?.trim()) {
       return NextResponse.json({error: 'Product ID is required'}, {status: 400});
@@ -142,7 +159,6 @@ export async function PATCH(request: Request) {
       return NextResponse.json({error: 'Valid price required'}, {status: 400});
     }
 
-    // Convert dollars to cents for storage (e.g., 45.00 -> 4500)
     const priceInCents = Math.round(priceNum * 100);
 
     const updates: Partial<Parameters<typeof updateProduct>[1]> = {
@@ -165,6 +181,29 @@ export async function PATCH(request: Request) {
       updates.imagePath = await saveUploadedImage(imageFile);
     }
 
+    // Handle gallery images - keep existing + add new
+    const keepGalleryImages: string[] = keepGalleryImagesStr 
+      ? JSON.parse(keepGalleryImagesStr) 
+      : [];
+
+    // Add new gallery images
+    const newGalleryImages: string[] = [];
+    for (const file of galleryImageFiles) {
+      if (file && file.size > 0) {
+        if (file.size > 12 * 1024 * 1024) {
+          return NextResponse.json({error: 'Gallery image file too large (max 12MB)'}, {status: 400});
+        }
+        if (!file.type.startsWith('image/')) {
+          continue;
+        }
+        const galleryPath = await saveUploadedImage(file);
+        newGalleryImages.push(galleryPath);
+      }
+    }
+
+    // Merge kept images with new images
+    updates.galleryImages = [...keepGalleryImages, ...newGalleryImages];
+
     const product = updateProduct(productId, updates);
     if (!product) {
       return NextResponse.json({error: 'Product not found'}, {status: 404});
@@ -186,11 +225,11 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const body = await request.json();
-    const productId = body.productId;
+    const {searchParams} = new URL(request.url);
+    const productId = searchParams.get('id');
 
-    if (!productId?.trim()) {
-      return NextResponse.json({error: 'Product ID is required'}, {status: 400});
+    if (!productId) {
+      return NextResponse.json({error: 'Product ID required'}, {status: 400});
     }
 
     const success = deleteProduct(productId);

@@ -1,16 +1,27 @@
 'use client';
 
 import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import Image from 'next/image';
 import {motion, AnimatePresence} from 'framer-motion';
-import {ShoppingBag, X, ChevronLeft, ChevronRight} from 'lucide-react';
+import {ShoppingBag, X, ChevronLeft, ChevronRight, Edit, Trash2} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import {formatPrice} from '@/lib/utils';
 import type {ShopProduct} from '@/lib/shop-storage';
 
-export default function ShopCatalog({products}: {products: ShopProduct[]}) {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
+export default function ShopCatalog({
+  products,
+  isAdmin,
+  onEdit,
+}: {
+  products: ShopProduct[];
+  isAdmin?: boolean;
+  onEdit?: (product: ShopProduct) => void;
+}) {
+  const router = useRouter();
+  const [selectedProduct, setSelectedProduct] = useState<ShopProduct | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   if (products.length === 0) {
     return (
@@ -20,19 +31,54 @@ export default function ShopCatalog({products}: {products: ShopProduct[]}) {
     );
   }
 
-  const openLightbox = (productIndex: number) => {
-    setCurrentProductIndex(productIndex);
-    setLightboxOpen(true);
+  const openLightbox = (product: ShopProduct) => {
+    setSelectedProduct(product);
+    setCurrentImageIndex(0);
   };
 
-  const currentProduct = products[currentProductIndex];
-
-  const nextProduct = () => {
-    setCurrentProductIndex((prev) => (prev + 1) % products.length);
+  const closeLightbox = () => {
+    setSelectedProduct(null);
+    setCurrentImageIndex(0);
   };
 
-  const prevProduct = () => {
-    setCurrentProductIndex((prev) => (prev - 1 + products.length) % products.length);
+  // Get all images for the selected product (main image + gallery images)
+  const getProductImages = (product: ShopProduct): string[] => {
+    return [product.imagePath, ...(product.galleryImages || [])];
+  };
+
+  const nextImage = () => {
+    if (!selectedProduct) return;
+    const images = getProductImages(selectedProduct);
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    if (!selectedProduct) return;
+    const images = getProductImages(selectedProduct);
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleDelete = async (productId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this product? This cannot be undone.')) return;
+
+    setDeleting(productId);
+    try {
+      const res = await fetch(`/api/admin/shop?id=${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        router.refresh();
+      } else {
+        alert('Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete product');
+    } finally {
+      setDeleting(null);
+    }
   };
 
   return (
@@ -47,7 +93,7 @@ export default function ShopCatalog({products}: {products: ShopProduct[]}) {
               >
                 <button
                   type="button"
-                  onClick={() => openLightbox(index)}
+                  onClick={() => openLightbox(product)}
                   className="relative aspect-square bg-white cursor-pointer"
                 >
                   {product.imagePath ? (
@@ -63,6 +109,11 @@ export default function ShopCatalog({products}: {products: ShopProduct[]}) {
                       <ShoppingBag size={40} className="text-brand-red/25" />
                     </div>
                   )}
+                  {product.galleryImages && product.galleryImages.length > 0 && (
+                    <div className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
+                      +{product.galleryImages.length + 1} views
+                    </div>
+                  )}
                 </button>
                 <div className="p-5 flex flex-col gap-3 flex-1">
                   <div className="flex items-start justify-between gap-2">
@@ -72,14 +123,41 @@ export default function ShopCatalog({products}: {products: ShopProduct[]}) {
                   {product.description && (
                     <p className="text-sm text-charcoal/65 leading-relaxed flex-1 line-clamp-2">{product.description}</p>
                   )}
-                  <a
-                    href={product.paymentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary w-full justify-center py-3 text-xs mt-auto"
-                  >
-                    Pre-Order Now
-                  </a>
+                  
+                  {/* Admin Controls */}
+                  {isAdmin && onEdit ? (
+                    <div className="flex gap-2 pt-2 border-t border-charcoal/10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(product);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 bg-charcoal text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-charcoal/80 transition-colors"
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(product.id, e)}
+                        disabled={deleting === product.id}
+                        className="flex-1 flex items-center justify-center gap-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 size={14} />
+                        {deleting === product.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  ) : (
+                    <a
+                      href={product.paymentLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary w-full justify-center py-3 text-xs mt-auto"
+                    >
+                      Pre-Order Now
+                    </a>
+                  )}
                 </div>
               </motion.div>
             </ScrollReveal>
@@ -87,73 +165,115 @@ export default function ShopCatalog({products}: {products: ShopProduct[]}) {
         </div>
       </div>
 
-      {/* Lightbox - Navigate through all products */}
+      {/* Lightbox - Show only selected product's images (front/back views) */}
       <AnimatePresence>
-        {lightboxOpen && currentProduct && (
+        {selectedProduct && (
           <motion.div
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
-            className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4"
-            onClick={() => setLightboxOpen(false)}
+            className={`fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center px-4 pt-4 ${
+              isAdmin ? 'pb-28' : 'pb-4'
+            }`}
+            onClick={closeLightbox}
           >
             <button
               type="button"
-              onClick={() => setLightboxOpen(false)}
+              onClick={closeLightbox}
               className="absolute top-4 right-4 text-white hover:text-brand-red transition-colors z-10"
             >
               <X size={32} />
             </button>
 
-            <div className="absolute top-6 left-6 bg-black/80 text-white px-5 py-3 rounded-lg z-10 max-w-md backdrop-blur-sm">
-              <p className="font-display font-bold text-lg">{currentProduct.productName}</p>
-              <p className="text-brand-red font-bold text-xl">{formatPrice(currentProduct.price)}</p>
-              {currentProduct.description && (
-                <p className="text-sm text-white/90 mt-2 leading-relaxed">{currentProduct.description}</p>
+            {/* Product info — sits above the image, never overlapping it */}
+            <div
+              className="mb-4 max-w-xl px-4 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="font-display font-bold text-lg text-white">{selectedProduct.productName}</p>
+              <p className="text-brand-red font-bold text-xl">{formatPrice(selectedProduct.price)}</p>
+              {selectedProduct.description && (
+                <p className="mt-1 text-sm text-white/80 leading-relaxed">{selectedProduct.description}</p>
               )}
             </div>
 
-            <div className="relative w-full max-w-4xl aspect-square my-32">
-              <Image
-                src={currentProduct.imagePath}
-                alt={currentProduct.productName}
-                fill
-                className="object-contain"
-                sizes="90vw"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
+            {/* Thumbnail rail sits directly beside the main image; nav controls
+                live in the same column as the image so they stay centered under it */}
+            <div
+              className="flex w-full max-w-5xl items-start justify-center gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {getProductImages(selectedProduct).length > 1 && (
+                <div className="flex max-h-[68vh] flex-col gap-2 overflow-y-auto pr-1">
+                  {getProductImages(selectedProduct).map((img, i) => (
+                    <button
+                      key={`${img}-${i}`}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(i);
+                      }}
+                      className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:h-[72px] sm:w-[72px] ${
+                        i === currentImageIndex
+                          ? 'border-brand-red ring-2 ring-brand-red'
+                          : 'border-white/30 opacity-70 hover:border-white hover:opacity-100'
+                      }`}
+                    >
+                      <Image
+                        src={img}
+                        alt={`${selectedProduct.productName} thumbnail ${i + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="72px"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
 
-            {/* Bottom Controls - Navigate through all products */}
-            {products.length > 1 && (
-              <div className="absolute bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-4 z-10">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevProduct();
-                  }}
-                  className="bg-white/90 hover:bg-white text-charcoal p-3 rounded-full transition-all shadow-lg"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-
-                <div className="bg-black/80 text-white px-6 py-2 rounded-full text-sm font-semibold min-w-[80px] text-center backdrop-blur-sm">
-                  {currentProductIndex + 1} / {products.length}
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative h-[68vh] w-[68vh] max-w-[80vw]">
+                  <Image
+                    src={getProductImages(selectedProduct)[currentImageIndex]}
+                    alt={`${selectedProduct.productName} - View ${currentImageIndex + 1}`}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 80vw, 68vh"
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextProduct();
-                  }}
-                  className="bg-white/90 hover:bg-white text-charcoal p-3 rounded-full transition-all shadow-lg"
-                >
-                  <ChevronRight size={24} />
-                </button>
+                {/* Navigation Controls - centered under the image */}
+                {getProductImages(selectedProduct).length > 1 && (
+                  <div className="flex items-center justify-center gap-4">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                      className="rounded-full bg-white/90 p-3 text-charcoal shadow-lg transition-all hover:bg-white"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+
+                    <div className="min-w-[80px] rounded-full bg-black/80 px-6 py-2 text-center text-sm font-semibold text-white backdrop-blur-sm">
+                      {currentImageIndex + 1} / {getProductImages(selectedProduct).length}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                      className="rounded-full bg-white/90 p-3 text-charcoal shadow-lg transition-all hover:bg-white"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

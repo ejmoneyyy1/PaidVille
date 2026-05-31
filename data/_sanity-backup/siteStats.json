@@ -1,0 +1,1 @@
+{"query":"*[_type==\"siteStats\"]","result":[{"_createdAt":"2026-05-03T14:05:43Z","_id":"13a5ffc7-cf9b-461b-9078-31fdef215492","_rev":"3YnWRdpGcbV2dKVjjqnu9a","_type":"siteStats","_updatedAt":"2026-05-03T14:05:48Z","eventsHosted":50,"rating":5,"ticketsSold":10000}],"syncTags":["s1:WjhCPg"],"ms":2}

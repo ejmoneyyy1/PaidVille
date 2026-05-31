@@ -1,5 +1,5 @@
 import {cache} from 'react';
-import {getSanityClient} from '@/lib/sanity-server';
+import {readSiteContent} from '@/lib/content-storage';
 
 export type NavigationDoc = {
   _id: string;
@@ -25,18 +25,15 @@ export type HomepageDoc = {
   sections?: HomepageSection[];
 } | null;
 
-/** CMS singletons used by the on-site admin (seed IDs). */
+/** Navigation, global settings, and homepage section copy from local file-based storage. */
 export const getSingletonDocs = cache(async () => {
   try {
-    const client = await getSanityClient();
-    const [navigation, globalSettings, homepage] = await Promise.all([
-      client.fetch<NavigationDoc>(`*[_id == "singleton-navigation"][0]{ _id, links }`),
-      client.fetch<GlobalSettingsDoc>(
-        `*[_id == "singleton-global-settings"][0]{ _id, contactEmail, footerTagline }`,
-      ),
-      client.fetch<HomepageDoc>(`*[_id == "singleton-homepage"][0]{ _id, sections }`),
-    ]);
-    return {navigation, globalSettings, homepage};
+    const data = readSiteContent();
+    return {
+      navigation: data.navigation as NavigationDoc,
+      globalSettings: data.globalSettings as GlobalSettingsDoc,
+      homepage: data.homepage as HomepageDoc,
+    };
   } catch {
     return {navigation: null, globalSettings: null, homepage: null};
   }

@@ -8,7 +8,7 @@ import MagneticButton from '@/components/ui/MagneticButton';
 import BearEmblemParallax from '@/components/parallax/BearEmblemParallax';
 import ReelModal from '@/components/reel/ReelModal';
 import EditableField from '@/components/admin/EditableField';
-import type {SiteContentDoc} from '@/lib/sanity-queries';
+import type {SiteContentDoc} from '@/lib/site-content-types';
 
 const SITE_STATS_ID = 'siteStats';
 

@@ -17,11 +17,13 @@
     "price": 3599,
     "paymentLink": "https://buy.stripe.com/7sY00j6sEffm26d2fXbjW02",
     "imagePath": "/shop/1779902412782-IMG_0809.png",
-    "galleryImages": [],
+    "galleryImages": [
+      "/shop/1780252715176-IMG_0810.png"
+    ],
     "isAvailable": true,
     "id": "shop-1779902412784-79boivl",
     "createdAt": "2026-05-27T17:20:12.784Z",
-    "updatedAt": "2026-05-27T17:20:12.784Z"
+    "updatedAt": "2026-05-31T18:43:52.335Z"
   },
   {
     "productName": "ECONOMICS GRAPHIC TEE WHITE - S26",

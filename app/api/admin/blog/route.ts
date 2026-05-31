@@ -1,10 +1,16 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
 import {revalidatePath} from 'next/cache';
-import {sanityWriteClient} from '@/lib/sanity-write';
-import {uploadSanityImageFile} from '@/lib/sanity-upload-image';
-import {uploadSanityVideoFile} from '@/lib/sanity-upload-video';
-import {plainTextToPortableBlocks} from '@/lib/portable-text-admin';
+import {writeFile, unlink} from 'fs/promises';
+import {join} from 'path';
+import {
+  createPost,
+  getPostById,
+  getPostBySlug,
+  updatePost,
+  deletePost,
+  type BlogPost,
+} from '@/lib/blog-storage';
 import {isValidBlogSlug, slugifyTitle} from '@/lib/slugify';
 
 export const runtime = 'nodejs';
@@ -14,14 +20,67 @@ function field(formData: FormData, key: string): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
-/** Create a blog post with optional cover image and hero video (file or URL). */
-export async function POST(request: Request) {
+/** Split a textarea body into an array of paragraph strings (blank-line separated). */
+function parseBody(raw: string): string[] {
+  return raw
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s+$/g, '').replace(/^\s+/g, '').trim())
+    .filter((p) => p.length > 0);
+}
+
+async function saveBlogFile(file: File): Promise<string> {
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const timestamp = Date.now();
+  const filename = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const publicPath = `/blog/${filename}`;
+  const fullPath = join(process.cwd(), 'public', 'blog', filename);
+  await writeFile(fullPath, buffer);
+  return publicPath;
+}
+
+async function deleteLocalMedia(path: string | null | undefined): Promise<void> {
+  if (!path || !path.startsWith('/blog/')) return;
+  const fullPath = join(process.cwd(), 'public', path);
+  try {
+    await unlink(fullPath);
+  } catch {
+    // Ignore if the file does not exist
+  }
+}
+
+/** GET - fetch a single post for editing (?id= or ?slug=). */
+export async function GET(request: Request) {
   const cookieStore = await cookies();
   if (cookieStore.get('pv_admin')?.value !== 'true') {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
-  if (!process.env.SANITY_API_WRITE_TOKEN) {
-    return NextResponse.json({error: 'Server missing SANITY_API_WRITE_TOKEN'}, {status: 500});
+
+  const {searchParams} = new URL(request.url);
+  const id = searchParams.get('id');
+  const slug = searchParams.get('slug');
+
+  let post: BlogPost | null = null;
+  if (id) {
+    post = getPostById(id);
+  } else if (slug) {
+    post = getPostBySlug(slug);
+  } else {
+    return NextResponse.json({error: 'id or slug is required'}, {status: 400});
+  }
+
+  if (!post) {
+    return NextResponse.json({error: 'Post not found'}, {status: 404});
+  }
+
+  return NextResponse.json({post});
+}
+
+/** Create a blog post. */
+export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  if (cookieStore.get('pv_admin')?.value !== 'true') {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
   let formData: FormData;
@@ -33,12 +92,15 @@ export async function POST(request: Request) {
 
   const title = field(formData, 'title');
   const excerpt = field(formData, 'excerpt');
-  if (!title) return NextResponse.json({error: 'Title is required'}, {status: 400});
-  if (!excerpt) return NextResponse.json({error: 'Excerpt is required'}, {status: 400});
+  if (!excerpt) {
+    return NextResponse.json({error: 'Excerpt is required'}, {status: 400});
+  }
 
   const rawSlug = field(formData, 'slug');
-  const slugCurrent = rawSlug ? slugifyTitle(rawSlug.replace(/\//g, '')) : slugifyTitle(title);
-  if (!slugCurrent || !isValidBlogSlug(slugCurrent)) {
+  const slug = rawSlug
+    ? slugifyTitle(rawSlug.replace(/\//g, ''))
+    : slugifyTitle(title || excerpt);
+  if (!slug || !isValidBlogSlug(slug)) {
     return NextResponse.json(
       {error: 'Slug must be 2–120 characters: lowercase letters, numbers, and hyphens only'},
       {status: 400},
@@ -48,100 +110,67 @@ export async function POST(request: Request) {
   const author = field(formData, 'author') || 'PaidVille';
   const category = field(formData, 'category') || 'EDITORIAL';
   const bodyText = field(formData, 'body');
-  const heroVideoUrlInput = field(formData, 'heroVideoUrl');
+  const body = parseBody(bodyText || excerpt);
 
-  type BlogCreateDoc = {
-    _type: 'blog';
-    title: string;
-    slug: {_type: 'slug'; current: string};
-    author: string;
-    publishedAt: string;
-    category: string;
-    excerpt: string;
-    status: 'published';
-    body: ReturnType<typeof plainTextToPortableBlocks>;
-    mainImage?: Awaited<ReturnType<typeof uploadSanityImageFile>> & {alt?: string};
-    heroVideoUrl?: string;
-  };
-
-  const doc: BlogCreateDoc = {
-    _type: 'blog',
-    title,
-    slug: {_type: 'slug', current: slugCurrent},
-    author,
-    publishedAt: new Date().toISOString(),
-    category,
-    excerpt,
-    status: 'published',
-    body: plainTextToPortableBlocks(bodyText || excerpt),
-  };
-
+  let coverImage: string | null = null;
   const imageFile = formData.get('coverImage');
   if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      const alt = field(formData, 'coverImageAlt') || title;
-      doc.mainImage = {...(await uploadSanityImageFile(imageFile)), alt};
-    } catch (e) {
-      const code = e instanceof Error ? e.message : '';
-      if (code === 'FILE_TOO_LARGE') {
-        return NextResponse.json({error: 'Cover image must be under 12MB'}, {status: 400});
-      }
-      if (code === 'UNSUPPORTED_TYPE') {
-        return NextResponse.json({error: 'Cover must be JPG, PNG, WebP, or GIF'}, {status: 400});
-      }
-      throw e;
+    if (imageFile.size > 12 * 1024 * 1024) {
+      return NextResponse.json({error: 'Cover image must be under 12MB'}, {status: 400});
     }
+    if (!imageFile.type.startsWith('image/')) {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
+    coverImage = await saveBlogFile(imageFile);
   }
 
+  let heroVideoUrl: string | null = null;
   const videoFile = formData.get('heroVideo');
   if (videoFile instanceof File && videoFile.size > 0) {
-    try {
-      doc.heroVideoUrl = await uploadSanityVideoFile(videoFile);
-    } catch (e) {
-      const code = e instanceof Error ? e.message : '';
-      if (code === 'FILE_TOO_LARGE') {
-        return NextResponse.json({error: 'Video must be under 40MB'}, {status: 400});
+    heroVideoUrl = await saveBlogFile(videoFile);
+  } else {
+    const heroVideoUrlInput = field(formData, 'heroVideoUrl');
+    if (heroVideoUrlInput) {
+      try {
+        const u = new URL(heroVideoUrlInput);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+          return NextResponse.json({error: 'Video URL must start with http:// or https://'}, {status: 400});
+        }
+        heroVideoUrl = heroVideoUrlInput;
+      } catch {
+        return NextResponse.json({error: 'Invalid hero video URL'}, {status: 400});
       }
-      if (code === 'UNSUPPORTED_TYPE') {
-        return NextResponse.json({error: 'Use MP4, WebM, or MOV for hero video'}, {status: 400});
-      }
-      throw e;
-    }
-  } else if (heroVideoUrlInput) {
-    try {
-      const u = new URL(heroVideoUrlInput);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') {
-        return NextResponse.json({error: 'Video URL must start with http:// or https://'}, {status: 400});
-      }
-      doc.heroVideoUrl = heroVideoUrlInput;
-    } catch {
-      return NextResponse.json({error: 'Invalid hero video URL'}, {status: 400});
     }
   }
 
   try {
-    const created = await sanityWriteClient.create(doc);
+    const post = createPost({
+      title: title || excerpt.slice(0, 80),
+      slug,
+      author,
+      category,
+      excerpt,
+      body,
+      coverImage,
+      heroVideoUrl,
+      publishedAt: new Date().toISOString(),
+    });
+
     revalidatePath('/');
     revalidatePath('/blog');
-    revalidatePath(`/blog/${slugCurrent}`);
-    return NextResponse.json({ok: true, _id: created._id, slug: slugCurrent});
-  } catch (err: unknown) {
-    const msg = err && typeof err === 'object' && 'message' in err ? String(err.message) : '';
-    if (msg.includes('slug') || msg.includes('duplicate')) {
-      return NextResponse.json({error: 'That URL slug is already in use'}, {status: 409});
-    }
-    console.error('[admin/blog POST]', err);
+    revalidatePath(`/blog/${slug}`);
+    return NextResponse.json({ok: true, id: post.id, slug: post.slug});
+  } catch (error) {
+    console.error('[admin/blog POST]', error);
     return NextResponse.json({error: 'Failed to create post'}, {status: 500});
   }
 }
 
+/** Update a blog post. */
 export async function PATCH(request: Request) {
   const cookieStore = await cookies();
   if (cookieStore.get('pv_admin')?.value !== 'true') {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-  }
-  if (!process.env.SANITY_API_WRITE_TOKEN) {
-    return NextResponse.json({error: 'Server missing SANITY_API_WRITE_TOKEN'}, {status: 500});
   }
 
   let formData: FormData;
@@ -151,78 +180,136 @@ export async function PATCH(request: Request) {
     return NextResponse.json({error: 'Invalid form data'}, {status: 400});
   }
 
-  const documentId = field(formData, 'documentId');
-  if (!documentId) {
-    return NextResponse.json({error: 'documentId is required'}, {status: 400});
+  const id = field(formData, 'id');
+  if (!id) {
+    return NextResponse.json({error: 'id is required'}, {status: 400});
   }
 
-  const slug = field(formData, 'slug');
-  const patch = sanityWriteClient.patch(documentId);
-  let hasChanges = false;
+  const existing = getPostById(id);
+  if (!existing) {
+    return NextResponse.json({error: 'Post not found'}, {status: 404});
+  }
 
-  const coverImage = formData.get('coverImage');
-  if (coverImage instanceof File && coverImage.size > 0) {
-    try {
-      const alt = field(formData, 'coverImageAlt') || 'Article cover';
-      const mainImage = {...(await uploadSanityImageFile(coverImage)), alt};
-      patch.set({mainImage});
-      hasChanges = true;
-    } catch (e) {
-      const code = e instanceof Error ? e.message : '';
-      if (code === 'FILE_TOO_LARGE') {
-        return NextResponse.json({error: 'Cover image must be under 12MB'}, {status: 400});
-      }
-      if (code === 'UNSUPPORTED_TYPE') {
-        return NextResponse.json({error: 'Cover must be JPG, PNG, WebP, or GIF'}, {status: 400});
-      }
-      throw e;
+  const updates: Partial<Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt'>> = {};
+
+  const title = formData.get('title');
+  if (typeof title === 'string' && title.trim()) {
+    updates.title = title.trim();
+  }
+
+  const rawSlug = field(formData, 'slug');
+  if (rawSlug) {
+    const slug = slugifyTitle(rawSlug.replace(/\//g, ''));
+    if (!slug || !isValidBlogSlug(slug)) {
+      return NextResponse.json(
+        {error: 'Slug must be 2–120 characters: lowercase letters, numbers, and hyphens only'},
+        {status: 400},
+      );
+    }
+    updates.slug = slug;
+  }
+
+  const author = formData.get('author');
+  if (typeof author === 'string' && author.trim()) {
+    updates.author = author.trim();
+  }
+
+  const category = formData.get('category');
+  if (typeof category === 'string' && category.trim()) {
+    updates.category = category.trim();
+  }
+
+  const excerpt = formData.get('excerpt');
+  if (typeof excerpt === 'string' && excerpt.trim()) {
+    updates.excerpt = excerpt.trim();
+  }
+
+  const bodyRaw = formData.get('body');
+  if (typeof bodyRaw === 'string') {
+    const body = parseBody(bodyRaw);
+    if (body.length > 0) {
+      updates.body = body;
     }
   }
 
-  const heroVideo = formData.get('heroVideo');
-  if (heroVideo instanceof File && heroVideo.size > 0) {
-    try {
-      const heroVideoUrl = await uploadSanityVideoFile(heroVideo);
-      patch.set({heroVideoUrl});
-      hasChanges = true;
-    } catch (e) {
-      const code = e instanceof Error ? e.message : '';
-      if (code === 'FILE_TOO_LARGE') {
-        return NextResponse.json({error: 'Video must be under 40MB'}, {status: 400});
-      }
-      if (code === 'UNSUPPORTED_TYPE') {
-        return NextResponse.json({error: 'Use MP4, WebM, or MOV for hero video'}, {status: 400});
-      }
-      throw e;
+  const imageFile = formData.get('coverImage');
+  if (imageFile instanceof File && imageFile.size > 0) {
+    if (imageFile.size > 12 * 1024 * 1024) {
+      return NextResponse.json({error: 'Cover image must be under 12MB'}, {status: 400});
     }
+    if (!imageFile.type.startsWith('image/')) {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
+    updates.coverImage = await saveBlogFile(imageFile);
+    await deleteLocalMedia(existing.coverImage);
+  }
+
+  const videoFile = formData.get('heroVideo');
+  if (videoFile instanceof File && videoFile.size > 0) {
+    updates.heroVideoUrl = await saveBlogFile(videoFile);
+    await deleteLocalMedia(existing.heroVideoUrl);
   } else {
-    const heroVideoUrl = field(formData, 'heroVideoUrl');
-    if (heroVideoUrl) {
+    const heroVideoUrlInput = field(formData, 'heroVideoUrl');
+    if (heroVideoUrlInput) {
       try {
-        const u = new URL(heroVideoUrl);
+        const u = new URL(heroVideoUrlInput);
         if (u.protocol !== 'http:' && u.protocol !== 'https:') {
           return NextResponse.json({error: 'Video URL must start with http:// or https://'}, {status: 400});
         }
-        patch.set({heroVideoUrl});
-        hasChanges = true;
+        updates.heroVideoUrl = heroVideoUrlInput;
       } catch {
         return NextResponse.json({error: 'Invalid hero video URL'}, {status: 400});
       }
     }
   }
 
-  if (!hasChanges) {
-    return NextResponse.json({error: 'No image or video provided'}, {status: 400});
-  }
-
   try {
-    await patch.commit();
+    const updated = updatePost(id, updates);
+    if (!updated) {
+      return NextResponse.json({error: 'Failed to update post'}, {status: 500});
+    }
+
     revalidatePath('/');
     revalidatePath('/blog');
-    if (slug) revalidatePath(`/blog/${slug}`);
-    return NextResponse.json({ok: true});
-  } catch (e) {
-    console.error('[admin/blog PATCH]', e);
-    return NextResponse.json({error: 'Failed to update post media'}, {status: 500});
+    revalidatePath(`/blog/${updated.slug}`);
+    if (existing.slug !== updated.slug) {
+      revalidatePath(`/blog/${existing.slug}`);
+    }
+    return NextResponse.json({ok: true, id: updated.id, slug: updated.slug});
+  } catch (error) {
+    console.error('[admin/blog PATCH]', error);
+    return NextResponse.json({error: 'Failed to update post'}, {status: 500});
   }
+}
+
+/** Delete a blog post and its local media files. */
+export async function DELETE(request: Request) {
+  const cookieStore = await cookies();
+  if (cookieStore.get('pv_admin')?.value !== 'true') {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+  }
+
+  const {searchParams} = new URL(request.url);
+  const id = searchParams.get('id');
+  if (!id) {
+    return NextResponse.json({error: 'id is required'}, {status: 400});
+  }
+
+  const existing = getPostById(id);
+  if (!existing) {
+    return NextResponse.json({error: 'Post not found'}, {status: 404});
+  }
+
+  const success = deletePost(id);
+  if (!success) {
+    return NextResponse.json({error: 'Failed to delete post'}, {status: 500});
+  }
+
+  await deleteLocalMedia(existing.coverImage);
+  await deleteLocalMedia(existing.heroVideoUrl);
+
+  revalidatePath('/');
+  revalidatePath('/blog');
+  revalidatePath(`/blog/${existing.slug}`);
+  return NextResponse.json({success: true});
 }

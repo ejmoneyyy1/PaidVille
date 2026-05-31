@@ -1,17 +1,15 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
-import {sanityWriteClient} from '@/lib/sanity-write';
+import {revalidatePath} from 'next/cache';
+import {updateContentField} from '@/lib/content-storage';
 
+export const runtime = 'nodejs';
+
+/** Inline editor save endpoint — persists site copy to local file-based storage. */
 export async function POST(request: Request) {
   const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
-
-  if (!isAdmin) {
+  if (cookieStore.get('pv_admin')?.value !== 'true') {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-  }
-
-  if (!process.env.SANITY_API_WRITE_TOKEN) {
-    return NextResponse.json({error: 'Server missing SANITY_API_WRITE_TOKEN'}, {status: 500});
   }
 
   let body: {documentId?: string; field?: string; value?: unknown};
@@ -27,11 +25,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const payload =
-      field === 'slug' && typeof value === 'string'
-        ? {slug: {_type: 'slug' as const, current: value}}
-        : {[field]: value};
-    await sanityWriteClient.patch(documentId).set(payload).commit();
+    const ok = updateContentField(documentId, field, value);
+    if (!ok) {
+      return NextResponse.json({error: 'This field is not editable here'}, {status: 400});
+    }
+    revalidatePath('/');
     return NextResponse.json({ok: true});
   } catch (error) {
     console.error('[admin/update]', error);

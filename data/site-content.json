@@ -1,0 +1,52 @@
+{
+  "siteContent": {
+    "_id": "siteContent",
+    "heroTagline": "PREMIUM EXPERIENCES. ELEVATED LIFESTYLE.",
+    "heroSubtext": "CREATIVE AGENCY · ARKANSAS",
+    "eventsTitle": "Events & Entertainment",
+    "eventsDescription": "From intimate gatherings to large scale productions, let us craft your next unforgettable experience",
+    "brandingTitle": "Branding",
+    "brandingDescription": "Your brand is priceless. With our professional approach, spanning marketing, graphic creation, and analytics, we will amplify your brand story.",
+    "clothingTitle": "Clothing",
+    "clothingDescription": "Rep the culture. Shop the PaidVille collection.",
+    "communityTitle": "Community Engagement",
+    "communityDescription": "Giving back to the community that built us. How can we be of service?",
+    "aboutText": null,
+    "footerTagline": "Est. 2018 — ARK USA | Fayetteville, AR",
+    "instagramUrl": null,
+    "tiktokUrl": null,
+    "twitterUrl": null
+  },
+  "siteStats": {
+    "ticketsSold": 10000,
+    "eventsHosted": 50,
+    "rating": 5
+  },
+  "navigation": {
+    "_id": "singleton-navigation",
+    "ctaButtonText": "Shop",
+    "links": [
+      {"_key": "nav-services", "label": "Services", "path": "/#services"},
+      {"_key": "nav-events", "label": "Events", "path": "/events"},
+      {"_key": "nav-about", "label": "About", "path": "/about"},
+      {"_key": "nav-gallery", "label": "Gallery", "path": "/gallery"},
+      {"_key": "nav-blog", "label": "Biased Opinion", "path": "/blog"},
+      {"_key": "nav-shop", "label": "Shop", "path": "/shop"}
+    ]
+  },
+  "globalSettings": {
+    "_id": "singleton-global-settings",
+    "contactEmail": "Hstoneco@outlook.com",
+    "footerTagline": "Premium events. Elevated lifestyle. Based in Fayetteville, AR."
+  },
+  "homepage": {
+    "_id": "singleton-homepage",
+    "sections": [
+      {"_key": "services-1", "heading": "Services Built for the Culture", "subheading": "From the stage to the street — immersive strategy, production, and brand elevation."},
+      {"_key": "gallery-1", "heading": "The Gallery", "subheading": "Moments & Memories"},
+      {"_key": "events-1", "heading": "Upcoming Events", "subheading": "Don't miss what's next"},
+      {"_key": "shop-1", "heading": "Pre-order the drop", "subheading": "Summer collection — fresh drops, exclusive vibes."},
+      {"_key": "blog-1", "heading": "Biased Opinions", "subheading": "Editorial"}
+    ]
+  }
+}

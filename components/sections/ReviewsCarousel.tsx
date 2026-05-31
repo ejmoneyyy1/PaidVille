@@ -94,7 +94,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
             <div className="relative mx-auto max-w-3xl">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.article
-                  key={current._id}
+                  key={current.id}
                   custom={direction}
                   variants={slideVariants}
                   initial="enter"
@@ -128,7 +128,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
                   <div className="flex gap-2">
                     {items.map((item, i) => (
                       <button
-                        key={item._id}
+                        key={item.id}
                         type="button"
                         onClick={() => go(i)}
                         className={`h-2 rounded-full transition-all duration-300 ${

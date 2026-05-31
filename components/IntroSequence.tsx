@@ -167,6 +167,18 @@ export default function IntroSequence() {
       ac.abort();
       cancelAnimationFrame(raf);
       if (videoTimeoutRef.current) clearTimeout(videoTimeoutRef.current);
+      
+      // Clean up video element to prevent WebKit EmptyRanges error
+      const video = videoRef.current;
+      if (video) {
+        try {
+          video.pause();
+          video.src = '';
+          video.load();
+        } catch {
+          // Safari can throw errors during cleanup - safe to ignore
+        }
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -179,10 +191,11 @@ export default function IntroSequence() {
     if (video) {
       try {
         video.pause();
+        video.src = '';
+        video.load();
       } catch {
-        /* Safari can throw when tearing down media state */
+        /* Safari can throw when tearing down media state - safe to ignore */
       }
-      /* Do not set video.src = '' — WebKit throws ReferenceError: EmptyRanges while the node is still mounted */
     }
     setExiting(true);
     setTimeout(() => {

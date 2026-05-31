@@ -1,14 +1,10 @@
 import {NextResponse} from 'next/server';
 import {revalidatePath} from 'next/cache';
-import {getSanityWriteClient} from '@/lib/sanity-write';
+import {createReview} from '@/lib/review-storage';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
-  if (!process.env.SANITY_API_WRITE_TOKEN) {
-    return NextResponse.json({error: 'Reviews are not configured yet'}, {status: 500});
-  }
-
   let body: {name?: string; rating?: number; comment?: string};
   try {
     body = await request.json();
@@ -37,15 +33,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const write = getSanityWriteClient();
-    await write.create({
-      _type: 'review',
-      name,
-      rating,
-      comment,
-      status: 'pending',
-      submittedAt: new Date().toISOString(),
-    });
+    createReview({name, rating, comment});
 
     revalidatePath('/');
 

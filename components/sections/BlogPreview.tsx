@@ -3,35 +3,17 @@
 import Link from 'next/link';
 import {ArrowUpRight, Calendar, Play} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import EditableField from '@/components/admin/EditableField';
-import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
-import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
-import {isSanityBlogPost} from '@/lib/blog-admin';
-import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
 import {splitHeadingLastWord} from '@/lib/heading-display';
+import type {BlogPost} from '@/lib/blog-storage';
 
-const HOMEPAGE_DOC = 'singleton-homepage';
+export type {BlogPost} from '@/lib/blog-storage';
+
 const DEFAULT_BLOG_HEADING = 'Biased Opinions';
-
-export interface BlogPost {
-  _id: string;
-  title: string;
-  slug: {current: string};
-  mainImage?: {
-    asset: {_ref: string};
-    alt?: string;
-  };
-  /** Optional hero video — same idea as Gallery `videoUrl` (direct file URL). */
-  heroVideoUrl?: string | null;
-  publishedAt: string;
-  author?: string;
-  excerpt?: string | null;
-  category?: string | null;
-}
 
 interface BlogPreviewProps {
   posts: BlogPost[];
-  homepageBlogHeading?: string | null;
+  isAdmin: boolean;
+  heading?: string | null;
 }
 
 function BlogCard({post, index}: {post: BlogPost; index: number}) {
@@ -40,39 +22,19 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
     day: 'numeric',
     year: 'numeric',
   });
-  const canEdit = isSanityBlogPost(post);
-  const hasCover = blogHasImage(post.mainImage);
-  const imgUrl = blogImageUrl(post.mainImage, 800, 500);
 
   return (
     <ScrollReveal delay={index * 0.1} direction="up">
-      <div className="relative h-full">
-        {canEdit ? (
-          <>
-            <AdminDeleteControl
-              documentId={post._id}
-              entityLabel="this post"
-              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
-            />
-            <BlogPostMediaUpload
-              documentId={post._id}
-              slug={post.slug.current}
-              hasCover={hasCover}
-              hasVideo={Boolean(post.heroVideoUrl)}
-              variant="card"
-            />
-          </>
-        ) : null}
-        <Link
-          href={`/blog/${post.slug.current}`}
-          className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
-        >
+      <Link
+        href={`/blog/${post.slug}`}
+        className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
+      >
         <div className="relative aspect-video bg-silver overflow-hidden">
-          {imgUrl ? (
+          {post.coverImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={imgUrl}
-              alt={post.mainImage?.alt ?? post.title}
+              src={post.coverImage}
+              alt={post.title}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
           ) : (
@@ -104,24 +66,9 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
             )}
           </div>
 
-          {canEdit ? (
-            <EditableField
-              documentId={post._id}
-              field="title"
-              label="Post title"
-              value={post.title}
-              type="textarea"
-              wrapperClassName="group/edit relative mt-1 block"
-            >
-              <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
-                {post.title}
-              </h3>
-            </EditableField>
-          ) : (
-            <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
-              {post.title}
-            </h3>
-          )}
+          <h3 className="font-display font-bold text-lg text-charcoal leading-snug group-hover:text-brand-red transition-colors duration-200">
+            {post.title}
+          </h3>
 
           <div className="flex items-center gap-1 text-xs font-display font-semibold text-brand-red mt-1 group-hover:gap-2 transition-all duration-200">
             Read article
@@ -129,13 +76,12 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
           </div>
         </div>
       </Link>
-      </div>
     </ScrollReveal>
   );
 }
 
-export default function BlogPreview({posts, homepageBlogHeading}: BlogPreviewProps) {
-  const blogTitle = homepageBlogHeading ?? DEFAULT_BLOG_HEADING;
+export default function BlogPreview({posts, isAdmin, heading}: BlogPreviewProps) {
+  const blogTitle = heading ?? DEFAULT_BLOG_HEADING;
   const {lead, accent} = splitHeadingLastWord(blogTitle, DEFAULT_BLOG_HEADING);
 
   return (
@@ -151,45 +97,53 @@ export default function BlogPreview({posts, homepageBlogHeading}: BlogPreviewPro
         <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="section-label">Editorial</span>
-            <EditableField
-              documentId={HOMEPAGE_DOC}
-              field='sections[_key=="blog-1"].heading'
-              label="Blog — section heading"
-              value={blogTitle}
-              type="textarea"
-              wrapperClassName="relative inline-block group/edit"
-            >
-              <h2 className="section-title text-charcoal">
-                {lead ? (
-                  <>
-                    {lead} <span className="text-brand-red">{accent}</span>
-                  </>
-                ) : (
-                  <span className="text-brand-red">{accent}</span>
-                )}
-              </h2>
-            </EditableField>
+            <h2 className="section-title text-charcoal">
+              {lead ? (
+                <>
+                  {lead} <span className="text-brand-red">{accent}</span>
+                </>
+              ) : (
+                <span className="text-brand-red">{accent}</span>
+              )}
+            </h2>
           </div>
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm font-display font-semibold text-brand-red hover:text-brand-red-dark transition-colors group self-start sm:self-auto"
-          >
-            View all posts
-            <ArrowUpRight
-              size={15}
-              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            />
-          </Link>
+          <div className="flex flex-col items-start gap-3 self-start sm:items-end sm:self-auto">
+            {isAdmin && (
+              <Link
+                href="/blog?admin=true"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-red px-4 py-2 text-sm font-semibold text-white hover:bg-brand-red-dark transition-colors"
+              >
+                Manage Posts
+                <ArrowUpRight size={15} />
+              </Link>
+            )}
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 text-sm font-display font-semibold text-brand-red hover:text-brand-red-dark transition-colors group"
+            >
+              View all posts
+              <ArrowUpRight
+                size={15}
+                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              />
+            </Link>
+          </div>
         </ScrollReveal>
 
         {posts.length === 0 ? (
           <div className="text-center py-20 text-charcoal/50 font-display">
-            Published posts from Sanity will appear here.
+            {isAdmin ? (
+              <Link href="/blog?admin=true" className="text-brand-red hover:underline">
+                Add your first post
+              </Link>
+            ) : (
+              'New posts will appear here soon.'
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.slice(0, 3).map((post, i) => (
-              <BlogCard key={post._id} post={post} index={i} />
+              <BlogCard key={post.id} post={post} index={i} />
             ))}
           </div>
         )}

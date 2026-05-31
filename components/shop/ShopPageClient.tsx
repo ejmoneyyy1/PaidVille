@@ -19,6 +19,28 @@ export default function ShopPageClient({
 }) {
   const router = useRouter();
   const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
+
+  const handleOpenAddModal = () => {
+    setEditingProduct(null);
+    setShowProductModal(true);
+  };
+
+  const handleOpenEditModal = (product: ShopProduct) => {
+    setEditingProduct(product);
+    setShowProductModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowProductModal(false);
+    setEditingProduct(null);
+  };
+
+  const handleSuccess = () => {
+    setShowProductModal(false);
+    setEditingProduct(null);
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen pt-32 pb-0 bg-cream">
@@ -35,7 +57,7 @@ export default function ShopPageClient({
         {isAdmin && (
           <button
             type="button"
-            onClick={() => setShowProductModal(true)}
+            onClick={handleOpenAddModal}
             className="absolute top-0 right-0 flex items-center gap-2 bg-brand-red text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-red-dark transition-colors"
           >
             <span className="text-xl">+</span>
@@ -44,17 +66,19 @@ export default function ShopPageClient({
         )}
       </div>
       
-      <ShopCatalog products={initialProducts} />
+      <ShopCatalog 
+        products={initialProducts} 
+        isAdmin={isAdmin}
+        onEdit={handleOpenEditModal}
+      />
       <CollectionGallery images={collectionImages} isAdmin={isAdmin} />
 
       {/* Product Modal */}
       {showProductModal && (
         <ShopProductModal
-          onClose={() => setShowProductModal(false)}
-          onSuccess={() => {
-            setShowProductModal(false);
-            router.refresh();
-          }}
+          product={editingProduct || undefined}
+          onClose={handleCloseModal}
+          onSuccess={handleSuccess}
         />
       )}
     </div>

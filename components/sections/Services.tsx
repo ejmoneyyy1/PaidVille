@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {motion, useMotionValue, useSpring, useTransform} from 'framer-motion';
 import {Zap, Camera, ShoppingBag, Users} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
-import type {SiteContentDoc} from '@/lib/sanity-queries';
+import type {SiteContentDoc} from '@/lib/site-content-types';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
 import {cn} from '@/lib/utils';
