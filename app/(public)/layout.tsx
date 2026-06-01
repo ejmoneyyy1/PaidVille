@@ -10,6 +10,9 @@ import {getSiteContent} from '@/lib/get-site-content';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import {buildNavItems} from '@/lib/build-nav-items';
 import FloatingJoinButton from '@/components/ui/FloatingJoinButton';
+import SmoothScroll from '@/components/ui/SmoothScroll';
+import CustomCursor from '@/components/ui/CustomCursor';
+import ScrollProgress from '@/components/ui/ScrollProgress';
 
 export default async function PublicLayout({children}: {children: React.ReactNode}) {
   const siteContent = await getSiteContent();
@@ -21,6 +24,9 @@ export default async function PublicLayout({children}: {children: React.ReactNod
   return (
     <InquiryProvider>
       <AdminProvider isAdmin={isAdmin}>
+        <SmoothScroll />
+        <ScrollProgress />
+        <CustomCursor />
         <IntroSequence />
         <Navbar navItems={navItems} />
         <main className="relative">{children}</main>

@@ -94,14 +94,14 @@ export default function ShopCatalog({
                 <button
                   type="button"
                   onClick={() => openLightbox(product)}
-                  className="relative aspect-square bg-white cursor-pointer"
+                  className="group relative aspect-square overflow-hidden bg-white cursor-pointer"
                 >
                   {product.imagePath ? (
                     <Image
                       src={product.imagePath}
                       alt={product.productName}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                       sizes="(max-width:768px) 100vw, 33vw"
                     />
                   ) : (

@@ -34,23 +34,26 @@ function MasonryGrid({
   items: GalleryItem[];
   onSelect: (item: GalleryItem) => void;
 }) {
-  const columns = [
-    items.filter((_, i) => i % 3 === 0),
-    items.filter((_, i) => i % 3 === 1),
-    items.filter((_, i) => i % 3 === 2),
-  ];
+  const columns: {item: GalleryItem; index: number}[][] = [[], [], []];
+  items.forEach((item, i) => columns[i % 3].push({item, index: i}));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {columns.map((col, colIdx) => (
         <div key={colIdx} className="flex flex-col gap-4">
-          {col.map((item, itemIdx) => {
+          {col.map(({item, index}, itemIdx) => {
             const isTall = (colIdx + itemIdx) % 3 === 0;
             const poster = posterFor(item);
             const video = isPlayableVideo(item);
 
             return (
-              <ScrollReveal key={item.id} delay={colIdx * 0.1 + itemIdx * 0.07} direction="up">
+              <motion.div
+                key={item.id}
+                initial={{opacity: 0, y: 60, scale: 0.95}}
+                whileInView={{opacity: 1, y: 0, scale: 1}}
+                viewport={{once: true, margin: '-50px'}}
+                transition={{delay: (index % 6) * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1]}}
+              >
                 <motion.button
                   className={`relative w-full rounded-2xl overflow-hidden cursor-pointer group
                     ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-cream
@@ -74,6 +77,20 @@ function MasonryGrid({
                       <span className="font-display font-black text-3xl text-brand-red/10">PV</span>
                     </div>
                   )}
+
+                  {/* Clip-wipe reveal: slides right-to-left exposing the image */}
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 z-20 origin-right bg-[#e8e8e4]"
+                    initial={{scaleX: 1}}
+                    whileInView={{scaleX: 0}}
+                    viewport={{once: true, margin: '-40px'}}
+                    transition={{
+                      duration: 0.7,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: 0.15 + (index % 6) * 0.06,
+                    }}
+                  />
 
                   <motion.div
                     className={cn(
@@ -104,7 +121,7 @@ function MasonryGrid({
                     </span>
                   ) : null}
                 </motion.button>
-              </ScrollReveal>
+              </motion.div>
             );
           })}
         </div>

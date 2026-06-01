@@ -41,9 +41,9 @@ function EventCard({
   return (
     <ScrollReveal delay={index * 0.08} direction="up">
       <motion.article
-        whileHover={{y: -4}}
-        transition={{duration: 0.22}}
-        className="relative rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
+        className="group relative rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm"
+        whileHover={{y: -6, scale: 1.015, boxShadow: '0 20px 40px rgba(176,0,0,0.08)'}}
+        transition={{type: 'spring', stiffness: 300, damping: 25}}
       >
         <div className="h-1 w-full bg-brand-red" />
 
@@ -59,12 +59,12 @@ function EventCard({
         )}
 
         {event.imagePath ? (
-          <div className="relative aspect-video w-full bg-charcoal">
+          <div className="relative aspect-video w-full overflow-hidden bg-charcoal">
             <Image
               src={event.imagePath}
               alt={event.eventName}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               sizes="(max-width:768px) 100vw, 33vw"
             />
           </div>
@@ -143,7 +143,7 @@ export default function Events({
       <div className="container-max section-padding">
         <ScrollReveal className="mb-14 text-center">
           <span className="section-label justify-center">What&apos;s Coming Up</span>
-          <h2 className="section-title text-charcoal">
+          <h2 className="section-title text-charcoal tracking-[-0.03em]">
             {lead ? (
               <>
                 {lead} <span className="text-brand-red">{accent}</span>

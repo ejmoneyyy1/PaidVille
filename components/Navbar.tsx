@@ -2,6 +2,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import Link from 'next/link';
+import {usePathname} from 'next/navigation';
 import {motion, AnimatePresence} from 'framer-motion';
 import RotatingLogoMark from '@/components/brand/RotatingLogoMark';
 import {Menu, X, ShoppingBag} from 'lucide-react';
@@ -11,12 +12,15 @@ import EditableField from '@/components/admin/EditableField';
 
 const NAV_DOC = 'singleton-navigation';
 
-function NavLink({href, children}: {href: string; children: React.ReactNode}) {
+function NavLink({href, children, dark}: {href: string; children: React.ReactNode; dark?: boolean}) {
   return (
     <li>
       <Link
         href={href}
-        className="group relative block whitespace-nowrap px-2.5 py-2 font-display text-[10px] font-bold tracking-[0.12em] uppercase text-charcoal/65 transition-colors duration-200 hover:text-charcoal lg:px-3 lg:text-[11px] lg:tracking-[0.14em]"
+        className={cn(
+          'group relative block whitespace-nowrap px-2.5 py-2 font-display text-[10px] font-bold tracking-[0.12em] uppercase transition-colors duration-200 lg:px-3 lg:text-[11px] lg:tracking-[0.14em]',
+          dark ? 'text-cream/75 hover:text-white' : 'text-charcoal/65 hover:text-charcoal',
+        )}
       >
         <span className="relative z-10">{children}</span>
         <span
@@ -34,12 +38,20 @@ function NavLink({href, children}: {href: string; children: React.ReactNode}) {
 
 export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
   const [scrolled, setScrolled] = useState(false);
+  const [atTop, setAtTop] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
+
+  // The homepage has a dark hero, so the top (un-scrolled) navbar goes
+  // transparent + light to float over it. Everywhere else stays cream.
+  const onDarkHero = pathname === '/' && atTop && !scrolled;
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 24);
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setAtTop(y < 80);
     }
     window.addEventListener('scroll', onScroll, {passive: true});
     onScroll();
@@ -53,7 +65,9 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
         'fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out',
         scrolled
           ? 'py-2.5 bg-cream/[0.94] backdrop-blur-2xl border-b border-brand-red shadow-[0_12px_40px_rgba(0,0,0,0.06)]'
-          : 'py-4 bg-gradient-to-b from-cream/80 via-cream/40 to-transparent',
+          : onDarkHero
+            ? 'py-4 bg-gradient-to-b from-black/35 to-transparent'
+            : 'py-4 bg-gradient-to-b from-cream/80 via-cream/40 to-transparent',
       )}
     >
       <div
@@ -68,10 +82,20 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
         <Link href="/" className="flex min-w-0 shrink items-center gap-2.5 sm:gap-3.5 md:max-w-[13.5rem] md:gap-4 lg:max-w-[15rem] xl:max-w-none group">
           <RotatingLogoMark />
           <div className="flex min-w-0 flex-col leading-none">
-            <span className="truncate font-display font-black text-[1.2rem] tracking-tight text-gradient-brand transition-transform duration-300 group-hover:translate-x-0.5 sm:text-2xl md:text-[1.65rem] lg:text-[1.75rem]">
+            <span
+              className={cn(
+                'truncate font-display font-black text-[1.2rem] tracking-tight transition-transform duration-300 group-hover:translate-x-0.5 sm:text-2xl md:text-[1.65rem] lg:text-[1.75rem]',
+                onDarkHero ? 'text-cream' : 'text-gradient-brand',
+              )}
+            >
               PAID<span className="text-brand-red">VILLE</span>
             </span>
-            <span className="mt-0.5 hidden font-display text-[9px] font-bold uppercase tracking-[0.28em] text-charcoal/40 sm:block">
+            <span
+              className={cn(
+                'mt-0.5 hidden font-display text-[9px] font-bold uppercase tracking-[0.28em] sm:block',
+                onDarkHero ? 'text-cream/50' : 'text-charcoal/40',
+              )}
+            >
               Fayetteville · Since 2018
             </span>
           </div>
@@ -80,10 +104,15 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
         <div className="hidden min-w-0 md:flex md:justify-center md:px-1 lg:px-2">
           <motion.ul
             layout
-            className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border border-brand-red/35 bg-white/55 px-1 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)] backdrop-blur-md"
+            className={cn(
+              'flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border px-1 py-1 backdrop-blur-md',
+              onDarkHero
+                ? 'border-white/15 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_4px_24px_rgba(0,0,0,0.35)]'
+                : 'border-brand-red/35 bg-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)]',
+            )}
           >
             {navItems.map((item) => (
-              <NavLink key={item._key} href={item.href}>
+              <NavLink key={item._key} href={item.href} dark={onDarkHero}>
                 <EditableField
                   documentId={NAV_DOC}
                   field={`links[_key=="${item._key}"].label`}
@@ -101,7 +130,12 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
 
         <button
             type="button"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-red bg-white/90 text-charcoal shadow-sm transition-all duration-200 hover:bg-white active:scale-95 md:hidden"
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border shadow-sm transition-all duration-200 active:scale-95 md:hidden',
+              onDarkHero
+                ? 'border-white/25 bg-white/10 text-cream hover:bg-white/20'
+                : 'border-brand-red bg-white/90 text-charcoal hover:bg-white',
+            )}
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
