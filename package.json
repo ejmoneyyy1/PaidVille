@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "seed": "tsx scripts/seed-all.ts",
+    "seed:shop": "tsx scripts/seed-shop.ts",
     "dev": "next dev",
     "build": "next build",
     "build:cf": "npx @opennextjs/cloudflare build",

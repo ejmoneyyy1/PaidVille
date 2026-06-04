@@ -1,24 +1,41 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {cookies} from 'next/headers';
-import {writeFile, unlink} from 'fs/promises';
-import {join} from 'path';
-import {
-  getAllCollectionImages,
-  getCollectionImageById,
-  createCollectionImage,
-  updateCollectionImage,
-  deleteCollectionImage,
-} from '@/lib/collection-storage';
+import {revalidatePath} from 'next/cache';
+import {sanityWriteClient} from '@/lib/sanity-write';
+import {uploadSanityImageFile, type SanityImageField} from '@/lib/sanity-upload-image';
+import {urlFor} from '@/lib/sanity';
+import {getAllCollectionImages, getCollectionImageById, type CollectionImage} from '@/lib/collection-storage';
 
-async function checkAdmin() {
+export const runtime = 'nodejs';
+
+async function requireAdmin(): Promise<NextResponse | null> {
   const cookieStore = await cookies();
-  return cookieStore.get('pv_admin')?.value === 'true';
+  if (cookieStore.get('pv_admin')?.value !== 'true') {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+  }
+  if (!process.env.SANITY_API_WRITE_TOKEN) {
+    return NextResponse.json({error: 'Server missing SANITY_API_WRITE_TOKEN'}, {status: 500});
+  }
+  return null;
+}
+
+function imageFieldUrl(img: SanityImageField): string {
+  try {
+    return urlFor(img as never).url();
+  } catch {
+    return '';
+  }
+}
+
+function revalidateShopPaths() {
+  revalidatePath('/shop');
+  revalidatePath('/admin/dashboard');
 }
 
 // GET all collection images
 export async function GET() {
   try {
-    const images = getAllCollectionImages();
+    const images = await getAllCollectionImages();
     return NextResponse.json(images);
   } catch (error) {
     console.error('Error fetching collection images:', error);
@@ -28,44 +45,48 @@ export async function GET() {
 
 // POST new collection image
 export async function POST(request: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-    }
-
     const formData = await request.formData();
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const imageFile = formData.get('image') as File;
+    const title = (formData.get('title') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim() || undefined;
+    const imageFile = formData.get('image') as File | null;
 
-    if (!title?.trim()) {
+    if (!title) {
       return NextResponse.json({error: 'Title is required'}, {status: 400});
     }
-
-    if (!imageFile) {
+    if (!imageFile || imageFile.size === 0) {
       return NextResponse.json({error: 'Image is required'}, {status: 400});
     }
 
-    // Save image
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const timestamp = Date.now();
-    const ext = imageFile.name.split('.').pop() || 'jpg';
-    const filename = `${timestamp}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const imagePath = `/shop-collection/${filename}`;
-    const fullPath = join(process.cwd(), 'public', 'shop-collection', filename);
-
-    await writeFile(fullPath, buffer);
-
-    const newImage = createCollectionImage({
-      title: title.trim(),
-      description: description?.trim() || undefined,
-      imagePath,
+    const image = await uploadSanityImageFile(imageFile);
+    const created = await sanityWriteClient.create({
+      _type: 'collectionImage',
+      title,
+      ...(description ? {description} : {}),
+      image,
     });
 
-    return NextResponse.json(newImage, {status: 201});
+    revalidateShopPaths();
+    const result: CollectionImage = {
+      id: created._id,
+      title,
+      description,
+      imagePath: imageFieldUrl(image),
+      createdAt: created._createdAt ?? new Date().toISOString(),
+      updatedAt: created._updatedAt ?? new Date().toISOString(),
+    };
+    return NextResponse.json(result, {status: 201});
   } catch (error) {
+    const code = error instanceof Error ? error.message : '';
+    if (code === 'FILE_TOO_LARGE') {
+      return NextResponse.json({error: 'Image must be under 12MB'}, {status: 400});
+    }
+    if (code === 'UNSUPPORTED_TYPE') {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
     console.error('Error creating collection image:', error);
     return NextResponse.json({error: 'Failed to create image'}, {status: 500});
   }
@@ -73,68 +94,49 @@ export async function POST(request: NextRequest) {
 
 // PATCH update collection image
 export async function PATCH(request: NextRequest) {
-  try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  try {
     const formData = await request.formData();
-    const imageId = formData.get('imageId') as string;
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
+    const imageId = (formData.get('imageId') as string)?.trim();
+    const title = formData.get('title') as string | null;
+    const description = formData.get('description') as string | null;
     const imageFile = formData.get('image') as File | null;
 
     if (!imageId) {
       return NextResponse.json({error: 'Image ID is required'}, {status: 400});
     }
 
-    const existing = getCollectionImageById(imageId);
+    const existing = await getCollectionImageById(imageId);
     if (!existing) {
       return NextResponse.json({error: 'Image not found'}, {status: 404});
     }
 
-    const updates: Partial<{title: string; description: string; imagePath: string}> = {};
-
+    const updates: Record<string, unknown> = {};
     if (title?.trim()) {
       updates.title = title.trim();
     }
-
-    if (description !== undefined) {
+    if (description !== null) {
       updates.description = description.trim() || undefined;
     }
-
-    // If new image file is provided
     if (imageFile && imageFile.size > 0) {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const timestamp = Date.now();
-      const ext = imageFile.name.split('.').pop() || 'jpg';
-      const filename = `${timestamp}-${imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const imagePath = `/shop-collection/${filename}`;
-      const fullPath = join(process.cwd(), 'public', 'shop-collection', filename);
-
-      await writeFile(fullPath, buffer);
-      updates.imagePath = imagePath;
-
-      // Delete old image
-      if (existing.imagePath.startsWith('/shop-collection/')) {
-        const oldPath = join(process.cwd(), 'public', existing.imagePath);
-        try {
-          await unlink(oldPath);
-        } catch {
-          // Ignore if old file doesn't exist
-        }
-      }
+      updates.image = await uploadSanityImageFile(imageFile);
     }
 
-    const updated = updateCollectionImage(imageId, updates);
-    if (!updated) {
-      return NextResponse.json({error: 'Failed to update image'}, {status: 500});
-    }
+    await sanityWriteClient.patch(imageId).set(updates).commit();
 
+    revalidateShopPaths();
+    const updated = await getCollectionImageById(imageId);
     return NextResponse.json(updated);
   } catch (error) {
+    const code = error instanceof Error ? error.message : '';
+    if (code === 'FILE_TOO_LARGE') {
+      return NextResponse.json({error: 'Image must be under 12MB'}, {status: 400});
+    }
+    if (code === 'UNSUPPORTED_TYPE') {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
     console.error('Error updating collection image:', error);
     return NextResponse.json({error: 'Failed to update image'}, {status: 500});
   }
@@ -142,39 +144,19 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE collection image
 export async function DELETE(request: NextRequest) {
-  try {
-    const isAdmin = await checkAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  try {
     const {searchParams} = new URL(request.url);
     const imageId = searchParams.get('id');
-
     if (!imageId) {
       return NextResponse.json({error: 'Image ID is required'}, {status: 400});
     }
 
-    const existing = getCollectionImageById(imageId);
-    if (!existing) {
-      return NextResponse.json({error: 'Image not found'}, {status: 404});
-    }
+    await sanityWriteClient.delete(imageId);
 
-    const success = deleteCollectionImage(imageId);
-    if (!success) {
-      return NextResponse.json({error: 'Failed to delete image'}, {status: 500});
-    }
-
-    // Delete image file
-    if (existing.imagePath.startsWith('/shop-collection/')) {
-      const filePath = join(process.cwd(), 'public', existing.imagePath);
-      try {
-        await unlink(filePath);
-      } catch {
-        // Ignore if file doesn't exist
-      }
-    }
-
+    revalidateShopPaths();
     return NextResponse.json({success: true});
   } catch (error) {
     console.error('Error deleting collection image:', error);

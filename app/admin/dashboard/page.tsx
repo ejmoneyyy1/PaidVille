@@ -43,9 +43,9 @@ export default async function AdminDashboardPage() {
     console.error('[admin/dashboard]', e);
   }
 
-  // Get shop products from local storage (not Sanity)
+  // Get shop products from Sanity
   try {
-    shopProducts = getAllProducts();
+    shopProducts = await getAllProducts();
   } catch (e) {
     console.error('[admin/dashboard shop]', e);
   }

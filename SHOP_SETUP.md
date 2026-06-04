@@ -1,145 +1,75 @@
-# PaidVille Shop Management - Simple & Independent
+# PaidVille Shop Management
 
-## What's Been Set Up
+## How It Works
 
-Your shop is now **completely independent** from Sanity.io - just simple file-based storage that you control entirely through your dashboard.
+The shop and collection gallery are stored in **Sanity** (the same backend as
+blog, events, gallery, and reviews) — but you manage everything from the
+**on-site dashboard**, never inside Sanity Studio.
 
-### Storage System
-- **Products:** Stored in `data/shop-products.json` (auto-created)
-- **Images:** Stored in `public/shop/` folder
-- **No external dependencies** - everything stays in your project
+- **Products:** stored as `shopProduct` documents in Sanity
+- **Collection images:** stored as `collectionImage` documents in Sanity
+- **Images:** uploaded to Sanity's asset CDN
+- **Persistent:** because content lives in Sanity (not on the server's disk),
+  it survives every deploy — adding/editing a product through the dashboard
+  saves permanently.
 
-### Shop Dashboard Features
-- **"Shop" tab** in your admin dashboard at `/admin/dashboard`
-- Add/Edit/Delete products with a clean interface
-- Simple form with only what you need:
-  - Product name
-  - Description
-  - Price (USD)
-  - Payment link (Stripe, PayPal, anything!)
-  - Product image
-  - Availability toggle
+> Requires `SANITY_API_WRITE_TOKEN` to be set in the environment (it already is
+> for events/blog). The token is what lets the dashboard write to Sanity.
 
-### How It Works
-1. You add products through the dashboard
-2. Images are automatically saved to `public/shop/`
-3. Product data is saved to `data/shop-products.json`
-4. Shop page at `/shop` shows all available products
-5. Customers click "Pre-Order Now" → goes to your payment link
+## Managing Products (on-site dashboard)
 
-## Adding Your Products
+1. **Login:** go to `/admin/login`
+2. On the **Shop** page (`/shop`) or the **Shop tab** in `/admin/dashboard`,
+   use the same controls as before:
+   - **+ Add Product** — name, description, price (in dollars, e.g. `45.00`),
+     payment link, main image, and additional front/back/detail images
+   - **Edit** — change any field; leave the image empty to keep the current one;
+     add or remove gallery images individually
+   - **Delete** — removes the product
+   - **Available for purchase** toggle — only available products show on `/shop`
 
-Your client has 4 products ready to add. Here's the info for each:
+Prices are entered in dollars and stored in cents internally (e.g. `4500` =
+$45.00). Max image size: 12MB. The "Payment Link" accepts any checkout URL
+(Stripe Payment Link, PayPal, Square, etc.).
 
-### Product 1: Women's Summer Set
-```
-Name: PaidVille Women's Summer Set
-Description: Exclusive black tee and shorts set with gold PaidVille American Summer Club branding and athletic stripes
-Price: 45.00
-Payment Link: https://buy.stripe.com/3cI4gz4kwc3a26d7AhbjW04
-Image: Use public/shop-images/womens-set.png
-```
-_Enter price as dollars (e.g., 45.00) - the system automatically converts to cents for storage_
+## One-Time Migration (existing products → Sanity)
 
-### Product 2: American Summer Club Tee
-```
-Name: American Summer Club Tee - Sand
-Description: PaidVille American Summer Club signature tee in premium sand/cream color with pool scene back graphic
-Price: 35.00
-Payment Link: https://buy.stripe.com/7sY00j6sEffm26d2fXbjW02
-Image: Use public/shop-images/asc-tee.png
+The 4 existing products and 3 collection images currently live in the local
+files `data/shop-products.json` and `data/shop-collection.json`. To move them
+into Sanity once (with their images), run this **locally**, where your
+`.env.local` has `SANITY_API_WRITE_TOKEN`:
+
+```bash
+npm run seed:shop
 ```
 
-### Product 3: Economics Tee (White)
-```
-Name: Economics Tee - White
-Description: Property of PaidVille EST.2018 Finance Dept "Building the Future" tee in classic white
-Price: 32.00
-Payment Link: https://buy.stripe.com/5kQeVd8AM3wE3ahg6NbjW01
-Image: Use public/shop-images/economics-tee-white.png
-```
+The script is idempotent — it skips any product/collection image whose title
+already exists in Sanity, so it's safe to run more than once. After it succeeds,
+the `data/shop-*.json` files are no longer used by the site and can be deleted.
 
-### Product 4: Economics Tee (Black)
-```
-Name: Economics Tee - Black
-Description: Property of PaidVille EST.2018 Finance Dept "Building the Future" tee in sleek black with gold lettering
-Price: 32.00
-Payment Link: https://buy.stripe.com/fZu9ATaIU7MU4el6wdbjW00
-Image: Use public/shop-images/economics-tee-black.png
-```
+(Alternatively, you can skip the script and just re-add the 4 products through
+the dashboard — the product details are below.)
 
-## Steps to Add Products
+## Existing Product Details
 
-1. **Login to your admin dashboard**
-   - Go to `/admin/login`
+### Product 1: ASC Women's Set
+- Price: `52.99` · Link: `https://buy.stripe.com/3cI4gz4kwc3a26d7AhbjW04`
 
-2. **Click the "Shop" tab**
+### Product 2: ASC Tee Cream — S26
+- Price: `35.99` · Link: `https://buy.stripe.com/7sY00j6sEffm26d2fXbjW02`
 
-3. **Click "+ Add Product"**
+### Product 3: Economics Graphic Tee White — S26
+- Price: `31.99` · Link: `https://buy.stripe.com/5kQeVd8AM3wE3ahg6NbjW01`
 
-4. **Fill in the form:**
-   - Copy the info from above for each product
-   - **Enter price in dollars** (e.g., 45.00) - system converts to cents automatically
-   - Upload the corresponding image from `public/shop-images/`
-   - Make sure "Available for purchase" is checked
-   - Click "Create"
-
-5. **Repeat for all 4 products**
-
-## Managing Products
-
-### Add New Product
-- Go to Shop tab → "+ Add Product"
-- Fill in: name, description, price (in dollars like 45.00), payment link
-- Upload image
-- Click "Create"
-
-### Edit Product
-- Find product → Click "Edit"
-- Change any field (leave image empty to keep current)
-- Click "Update"
-
-### Delete Product
-- Find product → Click "Delete"
-- Confirm
-
-### Toggle Availability
-- Edit product → Check/uncheck "Available for purchase"
-- Only available products show on `/shop` page
+### Product 4: Economics Graphic Tee Black — S26
+- Price: `31.99` · Link: `https://buy.stripe.com/fZu9ATaIU7MU4el6wdbjW00`
 
 ## Technical Details
 
-### Files Created
-- `lib/shop-storage.ts` - File-based storage system
-- `app/api/admin/shop/route.ts` - CRUD API endpoints
-- `data/shop-products.json` - Your products database (auto-created)
-- `public/shop/` - Product images folder (auto-created)
-
-### How It's Different
-- **No Sanity:** Shop products stored locally in JSON file
-- **No external API calls:** Everything is server-side file operations
-- **No tokens needed:** Just works out of the box
-- **Fully portable:** Copy the `data` folder = copy your shop
-
-### Payment Links
-The "Payment Link" field accepts ANY checkout URL:
-- Stripe payment links
-- PayPal checkout URLs
-- Shopify buy buttons
-- Square invoices
-- Any other payment processor
-
-### Backup Your Shop
-Your entire shop is in two places:
-1. `data/shop-products.json` - all product info (prices stored in cents internally)
-2. `public/shop/` - all product images
-
-Just copy these to back up or migrate your shop!
-
-## Notes
-- **Enter prices in dollars** (e.g., 45.00) when adding products - the system converts to cents for accurate storage
-- Prices are stored in cents internally (e.g., 4500 = $45.00) to avoid floating-point errors
-- Maximum image size: 12MB
-- All fields except description are required
-- Products must have "Available" checked to show on shop page
-- Changes appear instantly on the `/shop` page
+- `sanity/schemaTypes/shopProduct.ts` — product schema (incl. `galleryImages`)
+- `sanity/schemaTypes/collectionImage.ts` — collection gallery schema
+- `lib/shop-storage.ts` / `lib/collection-storage.ts` — Sanity read helpers
+  (keep the same `ShopProduct` / `CollectionImage` shapes the UI expects)
+- `app/api/admin/shop/route.ts` / `app/api/admin/collection/route.ts` —
+  create/update/delete via the Sanity write client + asset upload
+- `scripts/seed-shop.ts` — one-time migration from the old JSON files

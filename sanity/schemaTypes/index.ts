@@ -1,4 +1,5 @@
 import {blogType} from './blog';
+import {collectionImageType} from './collectionImage';
 import {eventType} from './event';
 import {galleryType} from './gallery';
 import {inquirySubmissionType} from './inquirySubmission';
@@ -11,6 +12,7 @@ export const schemaTypes = [
   blogType,
   eventType,
   shopProductType,
+  collectionImageType,
   inquirySubmissionType,
   reviewType,
   galleryType,

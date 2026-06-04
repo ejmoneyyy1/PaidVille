@@ -46,6 +46,18 @@ export const shopProductType = defineType({
       ],
     }),
     defineField({
+      name: 'galleryImages',
+      type: 'array',
+      title: 'Additional images (front / back / detail views)',
+      of: [
+        {
+          type: 'image',
+          options: {hotspot: true},
+          fields: [defineField({name: 'alt', type: 'string', title: 'Alt text'})],
+        },
+      ],
+    }),
+    defineField({
       name: 'featuredOnHome',
       type: 'boolean',
       title: 'Featured on homepage Members Shop card',

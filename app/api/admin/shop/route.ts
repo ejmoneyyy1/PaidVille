@@ -1,114 +1,132 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
 import {revalidatePath} from 'next/cache';
-import {writeFileSync} from 'fs';
-import {join} from 'path';
-import {createProduct, updateProduct, deleteProduct} from '@/lib/shop-storage';
+import {sanityWriteClient} from '@/lib/sanity-write';
+import {uploadSanityImageFile, type SanityImageField} from '@/lib/sanity-upload-image';
+import {urlFor} from '@/lib/sanity';
+
+export const runtime = 'nodejs';
+
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+
+type KeyedImage = SanityImageField & {_key: string};
+
+function randomKey(): string {
+  return Math.random().toString(36).slice(2, 12);
+}
+
+function withKey(img: SanityImageField): KeyedImage {
+  return {...img, _key: randomKey()};
+}
 
 function revalidateShopPaths() {
+  revalidatePath('/');
   revalidatePath('/shop');
   revalidatePath('/admin/dashboard');
 }
 
-async function saveUploadedImage(file: File): Promise<string> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filename = `${Date.now()}-${file.name.replace(/[^\w.-]+/g, '_')}`;
-  const filepath = join(process.cwd(), 'public', 'shop', filename);
-  
-  // Ensure shop directory exists
-  const shopDir = join(process.cwd(), 'public', 'shop');
-  const {mkdirSync, existsSync} = await import('fs');
-  if (!existsSync(shopDir)) {
-    mkdirSync(shopDir, {recursive: true});
+function validateImageFile(file: File): NextResponse | null {
+  if (file.size > MAX_IMAGE_BYTES) {
+    return NextResponse.json({error: 'Image file too large (max 12MB)'}, {status: 400});
   }
-  
-  writeFileSync(filepath, buffer);
-  return `/shop/${filename}`;
+  if (!file.type.startsWith('image/')) {
+    return NextResponse.json({error: 'Only image files allowed'}, {status: 400});
+  }
+  return null;
 }
 
-/** POST - Create new shop product */
-export async function POST(request: Request) {
+function validatePaymentLink(paymentLink: string): NextResponse | null {
+  try {
+    const url = new URL(paymentLink);
+    if (!url.protocol.startsWith('http')) {
+      return NextResponse.json({error: 'Invalid payment link'}, {status: 400});
+    }
+  } catch {
+    return NextResponse.json({error: 'Invalid payment link URL'}, {status: 400});
+  }
+  return null;
+}
+
+async function requireAdmin(): Promise<NextResponse | null> {
   const cookieStore = await cookies();
   if (cookieStore.get('pv_admin')?.value !== 'true') {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
+  if (!process.env.SANITY_API_WRITE_TOKEN) {
+    return NextResponse.json({error: 'Server missing SANITY_API_WRITE_TOKEN'}, {status: 500});
+  }
+  return null;
+}
+
+/** POST - Create new shop product */
+export async function POST(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   try {
     const formData = await request.formData();
-    const productName = formData.get('productName') as string;
-    const description = formData.get('description') as string;
+    const productName = (formData.get('productName') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim() || '';
     const price = formData.get('price') as string;
-    const paymentLink = formData.get('paymentLink') as string;
+    const paymentLink = (formData.get('paymentLink') as string)?.trim();
     const isAvailable = formData.get('isAvailable') === 'true';
-    const imageFile = formData.get('image') as File;
+    const imageFile = formData.get('image') as File | null;
     const galleryImageFiles = formData.getAll('galleryImages') as File[];
 
-    if (!productName?.trim()) {
+    if (!productName) {
       return NextResponse.json({error: 'Product name is required'}, {status: 400});
     }
-
-    if (!paymentLink?.trim()) {
+    if (!paymentLink) {
       return NextResponse.json({error: 'Payment link is required'}, {status: 400});
     }
-
-    try {
-      const url = new URL(paymentLink);
-      if (!url.protocol.startsWith('http')) {
-        return NextResponse.json({error: 'Invalid payment link'}, {status: 400});
-      }
-    } catch {
-      return NextResponse.json({error: 'Invalid payment link URL'}, {status: 400});
-    }
+    const badLink = validatePaymentLink(paymentLink);
+    if (badLink) return badLink;
 
     const priceNum = parseFloat(price);
     if (Number.isNaN(priceNum) || priceNum < 0) {
       return NextResponse.json({error: 'Valid price required'}, {status: 400});
     }
-
     const priceInCents = Math.round(priceNum * 100);
 
     if (!imageFile || imageFile.size === 0) {
       return NextResponse.json({error: 'Product image is required'}, {status: 400});
     }
+    const badImage = validateImageFile(imageFile);
+    if (badImage) return badImage;
 
-    if (imageFile.size > 12 * 1024 * 1024) {
-      return NextResponse.json({error: 'Image file too large (max 12MB)'}, {status: 400});
-    }
+    const productImage = await uploadSanityImageFile(imageFile);
 
-    if (!imageFile.type.startsWith('image/')) {
-      return NextResponse.json({error: 'Only image files allowed'}, {status: 400});
-    }
-
-    const imagePath = await saveUploadedImage(imageFile);
-
-    // Handle gallery images (front/back views)
-    const galleryImages: string[] = [];
+    const galleryImages: KeyedImage[] = [];
     for (const file of galleryImageFiles) {
       if (file && file.size > 0) {
-        if (file.size > 12 * 1024 * 1024) {
-          return NextResponse.json({error: 'Gallery image file too large (max 12MB)'}, {status: 400});
-        }
-        if (!file.type.startsWith('image/')) {
-          continue; // Skip non-image files
-        }
-        const galleryPath = await saveUploadedImage(file);
-        galleryImages.push(galleryPath);
+        const badGallery = validateImageFile(file);
+        if (badGallery) return badGallery;
+        galleryImages.push(withKey(await uploadSanityImageFile(file)));
       }
     }
 
-    const product = createProduct({
-      productName: productName.trim(),
-      description: description?.trim() || '',
+    const created = await sanityWriteClient.create({
+      _type: 'shopProduct',
+      productName,
+      description,
       price: priceInCents,
-      paymentLink: paymentLink.trim(),
-      imagePath,
-      galleryImages,
+      stripePaymentLink: paymentLink,
       isAvailable,
+      featuredOnHome: true,
+      productImage,
+      galleryImages,
     });
 
     revalidateShopPaths();
-    return NextResponse.json({ok: true, product});
+    return NextResponse.json({ok: true, _id: created._id});
   } catch (error) {
+    const code = error instanceof Error ? error.message : '';
+    if (code === 'FILE_TOO_LARGE') {
+      return NextResponse.json({error: 'Image file too large (max 12MB)'}, {status: 400});
+    }
+    if (code === 'UNSUPPORTED_TYPE') {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
     console.error('[admin/shop POST]', error);
     return NextResponse.json({error: 'Failed to create product'}, {status: 500});
   }
@@ -116,102 +134,101 @@ export async function POST(request: Request) {
 
 /** PATCH - Update existing shop product */
 export async function PATCH(request: Request) {
-  const cookieStore = await cookies();
-  if (cookieStore.get('pv_admin')?.value !== 'true') {
-    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-  }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   try {
     const formData = await request.formData();
-    const productId = formData.get('productId') as string;
-    const productName = formData.get('productName') as string;
-    const description = formData.get('description') as string;
+    const productId = (formData.get('productId') as string)?.trim();
+    const productName = (formData.get('productName') as string)?.trim();
+    const description = (formData.get('description') as string)?.trim() || '';
     const price = formData.get('price') as string;
-    const paymentLink = formData.get('paymentLink') as string;
+    const paymentLink = (formData.get('paymentLink') as string)?.trim();
     const isAvailable = formData.get('isAvailable') === 'true';
     const imageFile = formData.get('image') as File | null;
     const galleryImageFiles = formData.getAll('galleryImages') as File[];
     const keepGalleryImagesStr = formData.get('keepGalleryImages') as string;
 
-    if (!productId?.trim()) {
+    if (!productId) {
       return NextResponse.json({error: 'Product ID is required'}, {status: 400});
     }
-
-    if (!productName?.trim()) {
+    if (!productName) {
       return NextResponse.json({error: 'Product name is required'}, {status: 400});
     }
-
-    if (!paymentLink?.trim()) {
+    if (!paymentLink) {
       return NextResponse.json({error: 'Payment link is required'}, {status: 400});
     }
-
-    try {
-      const url = new URL(paymentLink);
-      if (!url.protocol.startsWith('http')) {
-        return NextResponse.json({error: 'Invalid payment link'}, {status: 400});
-      }
-    } catch {
-      return NextResponse.json({error: 'Invalid payment link URL'}, {status: 400});
-    }
+    const badLink = validatePaymentLink(paymentLink);
+    if (badLink) return badLink;
 
     const priceNum = parseFloat(price);
     if (Number.isNaN(priceNum) || priceNum < 0) {
       return NextResponse.json({error: 'Valid price required'}, {status: 400});
     }
-
     const priceInCents = Math.round(priceNum * 100);
 
-    const updates: Partial<Parameters<typeof updateProduct>[1]> = {
-      productName: productName.trim(),
-      description: description?.trim() || '',
+    const updates: Record<string, unknown> = {
+      productName,
+      description,
       price: priceInCents,
-      paymentLink: paymentLink.trim(),
+      stripePaymentLink: paymentLink,
       isAvailable,
     };
 
     if (imageFile && imageFile.size > 0) {
-      if (imageFile.size > 12 * 1024 * 1024) {
-        return NextResponse.json({error: 'Image file too large (max 12MB)'}, {status: 400});
-      }
-
-      if (!imageFile.type.startsWith('image/')) {
-        return NextResponse.json({error: 'Only image files allowed'}, {status: 400});
-      }
-
-      updates.imagePath = await saveUploadedImage(imageFile);
+      const badImage = validateImageFile(imageFile);
+      if (badImage) return badImage;
+      updates.productImage = await uploadSanityImageFile(imageFile);
     }
 
-    // Handle gallery images - keep existing + add new
-    const keepGalleryImages: string[] = keepGalleryImagesStr 
-      ? JSON.parse(keepGalleryImagesStr) 
-      : [];
+    // Gallery: keep the existing images whose resolved URL is in keepGalleryImages,
+    // then append any newly uploaded files.
+    const keepUrls: string[] = keepGalleryImagesStr ? JSON.parse(keepGalleryImagesStr) : [];
+    const existing = await sanityWriteClient.fetch<{galleryImages?: KeyedImage[]} | null>(
+      `*[_type == "shopProduct" && _id == $id][0]{galleryImages}`,
+      {id: productId},
+    );
+    const keepSet = new Set(keepUrls);
+    const keptImages: KeyedImage[] = (existing?.galleryImages ?? []).filter((img) => {
+      if (!img || !('asset' in img)) return false;
+      let url = '';
+      try {
+        url = urlFor(img as never).url();
+      } catch {
+        return false;
+      }
+      return keepSet.has(url);
+    });
 
-    // Add new gallery images
-    const newGalleryImages: string[] = [];
+    const newGalleryImages: KeyedImage[] = [];
     for (const file of galleryImageFiles) {
       if (file && file.size > 0) {
-        if (file.size > 12 * 1024 * 1024) {
-          return NextResponse.json({error: 'Gallery image file too large (max 12MB)'}, {status: 400});
-        }
-        if (!file.type.startsWith('image/')) {
-          continue;
-        }
-        const galleryPath = await saveUploadedImage(file);
-        newGalleryImages.push(galleryPath);
+        const badGallery = validateImageFile(file);
+        if (badGallery) return badGallery;
+        newGalleryImages.push(withKey(await uploadSanityImageFile(file)));
       }
     }
 
-    // Merge kept images with new images
-    updates.galleryImages = [...keepGalleryImages, ...newGalleryImages];
+    updates.galleryImages = [...keptImages, ...newGalleryImages];
 
-    const product = updateProduct(productId, updates);
-    if (!product) {
+    const result = await sanityWriteClient
+      .patch(productId)
+      .set(updates)
+      .commit();
+    if (!result) {
       return NextResponse.json({error: 'Product not found'}, {status: 404});
     }
 
     revalidateShopPaths();
-    return NextResponse.json({ok: true, product});
+    return NextResponse.json({ok: true});
   } catch (error) {
+    const code = error instanceof Error ? error.message : '';
+    if (code === 'FILE_TOO_LARGE') {
+      return NextResponse.json({error: 'Image file too large (max 12MB)'}, {status: 400});
+    }
+    if (code === 'UNSUPPORTED_TYPE') {
+      return NextResponse.json({error: 'Use a JPG, PNG, WebP, or GIF image'}, {status: 400});
+    }
     console.error('[admin/shop PATCH]', error);
     return NextResponse.json({error: 'Failed to update product'}, {status: 500});
   }
@@ -219,23 +236,17 @@ export async function PATCH(request: Request) {
 
 /** DELETE - Remove shop product */
 export async function DELETE(request: Request) {
-  const cookieStore = await cookies();
-  if (cookieStore.get('pv_admin')?.value !== 'true') {
-    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-  }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
   try {
     const {searchParams} = new URL(request.url);
     const productId = searchParams.get('id');
-
     if (!productId) {
       return NextResponse.json({error: 'Product ID required'}, {status: 400});
     }
 
-    const success = deleteProduct(productId);
-    if (!success) {
-      return NextResponse.json({error: 'Product not found'}, {status: 404});
-    }
+    await sanityWriteClient.delete(productId);
 
     revalidateShopPaths();
     return NextResponse.json({ok: true});

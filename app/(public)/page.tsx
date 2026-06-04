@@ -75,8 +75,8 @@ async function getData() {
     // Sanity not configured or fetch error — fall back to static defaults
   }
 
-  // Get shop products from local storage
-  const shopProducts = getAvailableProducts();
+  // Get shop products from Sanity
+  const shopProducts = await getAvailableProducts();
 
   return {posts, galleryItems, stats, events, reviews, siteContent, shopProducts};
 }
