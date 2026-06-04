@@ -5,7 +5,6 @@ import {useRouter} from 'next/navigation';
 import {motion, AnimatePresence} from 'framer-motion';
 import {ChevronLeft, ChevronRight, Quote, Star} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
-import ParticleField from '@/components/ui/ParticleField';
 import AddReviewModal from '@/components/reviews/AddReviewModal';
 import type {Review} from '@/lib/reviews';
 
@@ -64,18 +63,15 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
   return (
     <>
       <section id="reviews" className="relative overflow-hidden border-t border-brand-red bg-charcoal py-20 md:py-28">
-        {/* Interactive starfield to match the dark immersive sections */}
-        <ParticleField className="absolute inset-0 z-0 h-full w-full opacity-60" count={70} />
-
         <div
-          className="pointer-events-none absolute inset-0 z-0 opacity-40"
+          className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             background:
               'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(176,0,0,0.18) 0%, transparent 60%)',
           }}
         />
 
-        <div className="container-max section-padding relative z-10">
+        <div className="container-max section-padding relative">
           <ScrollReveal className="mb-10 text-center">
             <span className="section-label justify-center text-white/70">Testimonials</span>
             <h2 className="section-title mt-2 text-white">
@@ -98,7 +94,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
             <div className="relative mx-auto max-w-3xl">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.article
-                  key={current.id}
+                  key={current._id}
                   custom={direction}
                   variants={slideVariants}
                   initial="enter"
@@ -132,7 +128,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
                   <div className="flex gap-2">
                     {items.map((item, i) => (
                       <button
-                        key={item.id}
+                        key={item._id}
                         type="button"
                         onClick={() => go(i)}
                         className={`h-2 rounded-full transition-all duration-300 ${

@@ -7,9 +7,11 @@ import ShopPageClient from '@/components/shop/ShopPageClient';
 export const dynamic = 'force-dynamic';
 
 export default async function ShopPage() {
-  const products = getAvailableProducts();
-  const allProducts = getAllProducts();
-  const collectionImages = getAllCollectionImages();
+  const [products, allProducts, collectionImages] = await Promise.all([
+    getAvailableProducts(),
+    getAllProducts(),
+    getAllCollectionImages(),
+  ]);
   const cookieStore = await cookies();
   const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
 

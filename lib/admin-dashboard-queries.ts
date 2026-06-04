@@ -1,4 +1,42 @@
-/** Row shapes consumed by the admin dashboard (file-based storage, mapped in the page). */
+export const adminReviewsQuery = `*[_type == "review" && !(_id in path("drafts.**"))] | order(submittedAt desc) {
+  _id,
+  name,
+  rating,
+  comment,
+  status,
+  submittedAt
+}`;
+
+export const adminInquiriesQuery = `*[_type == "inquirySubmission"] | order(submittedAt desc) [0...50] {
+  _id,
+  submissionType,
+  name,
+  email,
+  phone,
+  submittedAt,
+  formData
+}`;
+
+export const adminBlogListQuery = `*[_type == "blog"] | order(publishedAt desc) [0...30] {
+  _id,
+  title,
+  "slug": slug.current,
+  status,
+  publishedAt
+}`;
+
+export const adminEventsListQuery = `*[_type == "event"] | order(date desc) [0...30] {
+  _id,
+  eventName,
+  date,
+  location
+}`;
+
+export const adminGalleryListQuery = `*[_type in ["gallery", "galleryItem"]] | order(_updatedAt desc) [0...30] {
+  _id,
+  _type,
+  title
+}`;
 
 export type AdminReviewRow = {
   _id: string;

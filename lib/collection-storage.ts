@@ -1,83 +1,63 @@
-import {readFileSync, writeFileSync, existsSync, mkdirSync} from 'fs';
-import {join} from 'path';
-
-const COLLECTION_DATA_DIR = join(process.cwd(), 'data');
-const COLLECTION_DATA_FILE = join(COLLECTION_DATA_DIR, 'shop-collection.json');
+import {sanityClient, urlFor} from '@/lib/sanity';
 
 export type CollectionImage = {
   id: string;
   title: string;
   description?: string;
-  imagePath: string;
+  imagePath: string; // resolved URL
   createdAt: string;
   updatedAt: string;
 };
 
-function ensureDataDir() {
-  if (!existsSync(COLLECTION_DATA_DIR)) {
-    mkdirSync(COLLECTION_DATA_DIR, {recursive: true});
+type CollectionSanityDoc = {
+  _id: string;
+  title?: string;
+  description?: string;
+  image?: unknown;
+  _createdAt?: string;
+  _updatedAt?: string;
+};
+
+const COLLECTION_PROJECTION = `{
+  _id,
+  title,
+  description,
+  image,
+  _createdAt,
+  _updatedAt
+}`;
+
+function imageUrl(img: unknown): string {
+  if (!(img && typeof img === 'object' && 'asset' in (img as Record<string, unknown>))) return '';
+  try {
+    return urlFor(img as never).url();
+  } catch {
+    return '';
   }
 }
 
-function readCollection(): CollectionImage[] {
-  ensureDataDir();
-  if (!existsSync(COLLECTION_DATA_FILE)) {
-    return [];
-  }
-  const raw = readFileSync(COLLECTION_DATA_FILE, 'utf-8');
-  return JSON.parse(raw) as CollectionImage[];
-}
-
-function writeCollection(images: CollectionImage[]): void {
-  ensureDataDir();
-  writeFileSync(COLLECTION_DATA_FILE, JSON.stringify(images, null, 2), 'utf-8');
-}
-
-export function getAllCollectionImages(): CollectionImage[] {
-  return readCollection();
-}
-
-export function getCollectionImageById(id: string): CollectionImage | null {
-  const images = readCollection();
-  return images.find((img) => img.id === id) ?? null;
-}
-
-export function createCollectionImage(
-  data: Omit<CollectionImage, 'id' | 'createdAt' | 'updatedAt'>,
-): CollectionImage {
-  const images = readCollection();
-  const newImage: CollectionImage = {
-    ...data,
-    id: `collection-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+function mapImage(doc: CollectionSanityDoc): CollectionImage {
+  return {
+    id: doc._id,
+    title: doc.title ?? '',
+    description: doc.description || undefined,
+    imagePath: imageUrl(doc.image),
+    createdAt: doc._createdAt ?? '',
+    updatedAt: doc._updatedAt ?? '',
   };
-  images.push(newImage);
-  writeCollection(images);
-  return newImage;
 }
 
-export function updateCollectionImage(
-  id: string,
-  data: Partial<Omit<CollectionImage, 'id' | 'createdAt' | 'updatedAt'>>,
-): CollectionImage | null {
-  const images = readCollection();
-  const index = images.findIndex((img) => img.id === id);
-  if (index === -1) return null;
-
-  images[index] = {
-    ...images[index],
-    ...data,
-    updatedAt: new Date().toISOString(),
-  };
-  writeCollection(images);
-  return images[index];
+export async function getAllCollectionImages(): Promise<CollectionImage[]> {
+  const docs = await sanityClient.fetch<CollectionSanityDoc[]>(
+    `*[_type == "collectionImage"] | order(_createdAt asc) ${COLLECTION_PROJECTION}`,
+  );
+  return (docs ?? []).map(mapImage);
 }
 
-export function deleteCollectionImage(id: string): boolean {
-  const images = readCollection();
-  const filtered = images.filter((img) => img.id !== id);
-  if (filtered.length === images.length) return false;
-  writeCollection(filtered);
-  return true;
+export async function getCollectionImageById(id: string): Promise<CollectionImage | null> {
+  const doc = await sanityClient.fetch<CollectionSanityDoc | null>(
+    `*[_type == "collectionImage" && _id == $id][0] ${COLLECTION_PROJECTION}`,
+    {id},
+  );
+  return doc ? mapImage(doc) : null;
 }

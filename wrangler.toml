@@ -15,4 +15,7 @@ binding = "WORKER_SELF_REFERENCE"
 service = "paidville"
 
 [vars]
-NEXT_PUBLIC_SITE_URL = "https://paidville.eaalobuia.workers.dev"
+NEXT_PUBLIC_SANITY_PROJECT_ID = "qxv0mc90"
+NEXT_PUBLIC_SANITY_DATASET = "production"
+NEXT_PUBLIC_SITE_URL = "https://paidville.pages.dev"
+SANITY_REVALIDATE_SECRET = "paidville2018secret"

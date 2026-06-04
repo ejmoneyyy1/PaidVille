@@ -1,8 +1,4 @@
-import {readFileSync, writeFileSync, existsSync, mkdirSync} from 'fs';
-import {join} from 'path';
-
-const SHOP_DATA_DIR = join(process.cwd(), 'data');
-const SHOP_DATA_FILE = join(SHOP_DATA_DIR, 'shop-products.json');
+import {sanityClient, urlFor} from '@/lib/sanity';
 
 export type ShopProduct = {
   id: string;
@@ -10,83 +6,88 @@ export type ShopProduct = {
   description: string;
   price: number; // Stored in cents (e.g., 4500 for $45.00)
   paymentLink: string;
-  imagePath: string; // Main product image
-  galleryImages: string[]; // Additional product angles/images
+  imagePath: string; // Main product image (resolved URL)
+  galleryImages: string[]; // Additional product angles/images (resolved URLs)
   isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-function ensureDataDir() {
-  if (!existsSync(SHOP_DATA_DIR)) {
-    mkdirSync(SHOP_DATA_DIR, {recursive: true});
-  }
+/** Raw shape of a `shopProduct` document fetched from Sanity. */
+type ShopProductSanityDoc = {
+  _id: string;
+  productName?: string;
+  description?: string;
+  price?: number;
+  stripePaymentLink?: string;
+  isAvailable?: boolean;
+  productImage?: unknown;
+  galleryImages?: unknown[];
+  _createdAt?: string;
+  _updatedAt?: string;
+};
+
+const SHOP_PROJECTION = `{
+  _id,
+  productName,
+  description,
+  price,
+  stripePaymentLink,
+  isAvailable,
+  productImage,
+  galleryImages,
+  _createdAt,
+  _updatedAt
+}`;
+
+function hasAsset(img: unknown): boolean {
+  return Boolean(img && typeof img === 'object' && 'asset' in (img as Record<string, unknown>));
 }
 
-function readProducts(): ShopProduct[] {
-  ensureDataDir();
-  if (!existsSync(SHOP_DATA_FILE)) {
-    writeFileSync(SHOP_DATA_FILE, JSON.stringify([], null, 2));
-    return [];
-  }
+function imageUrl(img: unknown): string {
+  if (!hasAsset(img)) return '';
   try {
-    const data = readFileSync(SHOP_DATA_FILE, 'utf-8');
-    return JSON.parse(data);
+    return urlFor(img as never).url();
   } catch {
-    return [];
+    return '';
   }
 }
 
-function writeProducts(products: ShopProduct[]) {
-  ensureDataDir();
-  writeFileSync(SHOP_DATA_FILE, JSON.stringify(products, null, 2));
-}
-
-export function getAllProducts(): ShopProduct[] {
-  return readProducts();
-}
-
-export function getAvailableProducts(): ShopProduct[] {
-  return readProducts().filter((p) => p.isAvailable);
-}
-
-export function getProductById(id: string): ShopProduct | null {
-  const products = readProducts();
-  return products.find((p) => p.id === id) ?? null;
-}
-
-export function createProduct(data: Omit<ShopProduct, 'id' | 'createdAt' | 'updatedAt'>): ShopProduct {
-  const products = readProducts();
-  const newProduct: ShopProduct = {
-    ...data,
-    galleryImages: data.galleryImages || [],
-    id: `shop-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+function mapProduct(doc: ShopProductSanityDoc): ShopProduct {
+  return {
+    id: doc._id,
+    productName: doc.productName ?? '',
+    description: doc.description ?? '',
+    price: typeof doc.price === 'number' ? doc.price : 0,
+    paymentLink: doc.stripePaymentLink ?? '',
+    imagePath: imageUrl(doc.productImage),
+    galleryImages: Array.isArray(doc.galleryImages)
+      ? doc.galleryImages.filter(hasAsset).map(imageUrl).filter(Boolean)
+      : [],
+    isAvailable: doc.isAvailable ?? false,
+    createdAt: doc._createdAt ?? '',
+    updatedAt: doc._updatedAt ?? '',
   };
-  products.push(newProduct);
-  writeProducts(products);
-  return newProduct;
 }
 
-export function updateProduct(id: string, data: Partial<Omit<ShopProduct, 'id' | 'createdAt'>>): ShopProduct | null {
-  const products = readProducts();
-  const index = products.findIndex((p) => p.id === id);
-  if (index === -1) return null;
-
-  products[index] = {
-    ...products[index],
-    ...data,
-    updatedAt: new Date().toISOString(),
-  };
-  writeProducts(products);
-  return products[index];
+export async function getAllProducts(): Promise<ShopProduct[]> {
+  const docs = await sanityClient.fetch<ShopProductSanityDoc[]>(
+    `*[_type == "shopProduct"] | order(_createdAt asc) ${SHOP_PROJECTION}`,
+  );
+  return (docs ?? []).map(mapProduct);
 }
 
-export function deleteProduct(id: string): boolean {
-  const products = readProducts();
-  const filtered = products.filter((p) => p.id !== id);
-  if (filtered.length === products.length) return false;
-  writeProducts(filtered);
-  return true;
+export async function getAvailableProducts(): Promise<ShopProduct[]> {
+  const docs = await sanityClient.fetch<ShopProductSanityDoc[]>(
+    `*[_type == "shopProduct" && isAvailable == true] | order(_createdAt asc) ${SHOP_PROJECTION}`,
+  );
+  return (docs ?? []).map(mapProduct);
+}
+
+export async function getProductById(id: string): Promise<ShopProduct | null> {
+  const doc = await sanityClient.fetch<ShopProductSanityDoc | null>(
+    `*[_type == "shopProduct" && _id == $id][0] ${SHOP_PROJECTION}`,
+    {id},
+  );
+  return doc ? mapProduct(doc) : null;
 }

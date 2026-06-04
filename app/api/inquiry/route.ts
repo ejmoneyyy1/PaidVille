@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {Resend} from 'resend';
-import {createInquiry} from '@/lib/inquiry-storage';
+import {getSanityWriteClient} from '@/lib/sanity-write';
 
 export const runtime = 'nodejs';
 
@@ -30,7 +30,18 @@ export async function POST(request: Request) {
 
     const submittedAt = new Date().toISOString();
 
-    createInquiry({submissionType, name, email, phone, formData});
+    const write = getSanityWriteClient();
+    await write.create({
+      _type: 'inquirySubmission',
+      submissionType,
+      name,
+      email,
+      phone,
+      submittedAt,
+      formData: {
+        json: JSON.stringify(formData, null, 2),
+      },
+    });
 
     const resendKey = process.env.RESEND_API_KEY;
     const to = process.env.RESEND_TO_EMAIL;

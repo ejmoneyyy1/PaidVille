@@ -3,6 +3,7 @@
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {useAdmin} from '@/contexts/AdminContext';
+import {plainTextToPortableBlocks} from '@/lib/portable-text-admin';
 
 export default function AdminPanel() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function AdminPanel() {
           setErrorMsg('Enter a valid number');
           return;
         }
+      } else if (activePanel.type === 'richtext') {
+        value = plainTextToPortableBlocks(draft);
       }
       await saveField(activePanel.documentId, activePanel.field, value);
       setSaveState('saved');
@@ -93,7 +96,7 @@ export default function AdminPanel() {
         ) : activePanel.type === 'image' ? (
           <div className="space-y-2">
             <p className="text-xs text-white/50">
-              Paste an image URL or path.
+              Paste an image URL or path. Full Sanity asset upload can be added later.
             </p>
             <input
               type="url"

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {useRouter} from 'next/navigation';
 import Image from 'next/image';
 import {motion, AnimatePresence} from 'framer-motion';
@@ -23,6 +23,47 @@ export default function ShopCatalog({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  const getProductImages = useCallback((product: ShopProduct): string[] => {
+    return [product.imagePath, ...(product.galleryImages || [])];
+  }, []);
+
+  const closeLightbox = useCallback(() => {
+    setSelectedProduct(null);
+    setCurrentImageIndex(0);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProduct) return;
+
+    const images = getProductImages(selectedProduct);
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeLightbox();
+        return;
+      }
+
+      if (images.length <= 1) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [selectedProduct, closeLightbox, getProductImages]);
+
   if (products.length === 0) {
     return (
       <div className="container-max section-padding py-16 text-center text-charcoal/55 font-display">
@@ -34,16 +75,6 @@ export default function ShopCatalog({
   const openLightbox = (product: ShopProduct) => {
     setSelectedProduct(product);
     setCurrentImageIndex(0);
-  };
-
-  const closeLightbox = () => {
-    setSelectedProduct(null);
-    setCurrentImageIndex(0);
-  };
-
-  // Get all images for the selected product (main image + gallery images)
-  const getProductImages = (product: ShopProduct): string[] => {
-    return [product.imagePath, ...(product.galleryImages || [])];
   };
 
   const nextImage = () => {
@@ -172,6 +203,9 @@ export default function ShopCatalog({
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedProduct.productName} product gallery`}
             className={`fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center px-4 pt-4 ${
               isAdmin ? 'pb-28' : 'pb-4'
             }`}
@@ -197,14 +231,13 @@ export default function ShopCatalog({
               )}
             </div>
 
-            {/* Thumbnail rail sits directly beside the main image; nav controls
-                live in the same column as the image so they stay centered under it */}
+            {/* Thumbnail rail beside main image */}
             <div
-              className="flex w-full max-w-5xl items-start justify-center gap-3"
+              className="flex w-full max-w-6xl items-start justify-center gap-5"
               onClick={(e) => e.stopPropagation()}
             >
               {getProductImages(selectedProduct).length > 1 && (
-                <div className="flex max-h-[68vh] flex-col gap-2 overflow-y-auto pr-1">
+                <div className="flex max-h-[68vh] w-[min(22vh,10rem)] shrink-0 flex-col gap-3 overflow-y-auto pr-1">
                   {getProductImages(selectedProduct).map((img, i) => (
                     <button
                       key={`${img}-${i}`}
@@ -213,10 +246,10 @@ export default function ShopCatalog({
                         e.stopPropagation();
                         setCurrentImageIndex(i);
                       }}
-                      className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:h-[72px] sm:w-[72px] ${
+                      className={`relative block aspect-square w-full shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                         i === currentImageIndex
-                          ? 'border-brand-red ring-2 ring-brand-red'
-                          : 'border-white/30 opacity-70 hover:border-white hover:opacity-100'
+                          ? 'border-brand-red ring-2 ring-brand-red ring-offset-2 ring-offset-black/95'
+                          : 'border-white/30 opacity-75 hover:border-white hover:opacity-100'
                       }`}
                     >
                       <Image
@@ -224,14 +257,14 @@ export default function ShopCatalog({
                         alt={`${selectedProduct.productName} thumbnail ${i + 1}`}
                         fill
                         className="object-cover"
-                        sizes="72px"
+                        sizes="160px"
                       />
                     </button>
                   ))}
                 </div>
               )}
 
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex min-w-0 flex-col items-center gap-4">
                 <div className="relative h-[68vh] w-[68vh] max-w-[80vw]">
                   <Image
                     src={getProductImages(selectedProduct)[currentImageIndex]}

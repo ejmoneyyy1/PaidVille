@@ -107,7 +107,7 @@ export default function CollectionGallery({
                     <motion.div
                       role="button"
                       tabIndex={0}
-                      className={`group relative w-full cursor-pointer overflow-hidden bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
+                      className={`relative w-full cursor-pointer bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
                         isTall ? 'aspect-[3/4]' : 'aspect-[5/4]'
                       }`}
                       onClick={(e) => {
@@ -126,7 +126,7 @@ export default function CollectionGallery({
                         src={img.imagePath}
                         alt={img.title}
                         fill
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        className="object-cover"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </motion.div>

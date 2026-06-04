@@ -2,10 +2,10 @@
 
 import {useRef, useState} from 'react';
 import Link from 'next/link';
-import {motion, useMotionTemplate, useMotionValue, useSpring, useTransform} from 'framer-motion';
+import {motion, useMotionValue, useSpring, useTransform} from 'framer-motion';
 import {Zap, Camera, ShoppingBag, Users} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
-import type {SiteContentDoc} from '@/lib/site-content-types';
+import type {SiteContentDoc} from '@/lib/sanity-queries';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import EditableField from '@/components/admin/EditableField';
 import {cn} from '@/lib/utils';
@@ -79,8 +79,8 @@ function ServiceTitleDescription({
   if (!fields || !siteContentId) {
     return (
       <>
-        <h3 className="font-display font-bold text-xl text-cream leading-snug">{service.title}</h3>
-        <p className="text-sm text-cream/70 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
+        <h3 className="font-display font-bold text-xl text-charcoal leading-snug">{service.title}</h3>
+        <p className="text-sm text-charcoal/65 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
       </>
     );
   }
@@ -94,7 +94,7 @@ function ServiceTitleDescription({
         type="text"
         wrapperClassName="relative block group/edit"
       >
-        <h3 className="font-display font-bold text-xl text-cream leading-snug">{service.title}</h3>
+        <h3 className="font-display font-bold text-xl text-charcoal leading-snug">{service.title}</h3>
       </EditableField>
       <EditableField
         documentId={siteContentId}
@@ -104,7 +104,7 @@ function ServiceTitleDescription({
         type="textarea"
         wrapperClassName="relative block group/edit"
       >
-        <p className="text-sm text-cream/70 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
+        <p className="text-sm text-charcoal/65 leading-relaxed flex-1 whitespace-pre-line">{service.description}</p>
       </EditableField>
     </>
   );
@@ -123,22 +123,10 @@ function TiltCard({
   const [hovered, setHovered] = useState(false);
   const {openEvent, openBranding, openCommunity} = useInquiry();
 
-  // Tilt values (existing)
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
   const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [6, -6]), {stiffness: 200, damping: 26});
   const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-6, 6]), {stiffness: 200, damping: 26});
-
-  // Cursor spotlight for the 1px gradient border
-  // Start far off-card so at rest the gradient falls back to the dim stop (base border visible)
-  const mouseXPx = useMotionValue(-9999);
-  const mouseYPx = useMotionValue(-9999);
-  const spotX = useSpring(mouseXPx, {stiffness: 220, damping: 22, mass: 0.08});
-  const spotY = useSpring(mouseYPx, {stiffness: 220, damping: 22, mass: 0.08});
-  // When cursor is at -9999 the circle centre is infinitely far → every point on the
-  // card hits the last colour stop (rgba(176,0,0,0.42)) → a uniform dim border at rest.
-  // On hover the hot-spot brightens to 0.95 at the cursor, fading out within 220px.
-  const borderGlow = useMotionTemplate`radial-gradient(circle 220px at ${spotX}px ${spotY}px, rgba(176,0,0,0.95) 0%, rgba(176,0,0,0.42) 55%, rgba(176,0,0,0.42) 100%)`;
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const el = ref.current;
@@ -146,15 +134,11 @@ function TiltCard({
     const rect = el.getBoundingClientRect();
     rawX.set((e.clientX - rect.left) / rect.width - 0.5);
     rawY.set((e.clientY - rect.top) / rect.height - 0.5);
-    mouseXPx.set(e.clientX - rect.left);
-    mouseYPx.set(e.clientY - rect.top);
   }
 
   function handleMouseLeave() {
     rawX.set(0);
     rawY.set(0);
-    mouseXPx.set(-9999);
-    mouseYPx.set(-9999);
     setHovered(false);
   }
 
@@ -172,53 +156,49 @@ function TiltCard({
 
   return (
     <ScrollReveal delay={index * 0.1} direction="up">
-      {/* 1-px gradient border: the outer element's background IS the border colour;
-          the inner card fills to bg-[#141414] leaving only the 1px gap visible */}
       <motion.div
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={handleMouseLeave}
-        style={{rotateX, rotateY, transformPerspective: 900, background: borderGlow}}
-        className="relative h-full rounded-2xl p-px"
+        style={{rotateX, rotateY, transformPerspective: 900}}
+        className="relative h-full"
       >
         <div
           className={cn(
-            'relative h-full rounded-[15px] p-8 flex flex-col gap-5 overflow-hidden bg-[#141414]',
-            'transition-shadow duration-300',
-            hovered ? 'shadow-[0_16px_40px_rgba(0,0,0,0.5)]' : 'shadow-sm',
+            'relative h-full rounded-2xl p-8 flex flex-col gap-5 overflow-hidden border border-brand-red bg-cream',
+            'shadow-sm transition-shadow duration-300',
+            hovered && 'shadow-md'
           )}
         >
-          {/* Inner ambient glow on hover */}
           <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-[15px]"
+            className="absolute inset-0 rounded-2xl pointer-events-none"
             animate={{opacity: hovered ? 1 : 0}}
             transition={{duration: 0.35}}
             style={{
-              background: 'radial-gradient(ellipse 70% 55% at 35% 20%, rgba(176,0,0,0.08) 0%, transparent 60%)',
+              background:
+                'radial-gradient(ellipse at 30% 20%, rgba(176,0,0,0.06) 0%, transparent 55%)',
             }}
           />
 
           <motion.div
-            animate={{
-              y: hovered ? -3 : 0,
-              scale: hovered ? 1.04 : 1,
-              boxShadow: hovered ? '0 0 22px rgba(176,0,0,0.5)' : '0 0 0px rgba(176,0,0,0)',
-            }}
+            animate={{y: hovered ? -3 : 0, scale: hovered ? 1.03 : 1}}
             transition={{duration: 0.28}}
-            className="relative z-10 inline-flex items-center justify-center w-14 h-14 rounded-xl border border-brand-red/60 bg-[#1c1c1c]"
+            className="relative z-10 inline-flex items-center justify-center w-14 h-14 rounded-xl border border-brand-red bg-white"
           >
             {Icon && (
               <Icon
                 size={24}
-                className={cn('transition-colors duration-300', hovered ? 'text-brand-red' : 'text-cream/60')}
+                className={cn('transition-colors duration-300', hovered ? 'text-brand-red' : 'text-charcoal/55')}
               />
             )}
           </motion.div>
 
           <div className="relative z-10 flex flex-col gap-3 flex-1">
-            <ServiceTitleDescription service={service} siteContentId={siteContentId} />
+            <ServiceTitleDescription
+              service={service}
+              siteContentId={siteContentId}
+            />
           </div>
 
           {service.id === 'shop' ? (
@@ -238,12 +218,10 @@ function TiltCard({
             </button>
           )}
 
-          {/* Bottom scan-line grows on hover */}
           <motion.div
-            aria-hidden
-            className="absolute bottom-0 left-0 h-px bg-gradient-to-r from-brand-red/0 via-brand-red to-brand-red/0"
-            animate={{width: hovered ? '100%' : '0%', opacity: hovered ? 1 : 0}}
-            transition={{duration: 0.4, ease: 'easeInOut'}}
+            className="absolute bottom-0 left-0 h-px bg-brand-red"
+            animate={{width: hovered ? '100%' : '0%'}}
+            transition={{duration: 0.35, ease: 'easeInOut'}}
           />
         </div>
       </motion.div>
@@ -282,7 +260,7 @@ export default function Services({
   const breakIdx = heading.lastIndexOf(' the ');
 
   return (
-    <section id="services" className="relative py-24 md:py-32 overflow-hidden" style={{backgroundColor: '#0c0c0c'}}>
+    <section id="services" className="relative py-24 md:py-32 bg-silver overflow-hidden">
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[380px] pointer-events-none"
         style={{
@@ -301,7 +279,7 @@ export default function Services({
             type="textarea"
             wrapperClassName="relative mx-auto inline-block max-w-4xl group/edit"
           >
-            <h2 className="section-title text-cream tracking-[-0.03em]">
+            <h2 className="section-title text-charcoal">
               {breakIdx !== -1 ? (
                 <>
                   {heading.slice(0, breakIdx)}
@@ -321,7 +299,7 @@ export default function Services({
             type="textarea"
             wrapperClassName="relative mx-auto mt-4 block max-w-3xl group/edit"
           >
-            <p className="section-subtitle mx-auto mt-4 text-center text-cream/65">{subheading}</p>
+            <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/70">{subheading}</p>
           </EditableField>
         </ScrollReveal>
 

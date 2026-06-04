@@ -1,54 +1,32 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {motion, useInView, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform} from 'framer-motion';
+import {motion, useScroll, useTransform} from 'framer-motion';
 import {ArrowDown, Play, Star} from 'lucide-react';
 import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
 import BearEmblemParallax from '@/components/parallax/BearEmblemParallax';
-import ParticleField from '@/components/ui/ParticleField';
-import KineticText from '@/components/ui/KineticText';
 import ReelModal from '@/components/reel/ReelModal';
 import EditableField from '@/components/admin/EditableField';
-import type {SiteContentDoc} from '@/lib/site-content-types';
+import type {SiteContentDoc} from '@/lib/sanity-queries';
 
 const SITE_STATS_ID = 'siteStats';
-
-function CountUp({value, suffix = '', className}: {value: number; suffix?: string; className?: string}) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, {once: true, margin: '-40px'});
-  const prefersReduced = useReducedMotion();
-  const motionVal = useMotionValue(0);
-  const spring = useSpring(motionVal, {duration: 1800, bounce: 0});
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    if (prefersReduced) {
-      setDisplay(value);
-      return;
-    }
-    motionVal.set(value);
-  }, [inView, value, motionVal, prefersReduced]);
-
-  useEffect(() => {
-    const unsubscribe = spring.on('change', (v) => setDisplay(Math.round(v)));
-    return () => unsubscribe();
-  }, [spring]);
-
-  return (
-    <span ref={ref} className={className}>
-      {display.toLocaleString('en-US')}
-      {suffix}
-    </span>
-  );
-}
 
 export type HeroStats = {
   ticketsSold: number;
   eventsHosted: number;
   rating: number;
 };
+
+function formatTicketsLabel(n: number) {
+  if (n >= 1000) return `${Math.round(n / 1000)}k+ Tickets Sold`;
+  return `${n}+ Tickets Sold`;
+}
+
+function formatEventsHostedLabel(n: number) {
+  if (n >= 100) return '100+ Events Hosted';
+  return `${n}+ Events Hosted`;
+}
 
 const FALLBACK_HERO_TAGLINE = 'PREMIUM EVENTS. ELEVATED LIFESTYLE.';
 const FALLBACK_HERO_SUBTEXT = 'CREATIVE AGENCY · FAYETTEVILLE';
@@ -114,8 +92,7 @@ export default function Hero({
     <>
     <section
       ref={sectionRef}
-      className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden"
-      style={{backgroundColor: '#070707'}}
+      className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-cream"
     >
       <BearEmblemParallax />
 
@@ -123,7 +100,7 @@ export default function Hero({
         <video
           ref={videoRef}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            videoLoaded ? 'opacity-40' : 'opacity-0'
+            videoLoaded ? 'opacity-90' : 'opacity-0'
           }`}
           muted
           loop
@@ -134,32 +111,19 @@ export default function Hero({
         />
 
         <div
-          className={`absolute inset-0 transition-opacity duration-1000 ${
+          className={`absolute inset-0 bg-cream transition-opacity duration-1000 ${
             videoLoaded ? 'opacity-0' : 'opacity-100'
           }`}
-          style={{backgroundColor: '#070707'}}
         />
 
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(to bottom, rgba(7,7,7,0.55) 0%, rgba(7,7,7,0.30) 45%, rgba(7,7,7,0.92) 100%)',
+              'linear-gradient(to bottom, rgba(245,245,240,0.35) 0%, rgba(245,245,240,0.1) 45%, rgba(245,245,240,0.75) 100%)',
           }}
         />
       </motion.div>
-
-      {/* Interactive particle starfield */}
-      <ParticleField className="absolute inset-0 z-[1] h-full w-full" />
-
-      {/* Ambient red glow */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 50% at 50% 42%, rgba(176,0,0,0.20) 0%, transparent 68%)',
-        }}
-      />
 
       <motion.div
         className="relative z-10 text-center flex flex-col items-center gap-8 section-padding"
@@ -180,7 +144,7 @@ export default function Hero({
             type="text"
             wrapperClassName="relative inline-block group/edit"
           >
-            <span className="section-label text-[11px] text-cream/75">
+            <span className="section-label text-[11px] text-charcoal/80">
               {siteContent?.heroSubtext ?? FALLBACK_HERO_SUBTEXT}
             </span>
           </EditableField>
@@ -218,12 +182,8 @@ export default function Hero({
             type="text"
             wrapperClassName="relative inline-block group/edit"
           >
-            <p className="text-[clamp(0.8rem,1.9vw,1.05rem)] font-display font-medium tracking-[0.22em] uppercase text-cream/70">
-              <KineticText
-                text={siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
-                delayStart={0.6}
-                stagger={0.03}
-              />
+            <p className="text-[clamp(0.8rem,1.9vw,1.05rem)] font-display font-medium tracking-[0.22em] uppercase text-charcoal/55">
+              {siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
             </p>
           </EditableField>
         </motion.div>
@@ -244,7 +204,7 @@ export default function Hero({
           </MagneticButton>
 
           <MagneticButton
-            className="btn-secondary text-sm px-10 py-4 flex items-center gap-2 text-cream hover:text-charcoal"
+            className="btn-secondary text-sm px-10 py-4 flex items-center gap-2"
             strength={0.28}
             onClick={() => setReelOpen(true)}
           >
@@ -275,7 +235,7 @@ export default function Hero({
                   <Star key={i} size={18} className="fill-amber-400 text-amber-500" aria-hidden />
                 ))}
               </div>
-              <p className="text-xs font-display font-semibold tracking-wide text-cream/70">5 Star Rating</p>
+              <p className="text-xs font-display font-semibold tracking-wide text-charcoal/70">5 Star Rating</p>
             </EditableField>
           </div>
           <div className="text-center min-w-[140px]">
@@ -287,9 +247,7 @@ export default function Hero({
               type="number"
               wrapperClassName="relative inline-block group/edit"
             >
-              <p className="font-display font-black text-xl text-cream">
-                <CountUp value={safeStats.ticketsSold} suffix="+" /> Tickets Sold
-              </p>
+              <p className="font-display font-black text-xl text-charcoal">{formatTicketsLabel(safeStats.ticketsSold)}</p>
             </EditableField>
           </div>
           <div className="text-center min-w-[140px]">
@@ -301,8 +259,8 @@ export default function Hero({
               type="number"
               wrapperClassName="relative inline-block group/edit"
             >
-              <p className="font-display font-black text-xl text-cream">
-                <CountUp value={safeStats.eventsHosted} suffix="+" /> Events Hosted
+              <p className="font-display font-black text-xl text-charcoal">
+                {formatEventsHostedLabel(safeStats.eventsHosted)}
               </p>
             </EditableField>
           </div>
@@ -316,7 +274,7 @@ export default function Hero({
         transition={{delay: 1.5, duration: 0.7}}
         style={{opacity}}
       >
-        <span className="text-[10px] font-display tracking-[0.2em] uppercase text-cream/40">Scroll</span>
+        <span className="text-[10px] font-display tracking-[0.2em] uppercase text-charcoal/35">Scroll</span>
         <motion.div
           animate={{y: [0, 8, 0]}}
           transition={{repeat: Infinity, duration: 1.5, ease: 'easeInOut'}}

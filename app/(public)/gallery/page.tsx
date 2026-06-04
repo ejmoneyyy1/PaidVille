@@ -1,13 +1,38 @@
-import {cookies} from 'next/headers';
-import GalleryPageMasonry from '@/components/gallery/GalleryPageMasonry';
-import {getGalleryPageItems} from '@/lib/gallery-storage';
+import {getSanityClient} from '@/lib/sanity-server';
+import {galleryQuery, type SanityGalleryDoc} from '@/lib/sanity';
+import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/GalleryPageMasonry';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+const HARDCODED_FALLBACK: GalleryPageItem[] = [
+  {_id: 'fallback-1', title: 'Gallery I', staticSrc: '/images/gallery1.jpg', mediaType: 'photo'},
+  {_id: 'fallback-2', title: 'Gallery II', staticSrc: '/images/gallery2.jpg', mediaType: 'photo'},
+  {_id: 'fallback-3', title: 'Gallery III', staticSrc: '/images/gallery3.jpg', mediaType: 'photo'},
+  {_id: 'fallback-4', title: 'Gallery IV', staticSrc: '/images/gallery4.jpg', mediaType: 'photo'},
+  {_id: 'fallback-5', title: 'Gallery V', staticSrc: '/images/gallery5.jpg', mediaType: 'photo'},
+];
+
+function normalizeGalleryFetch(raw: unknown): SanityGalleryDoc[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as SanityGalleryDoc[]).filter(
+    (row): row is SanityGalleryDoc =>
+      Boolean(row) && typeof row === 'object' && typeof row._id === 'string',
+  );
+}
 
 export default async function GalleryPage() {
-  const items = getGalleryPageItems();
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
+  let sanityGallery: SanityGalleryDoc[] = [];
+  try {
+    const client = await getSanityClient();
+    const raw = await client.fetch<unknown>(galleryQuery);
+    sanityGallery = normalizeGalleryFetch(raw);
+  } catch {
+    // Sanity not configured or fetch error
+  }
+
+  // Published API only (unless draft preview): unpublished drafts do not appear here.
+  const images: GalleryPageItem[] =
+    sanityGallery.length > 0 ? sanityGallery : HARDCODED_FALLBACK;
 
   return (
     <div className="min-h-screen pt-32 pb-0 bg-cream">
@@ -21,7 +46,7 @@ export default async function GalleryPage() {
         </p>
       </div>
       <div className="container-max section-padding pb-24">
-        <GalleryPageMasonry items={items} isAdmin={isAdmin} />
+        <GalleryPageMasonry items={images} />
       </div>
     </div>
   );

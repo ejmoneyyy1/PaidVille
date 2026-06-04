@@ -25,40 +25,6 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Lenis smooth-scroll integration */
-  html.lenis,
-  html.lenis body {
-    height: auto;
-  }
-
-  .lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-  }
-
-  .lenis.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-  }
-
-  .lenis.lenis-stopped {
-    overflow: hidden;
-  }
-
-  /* Custom cursor: hide native cursor on desktop, keep it on text fields */
-  .has-custom-cursor,
-  .has-custom-cursor a,
-  .has-custom-cursor button,
-  .has-custom-cursor [role='button'],
-  .has-custom-cursor label,
-  .has-custom-cursor summary {
-    cursor: none;
-  }
-
-  .has-custom-cursor input,
-  .has-custom-cursor textarea,
-  .has-custom-cursor select {
-    cursor: auto;
-  }
-
   body {
     /* Theme without Tailwind @apply so base styles survive even if utilities fail to expand */
     background-color: var(--cream);
@@ -98,17 +64,6 @@
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #1a1a1a 0%, #b00000 55%, #800000 100%);
-  }
-
-  /* Outlined / stroked display text (USTA-style) */
-  .text-outline {
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(245, 245, 240, 0.85);
-  }
-
-  .text-outline-red {
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--brand-red);
   }
 
   .text-gradient-white {

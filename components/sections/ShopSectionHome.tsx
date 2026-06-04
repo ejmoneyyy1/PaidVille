@@ -1,31 +1,13 @@
 'use client';
 
-import {useRef} from 'react';
+import {useState} from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {motion, useInView} from 'framer-motion';
+import {motion} from 'framer-motion';
 import {ShoppingBag, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
 import {formatPrice} from '@/lib/utils';
 import type {ShopProduct} from '@/lib/shop-storage';
-
-/** Slides a cream block across the image before it fully reveals on scroll. */
-function WipeReveal({children}: {children: React.ReactNode}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, {once: true, margin: '-60px'});
-  return (
-    <div ref={ref} className="relative overflow-hidden">
-      {children}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-10 origin-right bg-[#e8e8e4]"
-        initial={{scaleX: 1}}
-        animate={inView ? {scaleX: 0} : {scaleX: 1}}
-        transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.12}}
-      />
-    </div>
-  );
-}
 
 export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
   const displayProducts = products.slice(0, 3);
@@ -43,7 +25,7 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
         <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="section-label">Members Shop</span>
-            <h2 className="section-title text-charcoal tracking-[-0.03em]">
+            <h2 className="section-title text-charcoal">
               Pre-order the <span className="text-brand-red">drop</span>
             </h2>
             <p className="section-subtitle text-charcoal/70 mt-3">
@@ -71,27 +53,25 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
             {displayProducts.map((product, index) => (
               <ScrollReveal key={product.id} delay={index * 0.1} direction="up">
                 <motion.div
-                  className="group rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col h-full"
-                  whileHover={{y: -6, scale: 1.015, boxShadow: '0 20px 40px rgba(176,0,0,0.06)'}}
-                  transition={{type: 'spring', stiffness: 300, damping: 25}}
+                  whileHover={{y: -3}}
+                  transition={{duration: 0.22}}
+                  className="rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col h-full"
                 >
-                  <WipeReveal>
-                    <div className="relative aspect-square overflow-hidden bg-white">
-                      {product.imagePath ? (
-                        <Image
-                          src={product.imagePath}
-                          alt={product.productName}
-                          fill
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                          sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-silver">
-                          <ShoppingBag size={40} className="text-brand-red/25" />
-                        </div>
-                      )}
-                    </div>
-                  </WipeReveal>
+                  <div className="relative aspect-square bg-white">
+                    {product.imagePath ? (
+                      <Image
+                        src={product.imagePath}
+                        alt={product.productName}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-silver">
+                        <ShoppingBag size={40} className="text-brand-red/25" />
+                      </div>
+                    )}
+                  </div>
                   <div className="p-5 flex flex-col gap-2 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-display font-bold text-charcoal text-base leading-snug line-clamp-2">

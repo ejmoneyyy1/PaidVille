@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {Instagram, Twitter, Youtube, Facebook} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
 import FooterLogoStrip from '@/components/brand/FooterLogoStrip';
-import type {SiteContentDoc} from '@/lib/site-content-types';
+import type {SiteContentDoc} from '@/lib/sanity-queries';
 import type {GlobalSettingsDoc} from '@/lib/get-singleton-docs';
 import type {NavItemResolved} from '@/lib/build-nav-items';
 import EditableField from '@/components/admin/EditableField';
@@ -18,7 +18,7 @@ function TikTokGlyph({className}: {className?: string}) {
 }
 
 const socialClass =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-brand-red/40 bg-white/5 text-cream/60 transition-all duration-200 hover:border-brand-red hover:bg-white/10 hover:text-brand-red hover:shadow-[0_4px_16px_rgba(176,0,0,0.25)]';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-brand-red/40 bg-white/70 text-charcoal/55 transition-all duration-200 hover:border-brand-red hover:bg-white hover:text-brand-red hover:shadow-[0_4px_16px_rgba(176,0,0,0.15)]';
 
 export default function Footer({
   siteContent,
@@ -39,7 +39,7 @@ export default function Footer({
   const tiktokHref = siteContent?.tiktokUrl ?? SiteConfig.social.tiktok;
 
   return (
-    <footer className="relative overflow-hidden border-t border-brand-red bg-gradient-to-b from-[#0c0c0c] to-[#070707]">
+    <footer className="relative overflow-hidden border-t border-brand-red bg-gradient-to-b from-silver to-cream">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.45]"
         style={{
@@ -53,7 +53,7 @@ export default function Footer({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-6">
           <div className="space-y-3 lg:col-span-5">
             <div className="inline-flex flex-col gap-1">
-              <span className="font-display text-xl font-black tracking-tight text-cream md:text-2xl">
+              <span className="font-display text-xl font-black tracking-tight text-gradient-brand md:text-2xl">
                 PAID<span className="text-brand-red">VILLE</span>
               </span>
               <span className="h-px w-12 bg-brand-red/80" aria-hidden />
@@ -66,9 +66,9 @@ export default function Footer({
               type="textarea"
               wrapperClassName="relative block max-w-sm group/edit"
             >
-              <p className="max-w-sm text-sm leading-snug text-cream/65">{footerTagline}</p>
+              <p className="max-w-sm text-sm leading-snug text-charcoal/70">{footerTagline}</p>
             </EditableField>
-            <p className="text-[11px] font-display font-semibold uppercase tracking-[0.18em] text-cream/40">
+            <p className="text-[11px] font-display font-semibold uppercase tracking-[0.18em] text-charcoal/45">
               Est. 2018 — ARK USA · Fayetteville, AR
             </p>
             <FooterLogoStrip />
@@ -83,7 +83,7 @@ export default function Footer({
                 <li key={item._key} className="break-inside-avoid py-0.5">
                   <Link
                     href={item.href}
-                    className="text-cream/55 transition-colors duration-200 hover:text-brand-red"
+                    className="text-charcoal/60 transition-colors duration-200 hover:text-brand-red"
                   >
                     {item.label}
                   </Link>
@@ -132,12 +132,12 @@ export default function Footer({
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-brand-red/30 pt-5 sm:flex-row">
-          <p className="text-[11px] text-cream/40">&copy; {new Date().getFullYear()} PaidVille. All rights reserved.</p>
+          <p className="text-[11px] text-charcoal/45">&copy; {new Date().getFullYear()} PaidVille. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            <Link href="/privacy" className="text-[11px] text-cream/40 transition-colors hover:text-brand-red">
+            <Link href="/privacy" className="text-[11px] text-charcoal/45 transition-colors hover:text-brand-red">
               Privacy
             </Link>
-            <Link href="/terms" className="text-[11px] text-cream/40 transition-colors hover:text-brand-red">
+            <Link href="/terms" className="text-[11px] text-charcoal/45 transition-colors hover:text-brand-red">
               Terms
             </Link>
           </div>

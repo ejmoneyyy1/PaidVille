@@ -2,6 +2,7 @@ import type {Metadata, Viewport} from 'next';
 import {Inter, Montserrat} from 'next/font/google';
 import './globals.css';
 import {SiteConfig} from '@/lib/config';
+import VisualEditingClient from '@/components/VisualEditingClient';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,6 +55,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="en" className={`${inter.variable} ${montserrat.variable}`} suppressHydrationWarning>
       <body className="min-h-screen">
         {children}
+        <VisualEditingClient />
       </body>
     </html>
   );
