@@ -148,7 +148,7 @@ export default function BlogPreview({posts, homepageBlogHeading}: BlogPreviewPro
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 px-8 py-6">
           <div>
             <span className="section-label">Editorial</span>
             <EditableField

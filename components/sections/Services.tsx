@@ -271,7 +271,7 @@ export default function Services({
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal direction="up" className="mb-16 text-center">
+        <ScrollReveal direction="up" className="mb-16 text-center rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 px-8 py-8 mx-auto max-w-4xl">
           <span className="section-label justify-center">What We Do</span>
           <EditableField
             documentId={HOMEPAGE_DOC}

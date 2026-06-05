@@ -27,7 +27,7 @@ export default async function PublicLayout({children}: {children: React.ReactNod
         <MorphBackgroundMount />
         <SmoothScroll />
         <ScrollProgress />
-        <IntroSequence />
+        <IntroSequence splashVideoUrl={siteContent?.splashVideoUrl ?? null} />
         <Navbar navItems={navItems} />
         {/* No positive z-index here: the cosmos/scrim use negative z, so content
             already sits above them. Keeping main at the base stacking context lets

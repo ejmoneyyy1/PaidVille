@@ -13,6 +13,8 @@ import {
   type AdminInquiryRow,
   type AdminReviewRow,
 } from '@/lib/admin-dashboard-queries';
+import {getSiteContent} from '@/lib/get-site-content';
+import type {SiteContentDoc} from '@/lib/sanity-queries';
 import AdminDashboardClient from '@/components/admin/dashboard/AdminDashboardClient';
 
 export const metadata = {
@@ -29,6 +31,7 @@ export default async function AdminDashboardPage() {
   let events: AdminEventRow[] = [];
   let gallery: AdminGalleryRow[] = [];
   let shopProducts: ShopProduct[] = [];
+  let siteContent: SiteContentDoc | null = null;
 
   try {
     const client = await getSanityClient();
@@ -43,11 +46,16 @@ export default async function AdminDashboardPage() {
     console.error('[admin/dashboard]', e);
   }
 
-  // Get shop products from Sanity
   try {
     shopProducts = await getAllProducts();
   } catch (e) {
     console.error('[admin/dashboard shop]', e);
+  }
+
+  try {
+    siteContent = await getSiteContent();
+  } catch (e) {
+    console.error('[admin/dashboard siteContent]', e);
   }
 
   return (
@@ -58,6 +66,7 @@ export default async function AdminDashboardPage() {
       events={events ?? []}
       gallery={gallery ?? []}
       shopProducts={shopProducts ?? []}
+      siteContent={siteContent}
     />
   );
 }

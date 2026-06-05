@@ -30,13 +30,16 @@ export default function Footer({
   navItems: NavItemResolved[];
 }) {
   const rawFooterTagline =
-    globalSettings?.footerTagline ?? siteContent?.footerTagline ?? SiteConfig.tagline;
+    globalSettings?.footerTagline || siteContent?.footerTagline || SiteConfig.tagline;
   /** Hide legacy CMS copy that duplicated the Carpe Diem motto in the tagline slot. */
   const footerTagline = /carpe\s*diem/i.test(rawFooterTagline) ? SiteConfig.tagline : rawFooterTagline;
   const contactEmail = globalSettings?.contactEmail ?? SiteConfig.contact.email;
+  const siteDocId = siteContent?._id ?? '';
   const instagramHref = siteContent?.instagramUrl ?? SiteConfig.social.instagram;
   const twitterHref = siteContent?.twitterUrl ?? SiteConfig.social.twitter;
   const tiktokHref = siteContent?.tiktokUrl ?? SiteConfig.social.tiktok;
+  const youtubeHref = siteContent?.youtubeUrl ?? SiteConfig.social.youtube;
+  const facebookHref = siteContent?.facebookUrl ?? SiteConfig.social.facebook;
 
   return (
     <footer className="relative overflow-hidden border-t border-brand-red bg-[#0a0a0c]">
@@ -112,21 +115,66 @@ export default function Footer({
               </a>
             </EditableField>
             <div className="mt-4 flex flex-wrap gap-2">
-              <a href={instagramHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Instagram">
-                <Instagram size={16} />
-              </a>
-              <a href={tiktokHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="TikTok">
-                <TikTokGlyph className="size-4" />
-              </a>
-              <a href={twitterHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Twitter">
-                <Twitter size={16} />
-              </a>
-              <a href={SiteConfig.social.youtube} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="YouTube">
-                <Youtube size={16} />
-              </a>
-              <a href={SiteConfig.social.facebook} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Facebook">
-                <Facebook size={16} />
-              </a>
+              <EditableField
+                documentId={siteDocId}
+                field="instagramUrl"
+                label="Instagram URL"
+                value={instagramHref}
+                type="text"
+                wrapperClassName="relative group/edit"
+              >
+                <a href={instagramHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Instagram">
+                  <Instagram size={16} />
+                </a>
+              </EditableField>
+              <EditableField
+                documentId={siteDocId}
+                field="tiktokUrl"
+                label="TikTok URL"
+                value={tiktokHref}
+                type="text"
+                wrapperClassName="relative group/edit"
+              >
+                <a href={tiktokHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="TikTok">
+                  <TikTokGlyph className="size-4" />
+                </a>
+              </EditableField>
+              <EditableField
+                documentId={siteDocId}
+                field="twitterUrl"
+                label="Twitter / X URL"
+                value={twitterHref}
+                type="text"
+                wrapperClassName="relative group/edit"
+              >
+                <a href={twitterHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Twitter">
+                  <Twitter size={16} />
+                </a>
+              </EditableField>
+              <EditableField
+                documentId={siteDocId}
+                field="youtubeUrl"
+                label="YouTube URL"
+                value={youtubeHref}
+                type="text"
+                wrapperClassName="relative group/edit"
+              >
+                <a href={youtubeHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="YouTube">
+                  <Youtube size={16} />
+                </a>
+              </EditableField>
+              <EditableField
+                documentId={siteDocId}
+                field="facebookUrl"
+                label="Facebook URL"
+                value={facebookHref}
+                type="text"
+                wrapperClassName="relative group/edit"
+              >
+                <a href={facebookHref} target="_blank" rel="noopener noreferrer" className={socialClass} aria-label="Facebook">
+                  <Facebook size={16} />
+                </a>
+              </EditableField>
             </div>
           </div>
         </div>

@@ -253,7 +253,7 @@ const BLOB_FRAG = `
   varying float vFres;
   uniform vec3 uColor;
   void main() {
-    gl_FragColor = vec4(uColor * (vFres * 1.4 + 0.05), vFres * 0.55 + 0.04);
+    gl_FragColor = vec4(uColor * (vFres * 0.8 + 0.03), vFres * 0.28 + 0.02);
   }
 `;
 
@@ -293,7 +293,7 @@ export default function MorphParticles() {
       uMorph: {value: 0},
       uTime: {value: 0},
       uPixelRatio: {value: DPR},
-      uOpacity: {value: 1.0},
+      uOpacity: {value: 0.45},
       uScale: {value: 2.8},
       uMouseWorld: {value: new THREE.Vector2(999, 999)},
       uRepel: {value: 1.0},

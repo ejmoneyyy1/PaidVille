@@ -184,7 +184,7 @@ export default function Events({
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="mb-14 text-center">
+        <ScrollReveal className="mb-14 text-center rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 px-8 py-8 mx-auto max-w-4xl">
           <span className="section-label justify-center">What&apos;s Coming Up</span>
           <EditableField
             documentId={HOMEPAGE_DOC}

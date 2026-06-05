@@ -2,13 +2,14 @@
 
 export const siteContentQuery = `*[_type == "siteContent"][0]{
   _id,
+  heroVideoUrl, splashVideoUrl,
   heroTagline, heroSubtext,
   eventsTitle, eventsDescription, eventsImage,
   brandingTitle, brandingDescription, brandingImage,
   clothingTitle, clothingDescription, clothingImage,
   communityTitle, communityDescription, communityImage,
   aboutText, footerTagline,
-  instagramUrl, tiktokUrl, twitterUrl
+  instagramUrl, tiktokUrl, twitterUrl, youtubeUrl, facebookUrl
 }`;
 
 /** Shared image projection for `gallery` + `galleryItem` (asset dereferenced for CDN URLs). */
@@ -93,6 +94,8 @@ export const galleryEventsMediaQuery = `*[_type in ["gallery", "galleryItem"] &&
 
 export type SiteContentDoc = {
   _id?: string;
+  heroVideoUrl?: string | null;
+  splashVideoUrl?: string | null;
   heroTagline?: string | null;
   heroSubtext?: string | null;
   eventsTitle?: string | null;
@@ -112,6 +115,8 @@ export type SiteContentDoc = {
   instagramUrl?: string | null;
   tiktokUrl?: string | null;
   twitterUrl?: string | null;
+  youtubeUrl?: string | null;
+  facebookUrl?: string | null;
 };
 
 export type SanityGalleryDoc = {

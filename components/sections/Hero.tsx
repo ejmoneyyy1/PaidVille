@@ -60,7 +60,7 @@ export default function Hero({
           loop
           playsInline
           preload="metadata"
-          src="/videos/lights.mp4"
+          src={siteContent?.heroVideoUrl || '/videos/lights.mp4'}
         />
         <div
           className="absolute inset-0"
@@ -74,7 +74,7 @@ export default function Hero({
       {/* The morphing particle emblem (site-wide WebGL background) is the hero
           visual; content sits below it. */}
       <motion.div
-        className="relative z-10 text-center flex flex-col items-center gap-6 section-padding pb-[11vh]"
+        className="relative z-10 text-center flex flex-col items-center gap-6 section-padding pb-[11vh] pt-10 rounded-2xl bg-[#0c0d10]/70 backdrop-blur-sm border border-brand-red/10 mx-4 mb-6 sm:mx-8"
         style={{y: yText, opacity}}
       >
         <motion.div

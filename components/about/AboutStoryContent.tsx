@@ -114,7 +114,7 @@ export default function AboutStoryContent({variant = 'home'}: AboutStoryContentP
             </div>
           </ScrollReveal>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 p-6 md:p-8">
             <ScrollReveal direction="left" delay={0.1}>
               {isHome ? (
                 <>

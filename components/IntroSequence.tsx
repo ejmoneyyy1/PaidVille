@@ -11,7 +11,7 @@ const LOGO_HOLD_MS = 1600;
 /** Allow long clips / slow Safari decode before we bail out */
 const VIDEO_TIMEOUT_MS = 120000;
 
-export default function IntroSequence() {
+export default function IntroSequence({splashVideoUrl}: {splashVideoUrl?: string | null}) {
   const [phase, setPhase] = useState<Phase>('loader');
   const [count, setCount] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -345,7 +345,7 @@ export default function IntroSequence() {
                 playsInline
                 autoPlay
                 preload="auto"
-                src="/videos/lights.mp4"
+                src={splashVideoUrl || '/videos/lights.mp4'}
                 onEnded={finishIntro}
                 onClick={(e) => {
                   const el = e.currentTarget;
