@@ -7,6 +7,7 @@ import {Zap, Camera, ShoppingBag, Users} from 'lucide-react';
 import {SiteConfig} from '@/lib/config';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import FloatingOrbs from '@/components/ui/FloatingOrbs';
 import EditableField from '@/components/admin/EditableField';
 import {cn} from '@/lib/utils';
 import {useInquiry} from '@/components/inquiry/InquiryProvider';
@@ -166,7 +167,7 @@ function TiltCard({
       >
         <div
           className={cn(
-            'relative h-full rounded-2xl p-8 flex flex-col gap-5 overflow-hidden border border-brand-red bg-cream',
+            'relative h-full rounded-2xl p-8 flex flex-col gap-5 overflow-hidden border border-brand-red bg-[#141518]',
             'shadow-sm transition-shadow duration-300',
             hovered && 'shadow-md'
           )}
@@ -184,7 +185,7 @@ function TiltCard({
           <motion.div
             animate={{y: hovered ? -3 : 0, scale: hovered ? 1.03 : 1}}
             transition={{duration: 0.28}}
-            className="relative z-10 inline-flex items-center justify-center w-14 h-14 rounded-xl border border-brand-red bg-white"
+            className="relative z-10 inline-flex items-center justify-center w-14 h-14 rounded-xl border border-brand-red bg-card"
           >
             {Icon && (
               <Icon
@@ -260,7 +261,8 @@ export default function Services({
   const breakIdx = heading.lastIndexOf(' the ');
 
   return (
-    <section id="services" className="relative py-24 md:py-32 bg-silver overflow-hidden">
+    <section id="services" className="relative py-24 md:py-32 bg-transparent overflow-hidden">
+      <FloatingOrbs className="opacity-50" />
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[380px] pointer-events-none"
         style={{

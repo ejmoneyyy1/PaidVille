@@ -59,7 +59,7 @@ export default function EventImageUpload({
           e.stopPropagation();
           inputRef.current?.click();
         }}
-        className="absolute left-3 top-12 z-[15] flex items-center gap-1 rounded-full border border-charcoal/15 bg-white/95 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-charcoal shadow-sm hover:bg-brand-red hover:text-white disabled:opacity-60"
+        className="absolute left-3 top-12 z-[15] flex items-center gap-1 rounded-full border border-charcoal/15 bg-card/95 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-charcoal shadow-sm hover:bg-brand-red hover:text-white disabled:opacity-60"
         title={hasImage ? 'Replace event photo' : 'Add event photo'}
       >
         <ImagePlus size={12} />

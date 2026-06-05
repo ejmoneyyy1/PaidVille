@@ -10,8 +10,8 @@ export default function AboutStoryPage() {
   const {openJoin} = useInquiry();
 
   return (
-    <div className="min-h-screen bg-cream">
-      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-charcoal px-6">
+    <div className="min-h-screen bg-transparent">
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-transparent px-6">
         <motion.div
           className="pointer-events-none absolute inset-0 opacity-30"
           style={{
@@ -43,13 +43,13 @@ export default function AboutStoryPage() {
         </motion.div>
       </section>
 
-      <section className="bg-silver">
+      <section className="bg-transparent">
         <AboutStoryContent variant="page" />
       </section>
 
       <AboutMissionBanner />
 
-      <section className="border-t border-brand-red/15 bg-cream py-14 md:py-16">
+      <section className="border-t border-brand-red/15 bg-transparent py-14 md:py-16">
         <div className="container-max section-padding">
           <ScrollReveal className="mb-10 text-center">
             <span className="section-label justify-center">By the Numbers</span>

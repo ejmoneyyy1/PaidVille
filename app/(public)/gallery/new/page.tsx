@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 
 const inputCls =
-  'w-full rounded-[2px] border border-charcoal/20 bg-white px-4 py-3 text-charcoal placeholder:text-charcoal/40';
+  'w-full rounded-[2px] border border-charcoal/20 bg-card px-4 py-3 text-charcoal placeholder:text-charcoal/40';
 
 export default function GalleryNewPage() {
   const router = useRouter();

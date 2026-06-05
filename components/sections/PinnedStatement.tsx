@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from 'framer-motion';
 import ParticleField from '@/components/ui/ParticleField';
+import OrbitalRing from '@/components/ui/OrbitalRing';
 
 const LINE_ONE = 'WE CONTROL THE NIGHT.';
 const LINE_TWO = 'YOU SEIZE THE OPPORTUNITY.';
@@ -85,12 +86,13 @@ export default function PinnedStatement() {
         ref={ref}
         className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#070707] px-6"
       >
+        <OrbitalRing className="absolute inset-0 h-full w-full" />
         <ParticleField className="absolute inset-0 h-full w-full" count={150} repelRadius={150} />
         <div className="relative z-10 text-center">
-          <p className="font-display text-3xl font-black uppercase tracking-[-0.05em] text-cream md:text-5xl">
+          <p className="font-display text-3xl font-black uppercase tracking-[-0.05em] text-white md:text-5xl">
             {LINE_ONE}
           </p>
-          <p className="mt-4 font-display text-3xl font-black uppercase tracking-[-0.05em] text-cream md:text-5xl">
+          <p className="mt-4 font-display text-3xl font-black uppercase tracking-[-0.05em] text-white md:text-5xl">
             {LINE_TWO}
           </p>
         </div>
@@ -101,6 +103,9 @@ export default function PinnedStatement() {
   return (
     <section ref={ref} className="relative h-[220vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#070707]">
+        {/* Orbital ring — Saturn-like particle ring anchoring the cosmic moment */}
+        <OrbitalRing className="absolute inset-0 z-0 h-full w-full" />
+
         {/* Canvas constellation layer */}
         <ParticleField
           className="absolute inset-0 z-0 h-full w-full"
@@ -138,14 +143,14 @@ export default function PinnedStatement() {
             progress={scrollYProgress}
             rangeStart={0.08}
             rangeEnd={0.52}
-            className="font-display text-[clamp(1.75rem,5.2vw,4.25rem)] font-black uppercase leading-[1.02] tracking-[-0.05em] text-cream"
+            className="font-display text-[clamp(1.75rem,5.2vw,4.25rem)] font-black uppercase leading-[1.02] tracking-[-0.05em] text-white"
           />
           <KineticLine
             text={LINE_TWO}
             progress={scrollYProgress}
             rangeStart={0.38}
             rangeEnd={0.92}
-            className="mt-5 font-display text-[clamp(1.75rem,5.2vw,4.25rem)] font-black uppercase leading-[1.02] tracking-[-0.05em] text-cream md:mt-6"
+            className="mt-5 font-display text-[clamp(1.75rem,5.2vw,4.25rem)] font-black uppercase leading-[1.02] tracking-[-0.05em] text-white md:mt-6"
           />
         </div>
       </div>

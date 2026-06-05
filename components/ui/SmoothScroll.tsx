@@ -2,10 +2,13 @@
 
 import {useEffect} from 'react';
 import Lenis from 'lenis';
+import {gsap} from 'gsap';
+import {ScrollTrigger} from 'gsap/ScrollTrigger';
 
 /**
- * Adds premium inertia / smooth scrolling site-wide (Lenis).
- * - Disabled automatically when the user prefers reduced motion.
+ * Premium inertia / smooth scrolling site-wide (Lenis), wired to GSAP's
+ * ScrollTrigger so every scroll-driven effect on the site shares one clock.
+ * - Disabled when the user prefers reduced motion.
  * - Intercepts same-page hash links so they glide instead of jumping.
  * Renders nothing; purely a behavior provider.
  */
@@ -15,6 +18,8 @@ export default function SmoothScroll() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
+    gsap.registerPlugin(ScrollTrigger);
+
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -22,12 +27,11 @@ export default function SmoothScroll() {
       touchMultiplier: 1.5,
     });
 
-    let rafId = 0;
-    const frame = (time: number) => {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(frame);
-    };
-    rafId = requestAnimationFrame(frame);
+    // Drive ScrollTrigger from Lenis, and Lenis from GSAP's ticker (single rAF).
+    lenis.on('scroll', ScrollTrigger.update);
+    const onTick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(onTick);
+    gsap.ticker.lagSmoothing(0);
 
     const onClick = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
@@ -37,8 +41,7 @@ export default function SmoothScroll() {
       if (!href) return;
 
       const isSamePageHash =
-        href.startsWith('#') ||
-        (href.startsWith('/#') && window.location.pathname === '/');
+        href.startsWith('#') || (href.startsWith('/#') && window.location.pathname === '/');
       if (!isSamePageHash) return;
 
       const id = href.slice(href.indexOf('#'));
@@ -53,9 +56,10 @@ export default function SmoothScroll() {
     document.addEventListener('click', onClick);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(onTick);
       document.removeEventListener('click', onClick);
       lenis.destroy();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 

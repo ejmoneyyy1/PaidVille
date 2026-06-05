@@ -35,7 +35,7 @@ export default async function GalleryPage() {
     sanityGallery.length > 0 ? sanityGallery : HARDCODED_FALLBACK;
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-24 bg-transparent isolate [transform:translateZ(0)]">
       <div className="container-max section-padding mb-12 text-center">
         <span className="section-label justify-center">Moments & Memories</span>
         <h1 className="section-title text-charcoal mt-2">

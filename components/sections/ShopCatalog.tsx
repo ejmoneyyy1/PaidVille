@@ -120,23 +120,26 @@ export default function ShopCatalog({
             <ScrollReveal key={product.id} delay={index * 0.06} direction="up">
               <motion.div
                 whileHover={{y: -3}}
-                className="rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col h-full"
+                className="rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm flex flex-col h-full"
               >
-                <button
+                <motion.button
                   type="button"
                   onClick={() => openLightbox(product)}
-                  className="group relative aspect-square overflow-hidden bg-white cursor-pointer"
+                  whileHover={{scale: 1.01}}
+                  transition={{duration: 0.2}}
+                  className="group relative block w-full aspect-square overflow-hidden bg-card cursor-pointer"
                 >
                   {product.imagePath ? (
                     <Image
                       src={product.imagePath}
                       alt={product.productName}
                       fill
+                        loading="eager"
                       className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                       sizes="(max-width:768px) 100vw, 33vw"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-silver">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
                       <ShoppingBag size={40} className="text-brand-red/25" />
                     </div>
                   )}
@@ -145,7 +148,7 @@ export default function ShopCatalog({
                       +{product.galleryImages.length + 1} views
                     </div>
                   )}
-                </button>
+                </motion.button>
                 <div className="p-5 flex flex-col gap-3 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="font-display font-bold text-charcoal">{product.productName}</h2>
@@ -164,7 +167,7 @@ export default function ShopCatalog({
                           e.stopPropagation();
                           onEdit(product);
                         }}
-                        className="flex-1 flex items-center justify-center gap-1 bg-charcoal text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-charcoal/80 transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1 bg-ink text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-ink/80 transition-colors"
                       >
                         <Edit size={14} />
                         Edit
@@ -256,6 +259,7 @@ export default function ShopCatalog({
                         src={img}
                         alt={`${selectedProduct.productName} thumbnail ${i + 1}`}
                         fill
+                        loading="eager"
                         className="object-cover"
                         sizes="160px"
                       />
@@ -270,6 +274,7 @@ export default function ShopCatalog({
                     src={getProductImages(selectedProduct)[currentImageIndex]}
                     alt={`${selectedProduct.productName} - View ${currentImageIndex + 1}`}
                     fill
+                        loading="eager"
                     className="object-contain"
                     sizes="(max-width: 640px) 80vw, 68vh"
                   />
@@ -284,7 +289,7 @@ export default function ShopCatalog({
                         e.stopPropagation();
                         prevImage();
                       }}
-                      className="rounded-full bg-white/90 p-3 text-charcoal shadow-lg transition-all hover:bg-white"
+                      className="rounded-full bg-card/90 p-3 text-charcoal shadow-lg transition-all hover:bg-card"
                     >
                       <ChevronLeft size={24} />
                     </button>
@@ -299,7 +304,7 @@ export default function ShopCatalog({
                         e.stopPropagation();
                         nextImage();
                       }}
-                      className="rounded-full bg-white/90 p-3 text-charcoal shadow-lg transition-all hover:bg-white"
+                      className="rounded-full bg-card/90 p-3 text-charcoal shadow-lg transition-all hover:bg-card"
                     >
                       <ChevronRight size={24} />
                     </button>

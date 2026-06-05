@@ -78,7 +78,7 @@ export default function AboutStoryContent({variant = 'home'}: AboutStoryContentP
                 }}
               />
               <motion.div
-                className="relative overflow-hidden rounded-2xl border border-brand-red bg-white shadow-xl"
+                className="relative overflow-hidden rounded-2xl border border-brand-red bg-card shadow-xl"
                 whileHover={{scale: 1.01}}
                 transition={{duration: 0.35}}
               >
@@ -97,7 +97,7 @@ export default function AboutStoryContent({variant = 'home'}: AboutStoryContentP
               <motion.div
                 animate={{y: [0, -8, 0]}}
                 transition={{repeat: Infinity, duration: 4, ease: 'easeInOut'}}
-                className="absolute -bottom-5 -right-5 rounded-xl border border-brand-red bg-cream px-5 py-3 shadow-xl"
+                className="absolute -bottom-5 -right-5 rounded-xl border border-brand-red bg-[#141518] px-5 py-3 shadow-xl"
               >
                 <p className="font-display text-2xl font-black text-charcoal">Est.</p>
                 <p className="-mt-1 font-display text-2xl font-black text-brand-red">2018</p>
@@ -106,7 +106,7 @@ export default function AboutStoryContent({variant = 'home'}: AboutStoryContentP
               <motion.div
                 animate={{y: [0, 6, 0]}}
                 transition={{repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1.2}}
-                className="absolute -left-4 -top-4 rounded-xl border border-brand-red bg-cream px-4 py-3 shadow-xl"
+                className="absolute -left-4 -top-4 rounded-xl border border-brand-red bg-[#141518] px-4 py-3 shadow-xl"
               >
                 <p className="font-display text-xl font-black text-brand-red">3</p>
                 <p className="whitespace-nowrap text-xs text-charcoal/55">Founders</p>

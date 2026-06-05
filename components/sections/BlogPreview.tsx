@@ -52,7 +52,7 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
             <AdminDeleteControl
               documentId={post._id}
               entityLabel="this post"
-              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white"
+              className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-card text-charcoal shadow-md hover:bg-brand-red hover:text-white"
             />
             <BlogPostMediaUpload
               documentId={post._id}
@@ -65,9 +65,9 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
         ) : null}
         <Link
           href={`/blog/${post.slug.current}`}
-          className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
+          className="group block h-full rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm hover:shadow-md transition-shadow"
         >
-        <div className="relative aspect-video bg-silver overflow-hidden">
+        <div className="relative aspect-video bg-[#15161b] overflow-hidden">
           {imgUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -76,7 +76,7 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-silver">
+            <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
               <span className="font-display font-black text-4xl text-brand-red/15">PV</span>
             </div>
           )}
@@ -89,7 +89,7 @@ function BlogCard({post, index}: {post: BlogPost; index: number}) {
               Video
             </span>
           ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-cream/90 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e]/90 via-transparent to-transparent pointer-events-none" />
         </div>
 
         <div className="p-6 flex flex-col gap-3">
@@ -139,7 +139,7 @@ export default function BlogPreview({posts, homepageBlogHeading}: BlogPreviewPro
   const {lead, accent} = splitHeadingLastWord(blogTitle, DEFAULT_BLOG_HEADING);
 
   return (
-    <section id="blog" className="relative py-24 md:py-32 bg-cream overflow-hidden border-t border-brand-red">
+    <section id="blog" className="relative py-24 md:py-32 bg-transparent overflow-hidden border-t border-brand-red">
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[280px] pointer-events-none"
         style={{

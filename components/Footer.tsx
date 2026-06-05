@@ -18,7 +18,7 @@ function TikTokGlyph({className}: {className?: string}) {
 }
 
 const socialClass =
-  'flex h-9 w-9 items-center justify-center rounded-lg border border-brand-red/40 bg-white/70 text-charcoal/55 transition-all duration-200 hover:border-brand-red hover:bg-white hover:text-brand-red hover:shadow-[0_4px_16px_rgba(176,0,0,0.15)]';
+  'flex h-9 w-9 items-center justify-center rounded-lg border border-brand-red/40 bg-card/70 text-charcoal/55 transition-all duration-200 hover:border-brand-red hover:bg-card hover:text-brand-red hover:shadow-[0_4px_16px_rgba(176,0,0,0.15)]';
 
 export default function Footer({
   siteContent,
@@ -39,7 +39,7 @@ export default function Footer({
   const tiktokHref = siteContent?.tiktokUrl ?? SiteConfig.social.tiktok;
 
   return (
-    <footer className="relative overflow-hidden border-t border-brand-red bg-gradient-to-b from-silver to-cream">
+    <footer className="relative overflow-hidden border-t border-brand-red bg-[#0a0a0c]">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.45]"
         style={{

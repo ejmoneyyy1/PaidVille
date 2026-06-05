@@ -146,7 +146,7 @@ export default async function BlogPostPage({params}: Params) {
   const pullQuote = isStock ? stockArticle?.body?.[2] : null;
 
   return (
-    <article className="min-h-screen bg-cream pb-24 pt-20">
+    <article className="min-h-screen bg-transparent pb-24 pt-20">
       <section className="relative w-full min-h-[500px]">
         {sanityPost ? <ArticleAdminBar documentId={sanityPost._id} /> : null}
         {sanityPost ? (
@@ -230,7 +230,7 @@ export default async function BlogPostPage({params}: Params) {
                 </p>
                 {index === 2 && pullQuote ? (
                   <PullQuoteMotion>
-                    <div className="my-12 bg-charcoal px-8 py-12 text-center">
+                    <div className="my-12 bg-ink px-8 py-12 text-center">
                       <div className="mx-auto mb-6 h-[2px] w-24 bg-brand-red" />
                       <p className="text-[28px] italic leading-tight text-white">"{pullQuote}"</p>
                       <div className="mx-auto mt-6 h-[2px] w-24 bg-brand-red" />

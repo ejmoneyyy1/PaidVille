@@ -246,7 +246,7 @@ export default function AdminDashboardClient({
                 {shopProducts.map((product) => (
                   <div key={product.id} className="rounded-lg border border-[#333] bg-[#222] p-4">
                     {product.imagePath ? (
-                      <div className="relative aspect-square mb-3 rounded overflow-hidden bg-white">
+                      <div className="relative aspect-square mb-3 rounded overflow-hidden bg-card">
                         <Image
                           src={product.imagePath}
                           alt={product.productName}

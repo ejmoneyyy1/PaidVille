@@ -98,7 +98,7 @@ function MasonryGrid({
                 <div className="relative">
                   <motion.button
                     className={`relative w-full rounded-2xl overflow-hidden cursor-pointer group
-                      ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-cream
+                      ${isTall ? 'aspect-[3/4]' : 'aspect-video'} bg-[#15161b]
                       border border-brand-red hover:border-brand-red-dark transition-colors duration-300`}
                     onClick={(e) => {
                       const target = e.target as HTMLElement;
@@ -123,6 +123,7 @@ function MasonryGrid({
                           src={src}
                           alt={item.image?.alt ?? item.title}
                           fill
+                        loading="eager"
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
@@ -206,7 +207,7 @@ export default function GallerySection({ items }: GalleryProps) {
   const {isAdmin} = useAdmin();
 
   return (
-    <section id="gallery" className="relative py-24 md:py-32 bg-silver overflow-hidden border-t border-brand-red">
+    <section id="gallery" className="relative py-24 md:py-32 bg-transparent overflow-hidden border-t border-brand-red">
       <div className="container-max section-padding">
         {/* Header */}
         <ScrollReveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">

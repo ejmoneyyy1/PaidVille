@@ -28,7 +28,7 @@ export default function ShopSection({
   const sub = homepageShopSubheading ?? DEFAULT_SHOP_SUB;
   const {lead, accent} = splitHeadingLastWord(heading, DEFAULT_SHOP_HEADING);
   return (
-    <section id="shop" className="relative py-24 md:py-32 bg-silver overflow-hidden">
+    <section id="shop" className="relative py-24 md:py-32 bg-transparent overflow-hidden">
       <div
         className="absolute top-0 right-0 w-[400px] h-[400px] pointer-events-none"
         style={{
@@ -82,7 +82,7 @@ export default function ShopSection({
         </ScrollReveal>
 
         {!product || !product.stripePaymentLink ? (
-          <div className="rounded-2xl border border-brand-red bg-cream p-12 text-center text-charcoal/60 font-display">
+          <div className="rounded-2xl border border-brand-red bg-[#141518] p-12 text-center text-charcoal/60 font-display">
             Add a featured product in Sanity (Shop / Pre-Order) to show the pre-order card here.
           </div>
         ) : (
@@ -91,19 +91,20 @@ export default function ShopSection({
               <motion.div
                 whileHover={{y: -3}}
                 transition={{duration: 0.22}}
-                className="rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col"
+                className="rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm flex flex-col"
               >
-                <div className="relative aspect-square bg-white">
+                <div className="relative aspect-square bg-card">
                   {product.productImage?.asset?._ref ? (
                     <Image
                       src={urlFor(product.productImage).width(800).height(800).url()}
                       alt={product.productImage.alt ?? product.productName}
                       fill
+                        loading="eager"
                       className="object-cover"
                       sizes="(max-width:1024px) 100vw, 400px"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-silver">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
                       <ShoppingBag size={48} className="text-brand-red/25" />
                     </div>
                   )}

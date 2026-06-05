@@ -6,7 +6,7 @@ import {Trash2} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 const iconButtonClass =
-  'absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal text-white shadow-md transition-opacity hover:bg-brand-red hover:border-brand-red disabled:opacity-60';
+  'absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-ink text-white shadow-md transition-opacity hover:bg-brand-red hover:border-brand-red disabled:opacity-60';
 
 const textLinkClass =
   'inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wide text-brand-red hover:underline disabled:opacity-60';

@@ -12,7 +12,7 @@ import {buildNavItems} from '@/lib/build-nav-items';
 import FloatingJoinButton from '@/components/ui/FloatingJoinButton';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import ScrollProgress from '@/components/ui/ScrollProgress';
-import CustomCursor from '@/components/ui/CustomCursor';
+import MorphBackgroundMount from '@/components/ui/MorphBackgroundMount';
 
 export default async function PublicLayout({children}: {children: React.ReactNode}) {
   const siteContent = await getSiteContent();
@@ -24,11 +24,14 @@ export default async function PublicLayout({children}: {children: React.ReactNod
   return (
     <InquiryProvider>
       <AdminProvider isAdmin={isAdmin}>
+        <MorphBackgroundMount />
         <SmoothScroll />
         <ScrollProgress />
-        <CustomCursor />
         <IntroSequence />
         <Navbar navItems={navItems} />
+        {/* No positive z-index here: the cosmos/scrim use negative z, so content
+            already sits above them. Keeping main at the base stacking context lets
+            in-page modals (product lightbox, etc.) layer above the navbar. */}
         <main className="relative">{children}</main>
         <Footer siteContent={siteContent} globalSettings={globalSettings} navItems={navItems} />
         <FloatingJoinButton />

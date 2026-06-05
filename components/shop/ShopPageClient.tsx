@@ -43,7 +43,7 @@ export default function ShopPageClient({
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-0 bg-transparent isolate [transform:translateZ(0)]">
       <div className="container-max section-padding mb-12 text-center relative">
         <span className="section-label justify-center">Members Shop</span>
         <h1 className="section-title text-charcoal mt-2">

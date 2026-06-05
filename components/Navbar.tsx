@@ -52,8 +52,8 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
       className={cn(
         'fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out',
         scrolled
-          ? 'py-2.5 bg-cream/[0.94] backdrop-blur-2xl border-b border-brand-red shadow-[0_12px_40px_rgba(0,0,0,0.06)]'
-          : 'py-4 bg-gradient-to-b from-cream/80 via-cream/40 to-transparent',
+          ? 'py-2.5 bg-[#0b0b0d]/92 backdrop-blur-2xl border-b border-brand-red shadow-[0_12px_40px_rgba(0,0,0,0.5)]'
+          : 'py-4 bg-gradient-to-b from-[#0a0a0c]/92 via-[#0a0a0c]/50 to-transparent',
       )}
     >
       <div
@@ -80,7 +80,7 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
         <div className="hidden min-w-0 md:flex md:justify-center md:px-1 lg:px-2">
           <motion.ul
             layout
-            className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border border-brand-red/35 bg-white/55 px-1 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)] backdrop-blur-md"
+            className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-2xl border border-brand-red/35 bg-card/55 px-1 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_4px_24px_rgba(176,0,0,0.08)] backdrop-blur-md"
           >
             {navItems.map((item) => (
               <NavLink key={item._key} href={item.href}>
@@ -101,7 +101,7 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
 
         <button
             type="button"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-red bg-white/90 text-charcoal shadow-sm transition-all duration-200 hover:bg-white active:scale-95 md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-red bg-card/90 text-charcoal shadow-sm transition-all duration-200 hover:bg-card active:scale-95 md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -117,7 +117,7 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
             animate={{opacity: 1, height: 'auto'}}
             exit={{opacity: 0, height: 0}}
             transition={{duration: 0.32, ease: [0.22, 1, 0.36, 1]}}
-            className="overflow-hidden border-t border-brand-red bg-cream/98 backdrop-blur-xl md:hidden"
+            className="overflow-hidden border-t border-brand-red bg-[#0b0b0d]/98 backdrop-blur-xl md:hidden"
           >
             <ul className="section-padding flex flex-col gap-1 py-5">
               {navItems.map((item, i) => (
@@ -130,7 +130,7 @@ export default function Navbar({navItems}: {navItems: NavItemResolved[]}) {
                   <Link
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="block rounded-xl border border-transparent px-4 py-3 font-display text-sm font-semibold uppercase tracking-wide text-charcoal/85 transition-colors hover:border-brand-red/25 hover:bg-white"
+                    className="block rounded-xl border border-transparent px-4 py-3 font-display text-sm font-semibold uppercase tracking-wide text-charcoal/85 transition-colors hover:border-brand-red/25 hover:bg-card"
                   >
                     <EditableField
                       documentId={NAV_DOC}

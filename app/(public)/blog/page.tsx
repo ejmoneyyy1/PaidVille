@@ -33,7 +33,7 @@ export default async function BlogPage() {
     sectionString(sections, 'blog-1', 'subheading') ?? 'Editorial by PaidVille';
 
   return (
-    <div className="min-h-screen bg-cream pb-24 pt-20">
+    <div className="min-h-screen bg-transparent pb-24 pt-20">
       <BlogPageHeader heading={blogHeading} subheading={blogSub} />
 
       <div className="container-max section-padding pt-10">

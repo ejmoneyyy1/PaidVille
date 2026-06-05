@@ -19,7 +19,7 @@ export default async function EventsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-24 bg-transparent">
       <div className="container-max section-padding mb-4 text-center">
         <span className="section-label justify-center">What&apos;s Coming Up</span>
         <h1 className="section-title text-charcoal mt-2">

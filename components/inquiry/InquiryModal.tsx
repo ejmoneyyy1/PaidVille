@@ -262,7 +262,7 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[160] flex items-center justify-center bg-charcoal/40 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[160] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm"
           initial={{opacity: 0}}
           animate={{opacity: 1}}
           exit={{opacity: 0}}
@@ -274,7 +274,7 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
             role="dialog"
             aria-modal
             aria-labelledby="inquiry-title"
-            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-pv-red bg-cream shadow-xl"
+            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-pv-red bg-[#141518] shadow-xl"
             initial={{scale: 0.96, opacity: 0}}
             animate={{scale: 1, opacity: 1}}
             exit={{scale: 0.98, opacity: 0}}
@@ -284,7 +284,7 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-4 top-4 z-10 rounded-full border border-pv-red/40 p-2 text-charcoal transition-colors hover:bg-white"
+              className="absolute right-4 top-4 z-10 rounded-full border border-pv-red/40 p-2 text-charcoal transition-colors hover:bg-card"
               aria-label="Close"
             >
               <X size={18} />
