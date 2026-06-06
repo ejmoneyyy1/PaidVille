@@ -13,10 +13,10 @@ import {
 } from 'framer-motion';
 
 const DEFAULT_ITEMS = [
-  'AMERICAN SUMMER CLUB',
+  'CARPE DIEM',
   'EST. 2018',
   'PREMIUM EVENTS',
-  'ELEVATED LIFESTYLE',
+  'THE LAND WHERE WE GRANT WISHES',
   'FAYETTEVILLE · AR',
 ];
 

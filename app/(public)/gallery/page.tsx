@@ -4,6 +4,16 @@ import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/Gal
 
 export const revalidate = 60;
 
+export const metadata = {
+  title: 'Gallery',
+  description:
+    'Browse the PaidVille event gallery — curated photos and moments from our premium events and lifestyle experiences in Fayetteville, AR.',
+  openGraph: {
+    title: 'Gallery | PaidVille',
+    description: 'Curated photos and moments from PaidVille premium events.',
+  },
+};
+
 const HARDCODED_FALLBACK: GalleryPageItem[] = [
   {_id: 'fallback-1', title: 'Gallery I', staticSrc: '/images/gallery1.jpg', mediaType: 'photo'},
   {_id: 'fallback-2', title: 'Gallery II', staticSrc: '/images/gallery2.jpg', mediaType: 'photo'},

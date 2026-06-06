@@ -3,6 +3,16 @@ import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import {stockPosts} from './_data/stock-content';
+
+export const metadata = {
+  title: 'Biased Opinions',
+  description:
+    'The PaidVille editorial — unfiltered takes on events, lifestyle, culture, and what it means to live elevated in Fayetteville, AR.',
+  openGraph: {
+    title: 'Biased Opinions | PaidVille',
+    description: 'Unfiltered takes on events, culture, and elevated living from PaidVille.',
+  },
+};
 import BlogIndexClient from './_components/BlogIndexClient';
 import BlogPageHeader from './_components/BlogPageHeader';
 import type {DisplayPost} from './_components/BlogCard';
