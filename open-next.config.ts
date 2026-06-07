@@ -11,7 +11,7 @@ const config: OpenNextConfig = {
       queue: 'dummy',
     },
   },
-  proxy: {
+  middleware: {
     external: true,
     override: {
       wrapper: 'cloudflare-edge',
