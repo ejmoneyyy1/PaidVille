@@ -9,6 +9,124 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 import {formatPrice} from '@/lib/utils';
 import type {ShopProduct} from '@/lib/shop-storage';
 
+function ProductCard({
+  product,
+  index,
+  isAdmin,
+  onEdit,
+  onOpen,
+  onDelete,
+  deleting,
+}: {
+  product: ShopProduct;
+  index: number;
+  isAdmin?: boolean;
+  onEdit?: (p: ShopProduct) => void;
+  onOpen: (p: ShopProduct) => void;
+  onDelete: (id: string, e: React.MouseEvent) => void;
+  deleting: string | null;
+}) {
+  const hasSizes = product.sizeLinks.length > 0;
+  const [selectedSize, setSelectedSize] = useState(hasSizes ? product.sizeLinks[0].size : '');
+  const checkoutLink = hasSizes
+    ? (product.sizeLinks.find((s) => s.size === selectedSize)?.link ?? product.paymentLink)
+    : product.paymentLink;
+
+  return (
+    <ScrollReveal key={product.id} delay={index * 0.06} direction="up">
+      <motion.div
+        whileHover={{y: -3}}
+        className="rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm flex flex-col h-full"
+      >
+        <motion.button
+          type="button"
+          onClick={() => onOpen(product)}
+          whileHover={{scale: 1.01}}
+          transition={{duration: 0.2}}
+          className="group relative block w-full aspect-square overflow-hidden bg-card cursor-pointer"
+        >
+          {product.imagePath ? (
+            <Image
+              src={product.imagePath}
+              alt={product.productName}
+              fill
+              loading="eager"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              sizes="(max-width:768px) 100vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
+              <ShoppingBag size={40} className="text-brand-red/25" />
+            </div>
+          )}
+          {product.galleryImages && product.galleryImages.length > 0 && (
+            <div className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
+              +{product.galleryImages.length + 1} views
+            </div>
+          )}
+        </motion.button>
+        <div className="p-5 flex flex-col gap-3 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="font-display font-bold text-charcoal">{product.productName}</h2>
+            <span className="font-display font-black text-brand-red">{formatPrice(product.price)}</span>
+          </div>
+          {product.description && (
+            <p className="text-sm text-charcoal/65 leading-relaxed flex-1 line-clamp-2">{product.description}</p>
+          )}
+
+          {/* Size selector */}
+          {hasSizes && (
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-bold uppercase text-charcoal/50 shrink-0">Size</label>
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="flex-1 rounded-lg border border-brand-red/40 bg-[#0c0d10] px-3 py-1.5 text-sm font-bold text-charcoal focus:border-brand-red focus:outline-none cursor-pointer"
+              >
+                {product.sizeLinks.map((s) => (
+                  <option key={s.size} value={s.size}>{s.size}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Admin Controls */}
+          {isAdmin && onEdit ? (
+            <div className="flex gap-2 pt-2 border-t border-charcoal/10">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+                className="flex-1 flex items-center justify-center gap-1 bg-ink text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-ink/80 transition-colors"
+              >
+                <Edit size={14} />
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={(e) => onDelete(product.id, e)}
+                disabled={deleting === product.id}
+                className="flex-1 flex items-center justify-center gap-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                <Trash2 size={14} />
+                {deleting === product.id ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          ) : (
+            <a
+              href={checkoutLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary w-full justify-center py-3 text-xs mt-auto"
+            >
+              {hasSizes ? `Pre-Order — ${selectedSize}` : 'Pre-Order Now'}
+            </a>
+          )}
+        </div>
+      </motion.div>
+    </ScrollReveal>
+  );
+}
+
 export default function ShopCatalog({
   products,
   isAdmin,
@@ -117,84 +235,16 @@ export default function ShopCatalog({
       <div className="container-max section-padding pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
-            <ScrollReveal key={product.id} delay={index * 0.06} direction="up">
-              <motion.div
-                whileHover={{y: -3}}
-                className="rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm flex flex-col h-full"
-              >
-                <motion.button
-                  type="button"
-                  onClick={() => openLightbox(product)}
-                  whileHover={{scale: 1.01}}
-                  transition={{duration: 0.2}}
-                  className="group relative block w-full aspect-square overflow-hidden bg-card cursor-pointer"
-                >
-                  {product.imagePath ? (
-                    <Image
-                      src={product.imagePath}
-                      alt={product.productName}
-                      fill
-                        loading="eager"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                      sizes="(max-width:768px) 100vw, 33vw"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
-                      <ShoppingBag size={40} className="text-brand-red/25" />
-                    </div>
-                  )}
-                  {product.galleryImages && product.galleryImages.length > 0 && (
-                    <div className="absolute top-3 right-3 bg-black/80 text-white px-2 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
-                      +{product.galleryImages.length + 1} views
-                    </div>
-                  )}
-                </motion.button>
-                <div className="p-5 flex flex-col gap-3 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="font-display font-bold text-charcoal">{product.productName}</h2>
-                    <span className="font-display font-black text-brand-red">{formatPrice(product.price)}</span>
-                  </div>
-                  {product.description && (
-                    <p className="text-sm text-charcoal/65 leading-relaxed flex-1 line-clamp-2">{product.description}</p>
-                  )}
-                  
-                  {/* Admin Controls */}
-                  {isAdmin && onEdit ? (
-                    <div className="flex gap-2 pt-2 border-t border-charcoal/10">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(product);
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1 bg-ink text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-ink/80 transition-colors"
-                      >
-                        <Edit size={14} />
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => handleDelete(product.id, e)}
-                        disabled={deleting === product.id}
-                        className="flex-1 flex items-center justify-center gap-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                        {deleting === product.id ? 'Deleting...' : 'Delete'}
-                      </button>
-                    </div>
-                  ) : (
-                    <a
-                      href={product.paymentLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary w-full justify-center py-3 text-xs mt-auto"
-                    >
-                      Pre-Order Now
-                    </a>
-                  )}
-                </div>
-              </motion.div>
-            </ScrollReveal>
+            <ProductCard
+              key={product.id}
+              product={product}
+              index={index}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
+              onOpen={openLightbox}
+              onDelete={handleDelete}
+              deleting={deleting}
+            />
           ))}
         </div>
       </div>
