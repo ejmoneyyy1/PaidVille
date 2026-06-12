@@ -13,16 +13,21 @@ function dataset() {
 }
 
 /**
- * CDN-backed public client — synchronous, no dynamic functions.
- * Safe for use in ISR pages and shared layouts without opting routes
- * into dynamic rendering. Always fetches published content.
+ * Public client — synchronous, no dynamic functions. Safe for use in
+ * ISR pages and shared layouts without opting routes into dynamic
+ * rendering. Always fetches published content.
+ *
+ * useCdn is false on purpose: Next's ISR cache already shields Sanity
+ * from traffic (one fetch per revalidation), and skipping Sanity's CDN
+ * means admin edits appear on the next revalidation instead of being
+ * double-cached for an extra ~60s.
  */
 export function getSanityPublicClient(): SanityClient {
   return createClient({
     projectId: projectId(),
     dataset: dataset(),
     apiVersion,
-    useCdn: true,
+    useCdn: false,
     perspective: 'published',
   });
 }

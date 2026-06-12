@@ -6,12 +6,16 @@ import {blogMainImageProjection} from '@/lib/blog-image-projection';
 
 const apiVersion = '2024-07-01';
 
-/** CDN client for image URL builder (no draft) — same project as `getSanityClient`. */
+/**
+ * Shared client for shop/collection reads and the image URL builder.
+ * useCdn: false so admin edits show on the next ISR revalidation instead
+ * of being double-cached by Sanity's CDN for an extra ~60s.
+ */
 export const sanityClient = createClient({
   projectId: getSanityProjectId(),
   dataset: getSanityDataset(),
   apiVersion,
-  useCdn: process.env.NODE_ENV === 'production',
+  useCdn: false,
 });
 
 const builder = imageUrlBuilder(sanityClient);
