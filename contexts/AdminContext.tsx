@@ -48,6 +48,19 @@ export function AdminProvider({
     }
   }, []);
 
+  // ISR serves stale-while-revalidate: the first request after a save still
+  // gets the old page while the new one builds. Prime regeneration with a
+  // throwaway fetch, give it a beat, then refresh to pull the fresh payload.
+  const refreshFresh = useCallback(async () => {
+    try {
+      await fetch(window.location.pathname, {cache: 'no-store'});
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    } catch {
+      // best-effort prime; refresh regardless
+    }
+    router.refresh();
+  }, [router]);
+
   const saveField = useCallback(
     async (documentId: string, field: string, value: unknown) => {
       setIsSaving(true);
@@ -61,12 +74,12 @@ export function AdminProvider({
         if (!res.ok) {
           throw new Error(typeof data.error === 'string' ? data.error : 'Save failed');
         }
-        router.refresh();
+        await refreshFresh();
       } finally {
         setIsSaving(false);
       }
     },
-    [router],
+    [refreshFresh],
   );
 
   const deleteDocument = useCallback(
@@ -84,9 +97,9 @@ export function AdminProvider({
         window.location.assign(redirectTo);
         return;
       }
-      router.refresh();
+      await refreshFresh();
     },
-    [router],
+    [router, refreshFresh],
   );
 
   const value: AdminContextType = {
