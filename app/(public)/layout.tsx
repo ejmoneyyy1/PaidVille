@@ -1,4 +1,3 @@
-import {cookies} from 'next/headers';
 import IntroSequence from '@/components/IntroSequence';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -16,14 +15,12 @@ import MorphBackgroundMount from '@/components/ui/MorphBackgroundMount';
 
 export default async function PublicLayout({children}: {children: React.ReactNode}) {
   const siteContent = await getSiteContent();
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
   const {navigation, globalSettings} = await getSingletonDocs();
   const navItems = buildNavItems(navigation);
 
   return (
     <InquiryProvider>
-      <AdminProvider isAdmin={isAdmin}>
+      <AdminProvider>
         <MorphBackgroundMount />
         <SmoothScroll />
         <ScrollProgress />

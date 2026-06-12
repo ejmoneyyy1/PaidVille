@@ -9,8 +9,9 @@ export async function generateStaticParams() {
   return products.map((p) => ({id: p.id}));
 }
 
-export default async function ProductDetailPage({params}: {params: {id: string}}) {
-  const product = await getProductById(params.id);
+export default async function ProductDetailPage({params}: {params: Promise<{id: string}>}) {
+  const {id} = await params;
+  const product = await getProductById(id);
 
   if (!product || !product.isAvailable) {
     notFound();
