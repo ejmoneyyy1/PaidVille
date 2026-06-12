@@ -135,24 +135,29 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
               <p className="text-sm text-charcoal/35 italic">Add a description</p>
             )}
           </EditableField>
-          <EditableField
-            documentId={id}
-            field="eventbriteUrl"
-            label="Ticket / RSVP URL"
-            value={event.eventbriteUrl}
-            type="text"
-            wrapperClassName="group/edit relative mt-auto pt-2 block w-full"
-          >
-            <a
-              href={event.eventbriteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 btn-primary text-xs py-3 w-full"
+          {/* mt-auto lives on this div, not the EditableField wrapper — the
+              wrapper isn't rendered for non-admin visitors, which let the
+              button float at uneven heights across cards. */}
+          <div className="mt-auto pt-2">
+            <EditableField
+              documentId={id}
+              field="eventbriteUrl"
+              label="Ticket / RSVP URL"
+              value={event.eventbriteUrl}
+              type="text"
+              wrapperClassName="group/edit relative block w-full"
             >
-              Open ticket link
-              <ArrowUpRight size={14} />
-            </a>
-          </EditableField>
+              <a
+                href={event.eventbriteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 btn-primary text-xs py-3 w-full"
+              >
+                Open ticket link
+                <ArrowUpRight size={14} />
+              </a>
+            </EditableField>
+          </div>
         </div>
         </SpotlightCard>
       </motion.article>
