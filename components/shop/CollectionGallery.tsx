@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {createPortal} from 'react-dom';
 import Image from 'next/image';
 import {AnimatePresence, motion} from 'framer-motion';
 import {X, ChevronLeft, ChevronRight, Trash2, Upload, Edit} from 'lucide-react';
@@ -185,14 +186,17 @@ export default function CollectionGallery({
         </div>
       </div>
 
-      {/* Lightbox */}
+      {/* Lightbox — portaled to body: an ancestor CSS transform would
+          otherwise make this fixed overlay position relative to the page
+          instead of the viewport. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {lightboxOpen && images.length > 0 && (
           <motion.div
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
-            className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4"
+            className="fixed inset-0 z-[10000] bg-black/95 flex flex-col items-center justify-center p-4"
             onClick={() => setLightboxOpen(false)}
           >
             <button
@@ -255,7 +259,9 @@ export default function CollectionGallery({
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
 
       {/* Add/Edit Modal */}
       {showModal && (
@@ -317,13 +323,15 @@ function CollectionImageModal({
     }
   }
 
-  return (
+  // Portal to body: an ancestor CSS transform would otherwise make this
+  // fixed overlay position relative to the page instead of the viewport.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-lg bg-[#1A1A1A] border border-[#333]"
+        className="w-full max-w-lg rounded-lg bg-[#1A1A1A] border border-[#333] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b border-[#333] px-6 py-4">
@@ -412,6 +420,7 @@ function CollectionImageModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
