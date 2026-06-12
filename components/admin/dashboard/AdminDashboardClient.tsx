@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import React, {useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import Image from 'next/image';
@@ -13,8 +13,9 @@ import type {
   AdminInquiryRow,
   AdminReviewRow,
 } from '@/lib/admin-dashboard-queries';
+import type {SiteContentDoc} from '@/lib/sanity-queries';
 
-type Tab = 'reviews' | 'inquiries' | 'content' | 'shop';
+type Tab = 'reviews' | 'inquiries' | 'content' | 'shop' | 'settings';
 
 export default function AdminDashboardClient({
   reviews,
@@ -23,6 +24,7 @@ export default function AdminDashboardClient({
   events,
   gallery,
   shopProducts,
+  siteContent,
 }: {
   reviews: AdminReviewRow[];
   inquiries: AdminInquiryRow[];
@@ -30,6 +32,7 @@ export default function AdminDashboardClient({
   events: AdminEventRow[];
   gallery: AdminGalleryRow[];
   shopProducts: ShopProduct[];
+  siteContent?: SiteContentDoc | null;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('reviews');
@@ -121,6 +124,7 @@ export default function AdminDashboardClient({
     {id: 'inquiries', label: 'Inquiries', count: inquiries.length},
     {id: 'shop', label: 'Shop', count: shopProducts.length},
     {id: 'content', label: 'Content'},
+    {id: 'settings', label: 'Site Settings'},
   ];
 
   return (
@@ -246,7 +250,7 @@ export default function AdminDashboardClient({
                 {shopProducts.map((product) => (
                   <div key={product.id} className="rounded-lg border border-[#333] bg-[#222] p-4">
                     {product.imagePath ? (
-                      <div className="relative aspect-square mb-3 rounded overflow-hidden bg-white">
+                      <div className="relative aspect-square mb-3 rounded overflow-hidden bg-card">
                         <Image
                           src={product.imagePath}
                           alt={product.productName}
@@ -310,6 +314,10 @@ export default function AdminDashboardClient({
             <ContentList title="Events" empty="No events." items={events.map((e) => ({id: e._id, primary: e.eventName, secondary: e.location, href: '/events?admin=true'}))} />
             <ContentList title="Gallery" empty="No gallery items." items={gallery.map((g) => ({id: g._id, primary: g.title, secondary: g._type, href: '/gallery?admin=true'}))} />
           </div>
+        ) : null}
+
+        {tab === 'settings' ? (
+          <SiteSettingsPanel siteContent={siteContent ?? null} onSaved={() => router.refresh()} />
         ) : null}
       </div>
 
@@ -438,6 +446,169 @@ function ContentList({
   );
 }
 
+function VideoUploadCard({
+  label,
+  description,
+  field,
+  currentUrl,
+  defaultSrc,
+  onUploaded,
+}: {
+  label: string;
+  description: string;
+  field: 'heroVideoUrl' | 'splashVideoUrl';
+  currentUrl: string | null | undefined;
+  defaultSrc: string;
+  onUploaded: () => void;
+}) {
+  const activeUrl = currentUrl || defaultSrc;
+  const [uploading, setUploading] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+  const [error, setError] = useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    setError('');
+    setSavedMsg('');
+    try {
+      const fd = new FormData();
+      fd.append('field', field);
+      fd.append('video', file);
+      const res = await fetch('/api/admin/site-content', {method: 'POST', body: fd});
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === 'string' ? data.error : 'Upload failed');
+        return;
+      }
+      setSavedMsg('Uploaded ✓');
+      setTimeout(() => setSavedMsg(''), 3000);
+      onUploaded();
+    } catch {
+      setError('Network error — try again');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!currentUrl) return;
+    if (!window.confirm('Remove custom video and revert to the default?')) return;
+    setError('');
+    try {
+      const res = await fetch('/api/admin/site-content', {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({field}),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(typeof data.error === 'string' ? data.error : 'Failed');
+        return;
+      }
+      onUploaded();
+    } catch {
+      setError('Network error');
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-[#333] bg-[#222] overflow-hidden">
+      {/* Video preview */}
+      <video
+        key={activeUrl}
+        src={activeUrl}
+        className="w-full aspect-video object-cover bg-black"
+        muted
+        playsInline
+        preload="metadata"
+        controls={false}
+        onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+        onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
+      />
+
+      <div className="p-5 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold text-white">{label}</p>
+            <p className="text-xs text-white/45 mt-0.5">{description}</p>
+          </div>
+          {currentUrl && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="shrink-0 text-[11px] text-white/35 hover:text-red-400 transition-colors"
+            >
+              Revert to default
+            </button>
+          )}
+        </div>
+
+        <p className="text-[11px] text-white/35 truncate">
+          {currentUrl ? `Custom: ${currentUrl.split('/').pop()}` : 'Using default video'}
+        </p>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="video/mp4,video/webm,video/quicktime"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+        />
+
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          className="w-full rounded bg-brand-red py-2 text-xs font-semibold uppercase text-white hover:bg-[#900000] disabled:opacity-50 transition-colors"
+        >
+          {uploading ? 'Uploading…' : savedMsg || 'Upload New Video'}
+        </button>
+
+        {error && <p className="text-xs text-red-400">{error}</p>}
+        <p className="text-[10px] text-white/25">MP4, WebM, or MOV · max 40 MB</p>
+      </div>
+    </div>
+  );
+}
+
+function SiteSettingsPanel({
+  siteContent,
+  onSaved,
+}: {
+  siteContent: SiteContentDoc | null;
+  onSaved: () => void;
+}) {
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-white/70">Videos</h2>
+        <p className="mb-6 text-xs text-white/40">
+          Hover a card to preview. Upload a new file to replace — reverts to the built-in default if cleared.
+        </p>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <VideoUploadCard
+            label="Hero Background Video"
+            description="Plays behind the headline on the homepage."
+            field="heroVideoUrl"
+            currentUrl={siteContent?.heroVideoUrl}
+            defaultSrc="/videos/lights.mp4"
+            onUploaded={onSaved}
+          />
+          <VideoUploadCard
+            label="Splash / Intro Video"
+            description="Plays during the loading intro sequence."
+            field="splashVideoUrl"
+            currentUrl={siteContent?.splashVideoUrl}
+            defaultSrc="/videos/lights.mp4"
+            onUploaded={onSaved}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function formatInquiryJson(json: string): string {
   try {
     const parsed = JSON.parse(json) as Record<string, unknown>;
@@ -460,6 +631,21 @@ function ShopProductModal({
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [sizeLinks, setSizeLinks] = useState<{size: string; link: string}[]>(
+    product?.sizeLinks ?? [],
+  );
+
+  function addSizeRow() {
+    setSizeLinks((prev) => [...prev, {size: '', link: ''}]);
+  }
+
+  function removeSizeRow(i: number) {
+    setSizeLinks((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function updateSizeRow(i: number, field: 'size' | 'link', val: string) {
+    setSizeLinks((prev) => prev.map((row, idx) => (idx === i ? {...row, [field]: val} : row)));
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -468,10 +654,13 @@ function ShopProductModal({
 
     try {
       const formData = new FormData(e.currentTarget);
-      
+
       if (product?.id) {
         formData.append('productId', product.id);
       }
+
+      const validSizeLinks = sizeLinks.filter((s) => s.size.trim() && s.link.trim());
+      formData.append('sizeLinks', JSON.stringify(validSizeLinks));
 
       const res = await fetch('/api/admin/shop', {
         method: product?.id ? 'PATCH' : 'POST',
@@ -548,7 +737,7 @@ function ShopProductModal({
 
           <div>
             <label htmlFor="paymentLink" className="block text-xs font-semibold uppercase text-white/70 mb-1">
-              Payment Link *
+              Default Payment Link *
             </label>
             <input
               type="url"
@@ -559,7 +748,53 @@ function ShopProductModal({
               className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
               placeholder="https://buy.stripe.com/..."
             />
-            <p className="mt-1 text-xs text-white/40">Stripe, PayPal, or any checkout link</p>
+            <p className="mt-1 text-xs text-white/40">Used when no size is selected, or as fallback</p>
+          </div>
+
+          {/* Size-specific links */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold uppercase text-white/70">
+                Size Links <span className="normal-case text-white/40">(optional)</span>
+              </label>
+              <button
+                type="button"
+                onClick={addSizeRow}
+                className="text-xs font-bold text-brand-red hover:text-red-400 transition-colors"
+              >
+                + Add Size
+              </button>
+            </div>
+            {sizeLinks.length === 0 && (
+              <p className="text-xs text-white/30 italic">No sizes added — customers will use the default link above.</p>
+            )}
+            <div className="space-y-2">
+              {sizeLinks.map((row, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={row.size}
+                    onChange={(e) => updateSizeRow(i, 'size', e.target.value)}
+                    placeholder="Size (e.g. S, M, L, XL)"
+                    className="w-28 rounded border border-[#444] bg-[#222] px-2 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+                  />
+                  <input
+                    type="url"
+                    value={row.link}
+                    onChange={(e) => updateSizeRow(i, 'link', e.target.value)}
+                    placeholder="https://buy.stripe.com/..."
+                    className="flex-1 rounded border border-[#444] bg-[#222] px-2 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSizeRow(i)}
+                    className="text-white/40 hover:text-red-400 transition-colors text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>

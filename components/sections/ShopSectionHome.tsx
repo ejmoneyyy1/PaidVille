@@ -13,7 +13,7 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
   const displayProducts = products.slice(0, 3);
 
   return (
-    <section id="shop" className="relative py-24 md:py-32 bg-silver overflow-hidden">
+    <section id="shop" className="relative py-24 md:py-32 bg-transparent overflow-hidden">
       <div
         className="absolute top-0 right-0 w-[400px] h-[400px] pointer-events-none"
         style={{
@@ -22,7 +22,7 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 sm:flex-row sm:items-end rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 px-8 py-6">
           <div>
             <span className="section-label">Members Shop</span>
             <h2 className="section-title text-charcoal">
@@ -45,29 +45,30 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
         </ScrollReveal>
 
         {displayProducts.length === 0 ? (
-          <div className="rounded-2xl border border-brand-red bg-cream p-12 text-center text-charcoal/60 font-display">
+          <div className="rounded-2xl border border-brand-red bg-[#141518] p-12 text-center text-charcoal/60 font-display">
             Add products to your shop to show featured items here.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             {displayProducts.map((product, index) => (
-              <ScrollReveal key={product.id} delay={index * 0.1} direction="up">
+              <ScrollReveal key={product.id} delay={index * 0.1} direction="up" className="h-full">
                 <motion.div
                   whileHover={{y: -3}}
                   transition={{duration: 0.22}}
-                  className="rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm flex flex-col h-full"
+                  className="rounded-2xl overflow-hidden border border-brand-red bg-[#141518] shadow-sm flex flex-col h-full"
                 >
-                  <div className="relative aspect-square bg-white">
+                  <div className="relative aspect-square bg-card">
                     {product.imagePath ? (
                       <Image
                         src={product.imagePath}
                         alt={product.productName}
                         fill
+                        loading="eager"
                         className="object-cover"
                         sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-silver">
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#15161b]">
                         <ShoppingBag size={40} className="text-brand-red/25" />
                       </div>
                     )}

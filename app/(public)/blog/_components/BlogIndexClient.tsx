@@ -52,7 +52,7 @@ export default function BlogIndexClient({posts}: BlogIndexClientProps) {
           ) : null}
           <Link href={`/blog/${featuredPost.slug.current}`} className="group block">
           <div
-            className="relative min-h-[70vh] w-full overflow-hidden bg-silver"
+            className="relative min-h-[70vh] w-full overflow-hidden bg-[#15161b]"
             style={
               !featuredHasImage
                 ? {

@@ -1,8 +1,18 @@
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {galleryQuery, type SanityGalleryDoc} from '@/lib/sanity';
 import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/GalleryPageMasonry';
 
 export const revalidate = 60;
+
+export const metadata = {
+  title: 'Gallery',
+  description:
+    'Browse the PaidVille event gallery — curated photos and moments from our premium events and lifestyle experiences in Fayetteville, AR.',
+  openGraph: {
+    title: 'Gallery | PaidVille',
+    description: 'Curated photos and moments from PaidVille premium events.',
+  },
+};
 
 const HARDCODED_FALLBACK: GalleryPageItem[] = [
   {_id: 'fallback-1', title: 'Gallery I', staticSrc: '/images/gallery1.jpg', mediaType: 'photo'},
@@ -23,7 +33,7 @@ function normalizeGalleryFetch(raw: unknown): SanityGalleryDoc[] {
 export default async function GalleryPage() {
   let sanityGallery: SanityGalleryDoc[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const raw = await client.fetch<unknown>(galleryQuery);
     sanityGallery = normalizeGalleryFetch(raw);
   } catch {
@@ -35,7 +45,7 @@ export default async function GalleryPage() {
     sanityGallery.length > 0 ? sanityGallery : HARDCODED_FALLBACK;
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-24 bg-transparent isolate [transform:translateZ(0)]">
       <div className="container-max section-padding mb-12 text-center">
         <span className="section-label justify-center">Moments & Memories</span>
         <h1 className="section-title text-charcoal mt-2">

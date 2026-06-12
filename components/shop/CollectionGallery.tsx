@@ -6,7 +6,6 @@ import {AnimatePresence, motion} from 'framer-motion';
 import {X, ChevronLeft, ChevronRight, Trash2, Upload, Edit} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import type {CollectionImage} from '@/lib/collection-storage';
-import ScrollReveal from '@/components/ui/ScrollReveal';
 
 export default function CollectionGallery({
   images,
@@ -70,7 +69,7 @@ export default function CollectionGallery({
   };
 
   return (
-    <section className="py-16 bg-silver">
+    <section className="py-16 bg-transparent">
       <div className="container-max section-padding">
         <div className="text-center mb-8 relative">
           <span className="section-label justify-center">Collection Gallery</span>
@@ -92,22 +91,21 @@ export default function CollectionGallery({
         </div>
 
         {/* Masonry Grid matching regular gallery */}
-        <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 [column-fill:_balance]">
+        <div className="relative z-[1] w-full columns-1 gap-5 sm:columns-2 lg:columns-3 [column-fill:_balance]">
           {images.map((img, index) => {
             const isTall = index % 3 === 0;
 
             return (
-              <ScrollReveal key={img.id} delay={index * 0.04} direction="up">
+              <div key={img.id} className="break-inside-avoid w-full mb-5">
                 <motion.div
-                  className="break-inside-avoid relative mb-5"
                   whileHover={{scale: 1.005}}
                   transition={{duration: 0.2}}
                 >
-                  <div className="overflow-hidden rounded-2xl border border-brand-red bg-cream text-left shadow-sm transition-shadow hover:shadow-md">
+                  <div className="overflow-hidden rounded-2xl border border-brand-red bg-[#141518] text-left shadow-sm transition-shadow hover:shadow-md">
                     <motion.div
                       role="button"
                       tabIndex={0}
-                      className={`relative w-full cursor-pointer bg-gradient-to-br from-brand-muted/40 to-brand-card-surface ${
+                      className={`relative w-full cursor-pointer bg-card ${
                         isTall ? 'aspect-[3/4]' : 'aspect-[5/4]'
                       }`}
                       onClick={(e) => {
@@ -126,6 +124,7 @@ export default function CollectionGallery({
                         src={img.imagePath}
                         alt={img.title}
                         fill
+                        loading="eager"
                         className="object-cover"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
@@ -180,7 +179,7 @@ export default function CollectionGallery({
                     </div>
                   </div>
                 </motion.div>
-              </ScrollReveal>
+              </div>
             );
           })}
         </div>
@@ -217,6 +216,7 @@ export default function CollectionGallery({
                 src={images[selectedIndex].imagePath}
                 alt={images[selectedIndex].title}
                 fill
+                        loading="eager"
                 className="object-contain"
                 sizes="90vw"
                 onClick={(e) => e.stopPropagation()}
@@ -232,7 +232,7 @@ export default function CollectionGallery({
                     e.stopPropagation();
                     prevImage();
                   }}
-                  className="bg-white/90 hover:bg-white text-charcoal p-3 rounded-full transition-all shadow-lg"
+                  className="bg-card/90 hover:bg-card text-charcoal p-3 rounded-full transition-all shadow-lg"
                 >
                   <ChevronLeft size={24} />
                 </button>
@@ -247,7 +247,7 @@ export default function CollectionGallery({
                     e.stopPropagation();
                     nextImage();
                   }}
-                  className="bg-white/90 hover:bg-white text-charcoal p-3 rounded-full transition-all shadow-lg"
+                  className="bg-card/90 hover:bg-card text-charcoal p-3 rounded-full transition-all shadow-lg"
                 >
                   <ChevronRight size={24} />
                 </button>

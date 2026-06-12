@@ -4,7 +4,7 @@ import AboutStoryContent, {AboutMissionBanner} from '@/components/about/AboutSto
 
 export default function About() {
   return (
-    <section id="about" className="relative overflow-hidden bg-silver">
+    <section id="about" className="relative overflow-hidden bg-transparent">
       <AboutStoryContent variant="home" />
       <AboutMissionBanner />
     </section>

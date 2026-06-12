@@ -12,6 +12,21 @@ function dataset() {
   return getSanityDataset();
 }
 
+/**
+ * CDN-backed public client — synchronous, no dynamic functions.
+ * Safe for use in ISR pages and shared layouts without opting routes
+ * into dynamic rendering. Always fetches published content.
+ */
+export function getSanityPublicClient(): SanityClient {
+  return createClient({
+    projectId: projectId(),
+    dataset: dataset(),
+    apiVersion,
+    useCdn: true,
+    perspective: 'published',
+  });
+}
+
 /** Read token for draft-mode URL validation and preview API. */
 export function getSanityReadClient(): SanityClient {
   return createClient({
@@ -23,7 +38,11 @@ export function getSanityReadClient(): SanityClient {
   });
 }
 
-/** Published reads are clean; preview/draft-mode only enables Presentation stega. */
+/**
+ * Draft-mode-aware client — async, calls draftMode() which opts the
+ * calling route into dynamic rendering. Use ONLY for admin dashboard,
+ * the Studio, and any page that genuinely needs per-request draft preview.
+ */
 export async function getSanityClient(): Promise<SanityClient> {
   const {isEnabled} = await draftMode();
   const studioUrl = process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? 'https://paidville-studio.sanity.studio';
@@ -31,7 +50,7 @@ export async function getSanityClient(): Promise<SanityClient> {
     projectId: projectId(),
     dataset: dataset(),
     apiVersion,
-    useCdn: false,
+    useCdn: !isEnabled,
     perspective: isEnabled ? 'previewDrafts' : 'published',
     token: isEnabled ? process.env.SANITY_API_READ_TOKEN : undefined,
     stega: {

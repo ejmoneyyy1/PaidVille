@@ -1,5 +1,5 @@
 import {cache} from 'react';
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 
 export type NavigationDoc = {
   _id: string;
@@ -28,7 +28,7 @@ export type HomepageDoc = {
 /** CMS singletons used by the on-site admin (seed IDs). */
 export const getSingletonDocs = cache(async () => {
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const [navigation, globalSettings, homepage] = await Promise.all([
       client.fetch<NavigationDoc>(`*[_id == "singleton-navigation"][0]{ _id, links }`),
       client.fetch<GlobalSettingsDoc>(

@@ -1,11 +1,11 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useRef, useState} from 'react';
 import {motion, useScroll, useTransform} from 'framer-motion';
 import {ArrowDown, Play, Star} from 'lucide-react';
-import Image from 'next/image';
 import MagneticButton from '@/components/ui/MagneticButton';
-import BearEmblemParallax from '@/components/parallax/BearEmblemParallax';
+import ScrambleText from '@/components/ui/ScrambleText';
+import CountUp from '@/components/ui/CountUp';
 import ReelModal from '@/components/reel/ReelModal';
 import EditableField from '@/components/admin/EditableField';
 import type {SiteContentDoc} from '@/lib/sanity-queries';
@@ -18,16 +18,6 @@ export type HeroStats = {
   rating: number;
 };
 
-function formatTicketsLabel(n: number) {
-  if (n >= 1000) return `${Math.round(n / 1000)}k+ Tickets Sold`;
-  return `${n}+ Tickets Sold`;
-}
-
-function formatEventsHostedLabel(n: number) {
-  if (n >= 100) return '100+ Events Hosted';
-  return `${n}+ Events Hosted`;
-}
-
 const FALLBACK_HERO_TAGLINE = 'PREMIUM EVENTS. ELEVATED LIFESTYLE.';
 const FALLBACK_HERO_SUBTEXT = 'CREATIVE AGENCY · FAYETTEVILLE';
 
@@ -39,8 +29,6 @@ export default function Hero({
   siteContent?: SiteContentDoc | null;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const [reelOpen, setReelOpen] = useState(false);
 
   const safeStats = stats ?? {rating: 5, ticketsSold: 10000, eventsHosted: 100};
@@ -53,80 +41,40 @@ export default function Hero({
 
   const yText = useTransform(scrollYProgress, [0, 1], ['0%', '24%']);
   const opacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.04]);
 
   const rating = Math.min(5, Math.max(0, Math.round(safeStats.rating)));
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const tryPlay = () => {
-      video.play().catch(() => {});
-    };
-
-    tryPlay();
-    if (video.readyState >= 2) {
-      setVideoLoaded(true);
-    }
-
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') tryPlay();
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-
-    const markReady = () => setVideoLoaded(true);
-    video.addEventListener('loadeddata', markReady);
-    video.addEventListener('canplay', markReady);
-    video.addEventListener('playing', markReady);
-
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      video.removeEventListener('loadeddata', markReady);
-      video.removeEventListener('canplay', markReady);
-      video.removeEventListener('playing', markReady);
-    };
-  }, []);
 
   return (
     <>
     <section
       ref={sectionRef}
-      className="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-cream"
+      className="relative w-full h-screen min-h-[600px] flex items-end justify-center overflow-hidden bg-transparent"
     >
-      <BearEmblemParallax />
-
-      <motion.div className="absolute inset-0 z-0" style={{scale}}>
+      {/* Event-lights footage, screen-blended so the morph particles show
+          through the dark areas and the bokeh adds glow. */}
+      <motion.div className="absolute inset-0 z-0 pointer-events-none" style={{opacity}}>
         <video
-          ref={videoRef}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            videoLoaded ? 'opacity-90' : 'opacity-0'
-          }`}
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.18] mix-blend-screen"
+          autoPlay
           muted
           loop
           playsInline
-          autoPlay
           preload="metadata"
-          src="/videos/lights.mp4"
+          src={siteContent?.heroVideoUrl || '/videos/lights.mp4'}
         />
-
         <div
-          className={`absolute inset-0 bg-cream transition-opacity duration-1000 ${
-            videoLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
-        />
-
-        <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(to bottom, rgba(245,245,240,0.35) 0%, rgba(245,245,240,0.1) 45%, rgba(245,245,240,0.75) 100%)',
+              'linear-gradient(to bottom, rgba(8,8,9,0.5) 0%, transparent 30%, transparent 60%, rgba(8,8,9,0.92) 100%)',
           }}
         />
       </motion.div>
 
+      {/* The morphing particle emblem (site-wide WebGL background) is the hero
+          visual; content sits below it. */}
       <motion.div
-        className="relative z-10 text-center flex flex-col items-center gap-8 section-padding"
+        className="relative z-10 text-center flex flex-col items-center gap-6 section-padding pb-[11vh] pt-10 rounded-2xl bg-[#0c0d10]/70 backdrop-blur-sm border border-brand-red/10 mx-4 mb-6 sm:mx-8"
         style={{y: yText, opacity}}
       >
         <motion.div
@@ -152,27 +100,10 @@ export default function Hero({
         </motion.div>
 
         <motion.div
-          initial={{opacity: 0, scale: 0.96}}
-          animate={{opacity: 1, scale: 1}}
-          transition={{duration: 0.85, delay: 0.25, ease: [0.16, 1, 0.3, 1]}}
-          className="relative w-[min(72vw,420px)] aspect-[2/1] mx-auto"
-        >
-          <Image
-            src="/images/splashlogo.png"
-            alt="PaidVille"
-            fill
-            className="object-contain drop-shadow-sm"
-            sizes="(max-width: 768px) 72vw, 420px"
-            priority
-            fetchPriority="high"
-          />
-        </motion.div>
-
-        <motion.div
           initial={{opacity: 0}}
           animate={{opacity: 1}}
-          transition={{duration: 0.7, delay: 0.55}}
-          className="mt-1"
+          transition={{duration: 0.7, delay: 0.45}}
+          className="max-w-2xl"
         >
           <EditableField
             documentId={siteDocId}
@@ -182,11 +113,23 @@ export default function Hero({
             type="text"
             wrapperClassName="relative inline-block group/edit"
           >
-            <p className="text-[clamp(0.8rem,1.9vw,1.05rem)] font-display font-medium tracking-[0.22em] uppercase text-charcoal/55">
-              {siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
-            </p>
+            <ScrambleText
+              as="h1"
+              text={siteContent?.heroTagline ?? FALLBACK_HERO_TAGLINE}
+              duration={1300}
+              className="block font-display font-bold uppercase tracking-[0.16em] leading-snug text-charcoal/90 text-[clamp(0.95rem,2.3vw,1.5rem)]"
+            />
           </EditableField>
         </motion.div>
+
+        {/* Animated red accent rule under the headline */}
+        <motion.span
+          aria-hidden
+          initial={{scaleX: 0}}
+          animate={{scaleX: 1}}
+          transition={{duration: 0.9, delay: 1.0, ease: [0.22, 1, 0.36, 1]}}
+          className="block h-[3px] w-28 origin-left bg-gradient-to-r from-brand-red to-transparent"
+        />
 
         <motion.div
           initial={{opacity: 0, y: 14}}
@@ -208,7 +151,7 @@ export default function Hero({
             strength={0.28}
             onClick={() => setReelOpen(true)}
           >
-            <span className="flex items-center justify-center w-6 h-6 rounded-full border border-brand-red/40 bg-white">
+            <span className="flex items-center justify-center w-6 h-6 rounded-full border border-brand-red/40 bg-card">
               <Play size={10} className="text-brand-red" fill="currentColor" />
             </span>
             Watch Reel
@@ -247,7 +190,9 @@ export default function Hero({
               type="number"
               wrapperClassName="relative inline-block group/edit"
             >
-              <p className="font-display font-black text-xl text-charcoal">{formatTicketsLabel(safeStats.ticketsSold)}</p>
+              <p className="font-display font-black text-xl text-charcoal">
+                <CountUp value={safeStats.ticketsSold} thousands suffix="+" /> Tickets Sold
+              </p>
             </EditableField>
           </div>
           <div className="text-center min-w-[140px]">
@@ -260,7 +205,7 @@ export default function Hero({
               wrapperClassName="relative inline-block group/edit"
             >
               <p className="font-display font-black text-xl text-charcoal">
-                {formatEventsHostedLabel(safeStats.eventsHosted)}
+                <CountUp value={safeStats.eventsHosted} suffix="+" /> Events Hosted
               </p>
             </EditableField>
           </div>

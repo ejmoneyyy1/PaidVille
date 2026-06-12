@@ -42,6 +42,12 @@ export default function ScrollReveal({
         delay,
         ease: [0.25, 0.1, 0.25, 1],
       }}
+      onAnimationComplete={() => {
+        if (ref.current && isInView) {
+          ref.current.style.transform = '';
+          ref.current.style.willChange = 'auto';
+        }
+      }}
     >
       {children}
     </motion.div>

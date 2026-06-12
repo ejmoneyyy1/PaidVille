@@ -22,9 +22,39 @@ export const metadata: Metadata = {
     template: `%s | ${SiteConfig.name}`,
   },
   description: SiteConfig.description,
-  keywords: ['events', 'entertainment', 'lifestyle', 'Fayetteville', 'Arkansas', 'PaidVille', 'media', 'clothing'],
-  authors: [{name: 'PaidVille'}],
+  keywords: [
+    'PaidVille',
+    'Fayetteville events',
+    'Arkansas events',
+    'premium events',
+    'elevated lifestyle',
+    'event planning Fayetteville AR',
+    'nightlife Arkansas',
+    'PaidVille Productions',
+    'lifestyle brand',
+    'creative agency Arkansas',
+    'exclusive events',
+    'members only',
+    'Fayetteville nightlife',
+    'AR entertainment',
+  ],
+  authors: [{name: 'PaidVille', url: SiteConfig.url}],
   creator: 'PaidVille',
+  publisher: 'PaidVille',
+  metadataBase: new URL(SiteConfig.url),
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -32,22 +62,41 @@ export const metadata: Metadata = {
     siteName: SiteConfig.name,
     title: `${SiteConfig.name} – ${SiteConfig.tagline}`,
     description: SiteConfig.description,
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'PaidVille – Premium Events. Elevated Lifestyle.',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@paidville',
+    creator: '@paidville',
     title: `${SiteConfig.name} – ${SiteConfig.tagline}`,
     description: SiteConfig.description,
-    creator: '@paidville',
+    images: ['/og-image.png'],
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      {url: '/favicon.ico'},
+      {url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png'},
+      {url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png'},
+    ],
+    apple: [{url: '/apple-touch-icon.png', sizes: '180x180'}],
+    other: [
+      {rel: 'icon', url: '/icon-192.png', sizes: '192x192'},
+      {rel: 'icon', url: '/icon-512.png', sizes: '512x512'},
+    ],
   },
+  manifest: '/site.webmanifest',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#F5F5F0',
-  colorScheme: 'light',
+  themeColor: '#0a0a0b',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

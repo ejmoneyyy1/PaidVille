@@ -27,23 +27,26 @@ const AdminContext = createContext<AdminContextType | null>(null);
 
 export function AdminProvider({
   children,
-  isAdmin: initialIsAdmin,
+  isAdmin: serverIsAdmin = false,
 }: {
   children: React.ReactNode;
-  isAdmin: boolean;
+  isAdmin?: boolean;
 }) {
   const router = useRouter();
+  // Detect admin client-side so the server layout never needs cookies()
+  const [isAdmin, setIsAdmin] = useState(serverIsAdmin);
   const [isEditing, setIsEditing] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelConfig | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!initialIsAdmin || typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('admin') === 'true') {
-      setIsEditing(true);
+    const adminFromCookie = document.cookie.split(';').some((c) => c.trim() === 'pv_admin=true');
+    setIsAdmin(adminFromCookie);
+    if (adminFromCookie) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true') setIsEditing(true);
     }
-  }, [initialIsAdmin]);
+  }, []);
 
   const saveField = useCallback(
     async (documentId: string, field: string, value: unknown) => {
@@ -87,7 +90,7 @@ export function AdminProvider({
   );
 
   const value: AdminContextType = {
-    isAdmin: initialIsAdmin,
+    isAdmin,
     isEditing,
     toggleEditing: () => setIsEditing((p) => !p),
     activePanel,

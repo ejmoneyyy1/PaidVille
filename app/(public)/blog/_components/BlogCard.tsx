@@ -45,7 +45,7 @@ export default function BlogCard({
           <AdminDeleteControl
             documentId={post._id}
             entityLabel="this post"
-            className="absolute right-5 top-5 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-charcoal/90 text-white shadow-md hover:bg-brand-red"
+            className="absolute right-5 top-5 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-ink/90 text-white shadow-md hover:bg-brand-red"
           />
           <BlogPostMediaUpload
             documentId={post._id}
@@ -59,7 +59,7 @@ export default function BlogCard({
       <Link
         href={`/blog/${post.slug.current}`}
         className={`group relative block h-full border p-6 ${
-          isDarkFallback ? 'border-[#333333] text-white' : 'border-silver bg-cream text-charcoal'
+          isDarkFallback ? 'border-[#333333] text-white' : 'border-brand-red/30 bg-[#141518] text-charcoal'
         }`}
         style={
           isDarkFallback
@@ -71,7 +71,7 @@ export default function BlogCard({
         }
       >
       {hasImage && image ? (
-        <div className="relative -mx-6 -mt-6 mb-6 aspect-[3/2] overflow-hidden bg-silver">
+        <div className="relative -mx-6 -mt-6 mb-6 aspect-[3/2] overflow-hidden bg-[#15161b]">
           <Image
             src={image.src}
             alt={post.mainImage?.alt ?? post.title}

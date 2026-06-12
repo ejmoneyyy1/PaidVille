@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block admin routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /studio/
+
+Sitemap: https://paidville.com/sitemap.xml

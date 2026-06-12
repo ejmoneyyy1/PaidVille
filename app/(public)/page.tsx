@@ -6,7 +6,10 @@ import BlogPreview from '@/components/sections/BlogPreview';
 import ReviewsCarousel from '@/components/sections/ReviewsCarousel';
 import GallerySection from '@/components/sections/Gallery';
 import ShopSectionHome from '@/components/sections/ShopSectionHome';
-import {getSanityClient} from '@/lib/sanity-server';
+import BrandShowcase from '@/components/sections/BrandShowcase';
+import JoinSection from '@/components/sections/JoinSection';
+import Marquee from '@/components/ui/Marquee';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {
   blogQuery,
   galleryItemsQuery,
@@ -46,7 +49,7 @@ async function getData() {
   const siteContent = await getSiteContent();
 
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedReviews] =
       await Promise.all([
       client.fetch<BlogPost[]>(blogQuery),
@@ -96,6 +99,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero stats={stats} siteContent={siteContent} />
+      <Marquee />
       <Services
         siteContent={siteContent}
         homepageServicesHeading={sectionString(sections, 'services-1', 'heading')}
@@ -106,10 +110,12 @@ export default async function HomePage() {
         homepageEventsHeading={sectionString(sections, 'events-1', 'heading')}
         homepageEventsSubheading={sectionString(sections, 'events-1', 'subheading')}
       />
+      <BrandShowcase />
       <About />
       <GallerySection items={galleryItems} />
       <ShopSectionHome products={shopProducts} />
       <BlogPreview posts={posts} homepageBlogHeading={sectionString(sections, 'blog-1', 'heading')} />
+      <JoinSection />
       <ReviewsCarousel reviews={reviews} />
     </>
   );

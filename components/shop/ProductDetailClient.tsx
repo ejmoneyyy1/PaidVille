@@ -24,7 +24,7 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-24 bg-cream">
+    <div className="min-h-screen pt-32 pb-24 bg-transparent">
       <div className="container-max section-padding">
         {/* Back link */}
         <Link
@@ -40,13 +40,14 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
           <div>
             {/* Main Image */}
             <div
-              className="relative aspect-square bg-white rounded-2xl overflow-hidden border border-brand-red mb-4 cursor-pointer"
+              className="relative aspect-square bg-card rounded-2xl overflow-hidden border border-brand-red mb-4 cursor-pointer"
               onClick={() => setLightboxOpen(true)}
             >
               <Image
                 src={allImages[selectedImageIndex]}
                 alt={product.productName}
                 fill
+                        loading="eager"
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
@@ -58,7 +59,7 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                       e.stopPropagation();
                       prevImage();
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-charcoal p-2 rounded-full shadow-lg transition-all"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 hover:bg-card text-charcoal p-2 rounded-full shadow-lg transition-all"
                   >
                     <ChevronLeft size={24} />
                   </button>
@@ -68,13 +69,38 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                       e.stopPropagation();
                       nextImage();
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-charcoal p-2 rounded-full shadow-lg transition-all"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 hover:bg-card text-charcoal p-2 rounded-full shadow-lg transition-all"
                   >
                     <ChevronRight size={24} />
                   </button>
                 </>
               )}
             </div>
+
+            {/* Image pager — prev / counter / next */}
+            {allImages.length > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-5">
+                <button
+                  type="button"
+                  onClick={prevImage}
+                  aria-label="Previous image"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-red bg-card/80 text-charcoal transition-colors hover:bg-brand-red hover:text-white"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <span className="font-display text-sm font-semibold tracking-wide text-charcoal/75">
+                  {selectedImageIndex + 1} / {allImages.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={nextImage}
+                  aria-label="Next image"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-red bg-card/80 text-charcoal transition-colors hover:bg-brand-red hover:text-white"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
 
             {/* Thumbnail Gallery */}
             {allImages.length > 1 && (
@@ -88,7 +114,8 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                       idx === selectedImageIndex ? 'border-brand-red scale-95' : 'border-transparent hover:border-brand-red/50'
                     }`}
                   >
-                    <Image src={img} alt={`${product.productName} ${idx + 1}`} fill className="object-cover" sizes="150px" />
+                    <Image src={img} alt={`${product.productName} ${idx + 1}`} fill
+                        loading="eager" className="object-cover" sizes="150px" />
                   </button>
                 ))}
               </div>
@@ -131,7 +158,7 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
-            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
             onClick={() => setLightboxOpen(false)}
           >
             <button
@@ -146,6 +173,7 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                 src={allImages[selectedImageIndex]}
                 alt={product.productName}
                 fill
+                        loading="eager"
                 className="object-contain"
                 sizes="90vw"
                 onClick={(e) => e.stopPropagation()}
@@ -159,7 +187,7 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                     e.stopPropagation();
                     prevImage();
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-charcoal p-3 rounded-full"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/90 hover:bg-card text-charcoal p-3 rounded-full"
                 >
                   <ChevronLeft size={32} />
                 </button>
@@ -169,10 +197,36 @@ export default function ProductDetailClient({product}: {product: ShopProduct}) {
                     e.stopPropagation();
                     nextImage();
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-charcoal p-3 rounded-full"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/90 hover:bg-card text-charcoal p-3 rounded-full"
                 >
                   <ChevronRight size={32} />
                 </button>
+
+                {/* Bottom pager — prev / counter / next */}
+                <div
+                  className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={prevImage}
+                    aria-label="Previous image"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+                  <span className="font-display text-sm font-semibold tracking-wide text-white/85">
+                    {selectedImageIndex + 1} / {allImages.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={nextImage}
+                    aria-label="Next image"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                </div>
               </>
             )}
           </motion.div>

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
-import {cookies, draftMode} from 'next/headers';
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {blogMainImageProjection} from '@/lib/blog-image-projection';
 import {blogHasImage, blogImageUrl} from '@/lib/resolve-blog-image';
 import ArticleHeroMedia from '@/components/blog/ArticleHeroMedia';
@@ -19,9 +18,9 @@ import {
 import EditableField from '@/components/admin/EditableField';
 import ArticleAdminBar from './_components/ArticleAdminBar';
 import PendingBlogPost from './_components/PendingBlogPost';
+import AdminPendingPost from './_components/AdminPendingPost';
 
-/** New posts must not briefly resolve as stale 404 in the CDN/app cache. */
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface Params {
   params: Promise<{slug: string}>;
@@ -53,13 +52,9 @@ function formatVolume(value: number) {
 
 async function getPost(slug: string): Promise<BlogDoc | null> {
   try {
-    const {isEnabled} = await draftMode();
-    const client = await getSanityClient();
-    const filter = isEnabled
-      ? `_type == "blog" && slug.current == $slug`
-      : `_type == "blog" && slug.current == $slug && status == "published"`;
+    const client = getSanityPublicClient();
     return await client.fetch<BlogDoc>(
-      `*[${filter}][0] {
+      `*[_type == "blog" && slug.current == $slug && status == "published"][0] {
         _id, title, slug, ${blogMainImageProjection}, heroVideoUrl, publishedAt, author, body, category, excerpt
       }`,
       {slug}
@@ -74,17 +69,15 @@ export default async function BlogPostPage({params}: Params) {
   const sanityPost = await getPost(slug);
   const stockArticle = stockArticles[slug];
   if (!sanityPost && !stockArticle) {
-    const isAdminPv = (await cookies()).get('pv_admin')?.value === 'true';
-    if (isAdminPv) {
-      return <PendingBlogPost slug={slug} />;
-    }
-    notFound();
+    // Render a client wrapper so the admin check happens without cookies()
+    // (which would force the route into dynamic rendering).
+    return <AdminPendingPost slug={slug} />;
   }
   let morePosts: BlogPost[] = [];
   let volumeLabel = formatVolume(stockVolumeMap[slug] ?? 1);
 
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     morePosts = await client.fetch<BlogPost[]>(
       `*[_type == "blog" && status == "published" && slug.current != $slug] | order(publishedAt desc)[0...3] {
         _id,
@@ -117,7 +110,7 @@ export default async function BlogPostPage({params}: Params) {
 
   if (sanityPost) {
     try {
-      const client = await getSanityClient();
+      const client = getSanityPublicClient();
       const slugsByDate = await client.fetch<Array<{slug: {current: string}}>>(
         `*[_type == "blog" && status == "published"] | order(publishedAt desc) {
           slug
@@ -146,7 +139,7 @@ export default async function BlogPostPage({params}: Params) {
   const pullQuote = isStock ? stockArticle?.body?.[2] : null;
 
   return (
-    <article className="min-h-screen bg-cream pb-24 pt-20">
+    <article className="min-h-screen bg-transparent pb-24 pt-20">
       <section className="relative w-full min-h-[500px]">
         {sanityPost ? <ArticleAdminBar documentId={sanityPost._id} /> : null}
         {sanityPost ? (
@@ -230,7 +223,7 @@ export default async function BlogPostPage({params}: Params) {
                 </p>
                 {index === 2 && pullQuote ? (
                   <PullQuoteMotion>
-                    <div className="my-12 bg-charcoal px-8 py-12 text-center">
+                    <div className="my-12 bg-ink px-8 py-12 text-center">
                       <div className="mx-auto mb-6 h-[2px] w-24 bg-brand-red" />
                       <p className="text-[28px] italic leading-tight text-white">"{pullQuote}"</p>
                       <div className="mx-auto mt-6 h-[2px] w-24 bg-brand-red" />

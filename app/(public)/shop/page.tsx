@@ -1,10 +1,19 @@
-import {cookies} from 'next/headers';
 import {getAvailableProducts, getAllProducts} from '@/lib/shop-storage';
 import {getAllCollectionImages} from '@/lib/collection-storage';
 import type {CollectionImage} from '@/lib/collection-storage';
 import ShopPageClient from '@/components/shop/ShopPageClient';
 
-export const dynamic = 'force-dynamic';
+export const metadata = {
+  title: 'Shop',
+  description:
+    'Shop exclusive PaidVille drops — members-only clothing and lifestyle pieces. Pre-order now and be part of the culture.',
+  openGraph: {
+    title: 'Shop | PaidVille',
+    description: 'Exclusive drops and members-only pieces from PaidVille.',
+  },
+};
+
+export const revalidate = 60;
 
 export default async function ShopPage() {
   const [products, allProducts, collectionImages] = await Promise.all([
@@ -12,8 +21,6 @@ export default async function ShopPage() {
     getAllProducts(),
     getAllCollectionImages(),
   ]);
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
 
   // Combine collection images with product images
   const productAsCollectionImages: CollectionImage[] = allProducts.map((product) => ({
@@ -31,7 +38,6 @@ export default async function ShopPage() {
     <ShopPageClient
       initialProducts={products}
       collectionImages={allCollectionImages}
-      isAdmin={isAdmin}
     />
   );
 }

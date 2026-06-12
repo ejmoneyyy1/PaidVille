@@ -1,5 +1,5 @@
 import Events from '@/components/sections/Events';
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {eventsQuery, type SanityEventDoc} from '@/lib/sanity';
 
 export const metadata = {
@@ -12,14 +12,14 @@ export const revalidate = 60;
 export default async function EventsPage() {
   let events: SanityEventDoc[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     events = await client.fetch<SanityEventDoc[]>(eventsQuery);
   } catch {
     // ignore
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-24 bg-transparent">
       <div className="container-max section-padding mb-4 text-center">
         <span className="section-label justify-center">What&apos;s Coming Up</span>
         <h1 className="section-title text-charcoal mt-2">

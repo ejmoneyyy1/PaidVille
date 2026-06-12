@@ -1,9 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import {motion} from 'framer-motion';
 import {Calendar, MapPin, ArrowUpRight} from 'lucide-react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import SpotlightCard from '@/components/ui/SpotlightCard';
+import LiquidImage from '@/components/ui/LiquidImage';
+import FloatingOrbs from '@/components/ui/FloatingOrbs';
 import EditableField from '@/components/admin/EditableField';
 import AdminDeleteControl from '@/components/admin/AdminDeleteControl';
 import EventImageUpload from '@/components/events/EventImageUpload';
@@ -44,13 +46,10 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
   const id = event._id;
 
   return (
-    <ScrollReveal delay={index * 0.08} direction="up">
-      <motion.article
-        whileHover={{y: -4}}
-        transition={{duration: 0.22}}
-        className="relative rounded-2xl overflow-hidden border border-brand-red bg-cream shadow-sm hover:shadow-md transition-shadow"
-      >
-        <AdminDeleteControl documentId={id} entityLabel={event.eventName} className="absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-white text-charcoal shadow-md hover:bg-brand-red hover:text-white" />
+    <ScrollReveal delay={index * 0.08} direction="up" className="h-full">
+      <motion.article whileHover={{y: -4}} transition={{duration: 0.22}} className="relative h-full">
+        <SpotlightCard className="h-full flex flex-col rounded-2xl border border-brand-red bg-[#141518] shadow-sm transition-shadow hover:shadow-md">
+        <AdminDeleteControl documentId={id} entityLabel={event.eventName} className="absolute right-3 top-3 z-[20] flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 bg-card text-charcoal shadow-md hover:bg-brand-red hover:text-white" />
         <EventImageUpload documentId={id} hasImage={Boolean(eventImageRef(resolveEventImage(event)))} />
         <div className="h-1 w-full bg-brand-red" />
 
@@ -59,25 +58,26 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
           const ref = eventImageRef(img);
           if (ref && img) {
             return (
-              <div className="relative aspect-video w-full bg-charcoal">
-                <Image
+              <div className="relative aspect-video bg-ink">
+                <LiquidImage
                   src={eventImageUrl(img, event.eventName)}
                   alt={img.alt ?? event.eventName}
-                  fill
-                  className="object-cover"
+                  className="absolute inset-0"
                   sizes="(max-width:768px) 100vw, 33vw"
                 />
               </div>
             );
           }
           return (
-            <div className="flex aspect-video items-center justify-center bg-charcoal">
-              <span className="font-display font-black text-4xl text-brand-red/25">PV</span>
+            <div className="relative aspect-video bg-ink">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-display font-black text-4xl text-brand-red/25">PV</span>
+              </div>
             </div>
           );
         })()}
 
-        <div className="p-6 flex flex-col gap-3">
+        <div className="p-6 flex flex-col gap-3 flex-1">
           {event.isFeatured && (
             <span className="self-start text-[10px] font-display font-bold tracking-[0.2em] uppercase px-2.5 py-1 rounded-full border border-brand-red text-brand-red">
               Featured
@@ -141,7 +141,7 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
             label="Ticket / RSVP URL"
             value={event.eventbriteUrl}
             type="text"
-            wrapperClassName="group/edit relative mt-2 block w-full"
+            wrapperClassName="group/edit relative mt-auto pt-2 block w-full"
           >
             <a
               href={event.eventbriteUrl}
@@ -154,6 +154,7 @@ function EventCard({event, index}: {event: SanityEventDoc; index: number}) {
             </a>
           </EditableField>
         </div>
+        </SpotlightCard>
       </motion.article>
     </ScrollReveal>
   );
@@ -173,7 +174,8 @@ export default function Events({
   const {lead, accent} = splitHeadingLastWord(title, DEFAULT_EVENTS_TITLE);
 
   return (
-    <section id="events" className="relative py-24 md:py-32 bg-cream overflow-hidden">
+    <section id="events" className="relative py-24 md:py-32 bg-transparent overflow-hidden">
+      <FloatingOrbs className="opacity-50" />
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[320px] pointer-events-none"
         style={{
@@ -182,7 +184,7 @@ export default function Events({
       />
 
       <div className="container-max section-padding">
-        <ScrollReveal className="mb-14 text-center">
+        <ScrollReveal className="mb-14 text-center rounded-2xl bg-[#0c0d10]/80 backdrop-blur-sm border border-brand-red/10 px-8 py-8 mx-auto max-w-4xl">
           <span className="section-label justify-center">What&apos;s Coming Up</span>
           <EditableField
             documentId={HOMEPAGE_DOC}
@@ -220,7 +222,7 @@ export default function Events({
             then fill the form — or add them in Sanity.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 auto-rows-fr">
             {events.map((event, i) => (
               <EventCard key={event._id} event={event} index={i} />
             ))}

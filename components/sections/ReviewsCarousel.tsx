@@ -62,7 +62,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
 
   return (
     <>
-      <section id="reviews" className="relative overflow-hidden border-t border-brand-red bg-charcoal py-20 md:py-28">
+      <section id="reviews" className="relative overflow-hidden border-t border-brand-red bg-ink py-20 md:py-28">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
@@ -119,7 +119,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
                   <button
                     type="button"
                     onClick={prev}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-card/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
                     aria-label="Previous review"
                   >
                     <ChevronLeft size={20} />
@@ -132,7 +132,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
                         type="button"
                         onClick={() => go(i)}
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          i === index ? 'w-8 bg-brand-red' : 'w-2 bg-white/30 hover:bg-white/50'
+                          i === index ? 'w-8 bg-brand-red' : 'w-2 bg-card/30 hover:bg-card/50'
                         }`}
                         aria-label={`Go to review ${i + 1}`}
                       />
@@ -142,7 +142,7 @@ export default function ReviewsCarousel({reviews}: {reviews: Review[]}) {
                   <button
                     type="button"
                     onClick={next}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-card/10 text-white transition-colors hover:border-brand-red hover:bg-brand-red"
                     aria-label="Next review"
                   >
                     <ChevronRight size={20} />

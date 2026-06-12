@@ -69,6 +69,11 @@ export async function POST(request: Request) {
     const description = (formData.get('description') as string)?.trim() || '';
     const price = formData.get('price') as string;
     const paymentLink = (formData.get('paymentLink') as string)?.trim();
+
+
+    const sizeLinksRaw = formData.get('sizeLinks') as string | null;
+    const sizeLinks: {size: string; link: string}[] = sizeLinksRaw ? JSON.parse(sizeLinksRaw) : [];
+
     const isAvailable = formData.get('isAvailable') === 'true';
     const imageFile = formData.get('image') as File | null;
     const galleryImageFiles = formData.getAll('galleryImages') as File[];
@@ -111,6 +116,10 @@ export async function POST(request: Request) {
       description,
       price: priceInCents,
       stripePaymentLink: paymentLink,
+
+
+      sizeLinks,
+
       isAvailable,
       featuredOnHome: true,
       productImage,
@@ -144,6 +153,11 @@ export async function PATCH(request: Request) {
     const description = (formData.get('description') as string)?.trim() || '';
     const price = formData.get('price') as string;
     const paymentLink = (formData.get('paymentLink') as string)?.trim();
+
+
+    const sizeLinksRaw = formData.get('sizeLinks') as string | null;
+    const sizeLinks: {size: string; link: string}[] = sizeLinksRaw ? JSON.parse(sizeLinksRaw) : [];
+
     const isAvailable = formData.get('isAvailable') === 'true';
     const imageFile = formData.get('image') as File | null;
     const galleryImageFiles = formData.getAll('galleryImages') as File[];
@@ -172,6 +186,10 @@ export async function PATCH(request: Request) {
       description,
       price: priceInCents,
       stripePaymentLink: paymentLink,
+
+
+      sizeLinks,
+
       isAvailable,
     };
 

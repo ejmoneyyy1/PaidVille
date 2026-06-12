@@ -23,6 +23,19 @@ export default function ShopProductModal({
   const [galleryImagesToKeep, setGalleryImagesToKeep] = useState<string[]>(
     product?.galleryImages || []
   );
+  const [sizeLinks, setSizeLinks] = useState<{size: string; link: string}[]>(
+    product?.sizeLinks ?? []
+  );
+
+  function addSizeRow() {
+    setSizeLinks((prev) => [...prev, {size: '', link: ''}]);
+  }
+  function removeSizeRow(i: number) {
+    setSizeLinks((prev) => prev.filter((_, idx) => idx !== i));
+  }
+  function updateSizeRow(i: number, field: 'size' | 'link', val: string) {
+    setSizeLinks((prev) => prev.map((row, idx) => (idx === i ? {...row, [field]: val} : row)));
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,6 +48,9 @@ export default function ShopProductModal({
       if (product?.id) {
         formData.append('productId', product.id);
       }
+
+      const validSizeLinks = sizeLinks.filter((s) => s.size.trim() && s.link.trim());
+      formData.append('sizeLinks', JSON.stringify(validSizeLinks));
 
       // Add main image
       if (mainImageFile) {
@@ -139,7 +155,7 @@ export default function ShopProductModal({
 
           <div>
             <label htmlFor="paymentLink" className="block text-xs font-semibold uppercase text-white/70 mb-1">
-              Payment Link *
+              Default Payment Link *
             </label>
             <input
               type="url"
@@ -150,7 +166,53 @@ export default function ShopProductModal({
               className="w-full rounded border border-[#444] bg-[#222] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
               placeholder="https://buy.stripe.com/..."
             />
-            <p className="mt-1 text-xs text-white/40">Stripe, PayPal, or any checkout link</p>
+            <p className="mt-1 text-xs text-white/40">Used when no size is selected, or as fallback</p>
+          </div>
+
+          {/* Size-specific links */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold uppercase text-white/70">
+                Size Links <span className="normal-case text-white/40">(optional)</span>
+              </label>
+              <button
+                type="button"
+                onClick={addSizeRow}
+                className="text-xs font-bold text-brand-red hover:text-red-400 transition-colors"
+              >
+                + Add Size
+              </button>
+            </div>
+            {sizeLinks.length === 0 && (
+              <p className="text-xs text-white/30 italic">No sizes — customers use the default link above.</p>
+            )}
+            <div className="space-y-2">
+              {sizeLinks.map((row, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={row.size}
+                    onChange={(e) => updateSizeRow(i, 'size', e.target.value)}
+                    placeholder="Size (S, M, L…)"
+                    className="w-28 rounded border border-[#444] bg-[#222] px-2 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+                  />
+                  <input
+                    type="url"
+                    value={row.link}
+                    onChange={(e) => updateSizeRow(i, 'link', e.target.value)}
+                    placeholder="https://buy.stripe.com/..."
+                    className="flex-1 rounded border border-[#444] bg-[#222] px-2 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-brand-red focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSizeRow(i)}
+                    className="text-white/40 hover:text-red-400 transition-colors text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>

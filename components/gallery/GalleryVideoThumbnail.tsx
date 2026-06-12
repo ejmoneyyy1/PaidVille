@@ -87,7 +87,7 @@ export default function GalleryVideoThumbnail({src, title, poster}: Props) {
   return (
     <video
       ref={videoRef}
-      className="absolute inset-0 h-full w-full object-cover bg-charcoal/20"
+      className="absolute inset-0 h-full w-full object-cover bg-ink/20"
       src={src}
       title={title}
       poster={poster ?? undefined}

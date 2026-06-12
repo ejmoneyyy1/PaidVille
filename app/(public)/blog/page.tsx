@@ -1,8 +1,18 @@
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import {stockPosts} from './_data/stock-content';
+
+export const metadata = {
+  title: 'Biased Opinions',
+  description:
+    'The PaidVille editorial — unfiltered takes on events, lifestyle, culture, and what it means to live elevated in Fayetteville, AR.',
+  openGraph: {
+    title: 'Biased Opinions | PaidVille',
+    description: 'Unfiltered takes on events, culture, and elevated living from PaidVille.',
+  },
+};
 import BlogIndexClient from './_components/BlogIndexClient';
 import BlogPageHeader from './_components/BlogPageHeader';
 import type {DisplayPost} from './_components/BlogCard';
@@ -19,7 +29,7 @@ function sectionString(sections: unknown, key: string, prop: 'heading' | 'subhea
 export default async function BlogPage() {
   let sanityPosts: BlogPost[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const fetchedPosts = await client.fetch<BlogPost[]>(blogQuery);
     sanityPosts = fetchedPosts ?? [];
   } catch {
@@ -33,7 +43,7 @@ export default async function BlogPage() {
     sectionString(sections, 'blog-1', 'subheading') ?? 'Editorial by PaidVille';
 
   return (
-    <div className="min-h-screen bg-cream pb-24 pt-20">
+    <div className="min-h-screen bg-transparent pb-24 pt-20">
       <BlogPageHeader heading={blogHeading} subheading={blogSub} />
 
       <div className="container-max section-padding pt-10">

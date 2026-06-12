@@ -62,7 +62,7 @@ export default function AdminPanel() {
 
   return (
     <aside
-      className="fixed right-0 top-0 z-[9998] flex h-full w-[380px] max-w-[100vw] flex-col border-l border-[#333] bg-charcoal shadow-2xl"
+      className="fixed right-0 top-0 z-[9998] flex h-full w-[380px] max-w-[100vw] flex-col border-l border-[#333] bg-ink shadow-2xl"
       role="dialog"
       aria-label="Edit field"
     >

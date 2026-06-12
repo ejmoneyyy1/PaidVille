@@ -21,7 +21,7 @@ export default function PendingBlogPost({slug}: {slug: string}) {
         </button>
         <Link
           href="/blog/new?admin=true"
-          className="rounded-[2px] border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
+          className="rounded-[2px] border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-card/10"
         >
           New post form
         </Link>

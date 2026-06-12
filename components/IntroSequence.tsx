@@ -11,7 +11,7 @@ const LOGO_HOLD_MS = 1600;
 /** Allow long clips / slow Safari decode before we bail out */
 const VIDEO_TIMEOUT_MS = 120000;
 
-export default function IntroSequence() {
+export default function IntroSequence({splashVideoUrl}: {splashVideoUrl?: string | null}) {
   const [phase, setPhase] = useState<Phase>('loader');
   const [count, setCount] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -197,7 +197,7 @@ export default function IntroSequence() {
     <AnimatePresence>
       <motion.div
         key="intro-overlay"
-        className="fixed inset-0 z-[200] bg-cream flex items-center justify-center overflow-hidden"
+        className="fixed inset-0 z-[200] bg-[#0a0a0c] flex items-center justify-center overflow-hidden"
         animate={{ opacity: exiting ? 0 : 1 }}
         transition={{ duration: 0.65, ease: 'easeInOut' }}
       >
@@ -273,7 +273,7 @@ export default function IntroSequence() {
 
               {/* Progress bar */}
               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[200px]">
-                <div className="h-[2px] bg-charcoal/10 w-full rounded-full overflow-hidden">
+                <div className="h-[2px] bg-ink/10 w-full rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ background: 'linear-gradient(to right, #800000, #B00000, #D40000)' }}
@@ -332,7 +332,7 @@ export default function IntroSequence() {
           {phase === 'video' && (
             <motion.div
               key="video"
-              className="absolute inset-0 bg-cream flex items-center justify-center"
+              className="absolute inset-0 bg-[#0a0a0c] flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -345,7 +345,7 @@ export default function IntroSequence() {
                 playsInline
                 autoPlay
                 preload="auto"
-                src="/videos/lights.mp4"
+                src={splashVideoUrl || '/videos/lights.mp4'}
                 onEnded={finishIntro}
                 onClick={(e) => {
                   const el = e.currentTarget;
@@ -361,7 +361,7 @@ export default function IntroSequence() {
                 className="absolute bottom-8 right-8 flex items-center gap-2 px-5 py-2.5
                   rounded-full text-xs font-display font-semibold tracking-wider uppercase
                   text-charcoal/50 hover:text-charcoal border border-brand-red/40 hover:border-brand-red
-                  backdrop-blur-sm bg-white/70 transition-all duration-200 hover:bg-white
+                  backdrop-blur-sm bg-card/70 transition-all duration-200 hover:bg-card
                   focus:outline-none"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}

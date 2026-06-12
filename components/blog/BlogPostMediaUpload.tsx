@@ -48,8 +48,8 @@ export default function BlogPostMediaUpload({
 
   const btnClass =
     variant === 'card'
-      ? 'flex items-center gap-1 rounded-full border border-charcoal/15 bg-white/95 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-charcoal shadow-sm hover:bg-brand-red hover:text-white disabled:opacity-60'
-      : 'flex items-center gap-1 rounded-full border border-white/25 bg-charcoal/90 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-white hover:bg-brand-red disabled:opacity-60';
+      ? 'flex items-center gap-1 rounded-full border border-charcoal/15 bg-card/95 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-charcoal shadow-sm hover:bg-brand-red hover:text-white disabled:opacity-60'
+      : 'flex items-center gap-1 rounded-full border border-white/25 bg-ink/90 px-2.5 py-1.5 text-[10px] font-display font-bold uppercase tracking-wide text-white hover:bg-brand-red disabled:opacity-60';
 
   const wrapClass = cn(
     'z-[15] flex gap-2',

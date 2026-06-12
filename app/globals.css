@@ -7,9 +7,12 @@
     --brand-red: #b00000;
     --brand-red-light: #d40000;
     --brand-red-dark: #800000;
-    --cream: #f5f5f0;
-    --silver: #e5e5e5;
-    --charcoal: #1a1a1a;
+    /* Immersive dark theme. Space-separated RGB channels so Tailwind's
+       `rgb(var(--x) / <alpha-value>)` opacity modifiers keep working. */
+    --cream: 11 11 13; /* page background — near-black */
+    --silver: 22 23 27; /* alternate section surface */
+    --card: 20 21 26; /* cards / inputs / chips */
+    --charcoal: 244 243 238; /* primary text — cream */
   }
 
   *,
@@ -23,18 +26,27 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Literal dark base — guarantees a dark canvas even before tokens resolve. */
+    background-color: #0a0a0b;
   }
 
   body {
-    /* Theme without Tailwind @apply so base styles survive even if utilities fail to expand */
-    background-color: var(--cream);
-    color: var(--charcoal);
+    /* TRANSPARENT so the fixed -z-10 WebGL morph background shows through.
+       The dark base comes from html's background-color. */
+    background-color: transparent;
+    color: rgb(var(--charcoal));
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'kern' 1, 'liga' 1;
     overflow-x: hidden;
     min-height: 100vh;
+  }
+
+  /* Legibility over the cosmic background — soft shadow so text reads on the
+     galaxy everywhere. :where() keeps specificity 0 so components can override. */
+  main :where(h1, h2, h3, h4, h5, p, a, span, li, blockquote, label, strong, em) {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 2px 18px rgba(0, 0, 0, 0.7);
   }
 
   ::selection {
@@ -47,7 +59,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #e5e5e5;
+    background: #16171b;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -63,12 +75,12 @@
 @layer utilities {
   .text-gradient-brand {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #1a1a1a 0%, #b00000 55%, #800000 100%);
+    background-image: linear-gradient(135deg, #f4f3ee 0%, #d40000 55%, #b00000 100%);
   }
 
   .text-gradient-white {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(180deg, #1a1a1a 0%, rgba(26, 26, 26, 0.55) 100%);
+    background-image: linear-gradient(180deg, #f4f3ee 0%, rgba(244, 243, 238, 0.55) 100%);
   }
 
   .glow-red {
@@ -88,10 +100,10 @@
   }
 
   .card-glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(20, 21, 26, 0.62);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(176, 0, 0, 0.35);
+    border: 1px solid rgba(176, 0, 0, 0.32);
   }
 
   .card-glass-hover {
@@ -99,9 +111,9 @@
   }
 
   .card-glass-hover:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(176, 0, 0, 0.55);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.06), 0 0 32px rgba(176, 0, 0, 0.08);
+    background: rgba(30, 31, 38, 0.82);
+    border-color: rgba(176, 0, 0, 0.6);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 0 36px rgba(176, 0, 0, 0.18);
   }
 
   .section-padding {
@@ -116,14 +128,20 @@
     @apply h-px w-16 bg-gradient-to-r from-transparent via-brand-red to-transparent;
   }
 
+  /* Outlined (hollow) text — used by PinnedStatement's gliding ghost track */
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(245, 245, 240, 0.5);
+  }
+
   .inquiry-input {
-    @apply w-full rounded-xl border border-brand-red bg-white px-4 py-3 text-sm
+    @apply w-full rounded-xl border border-brand-red bg-card px-4 py-3 text-sm
       focus:outline-none focus:ring-2 focus:ring-brand-red/35;
-    color: var(--charcoal);
+    color: rgb(var(--charcoal));
   }
 
   .inquiry-input::placeholder {
-    color: rgba(26, 26, 26, 0.35);
+    color: rgba(244, 243, 238, 0.4);
   }
 }
 
@@ -133,7 +151,7 @@
       bg-brand-red text-white font-display font-semibold
       text-sm tracking-wider uppercase transition-all duration-300
       hover:bg-brand-red-light hover:scale-[1.02] hover:shadow-md
-      focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:ring-offset-[#F5F5F0]
+      focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:ring-offset-[#0B0B0D]
       active:scale-[0.98];
     box-shadow: 0 4px 20px rgba(176, 0, 0, 0.28);
   }
@@ -142,8 +160,8 @@
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full
       border border-brand-red text-charcoal font-display font-semibold
       text-sm tracking-wider uppercase transition-all duration-300
-      hover:bg-white hover:scale-[1.02]
-      focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:ring-offset-2 focus:ring-offset-[#F5F5F0]
+      hover:bg-brand-red hover:text-white hover:scale-[1.02]
+      focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:ring-offset-2 focus:ring-offset-[#0B0B0D]
       active:scale-[0.98];
   }
 

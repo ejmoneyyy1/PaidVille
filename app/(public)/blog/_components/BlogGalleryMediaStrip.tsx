@@ -11,7 +11,7 @@ export default function BlogGalleryMediaStrip({items}: {items: SanityGalleryDoc[
   if (!items.length) return null;
 
   return (
-    <section className="mb-14 rounded-2xl border border-brand-red/25 bg-white/60 p-5">
+    <section className="mb-14 rounded-2xl border border-brand-red/25 bg-card/60 p-5">
       <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <h2 className="font-display font-bold text-charcoal">From the gallery</h2>
         <Link href="/gallery" className="text-sm font-semibold text-brand-red hover:text-brand-red-light">
@@ -30,7 +30,7 @@ export default function BlogGalleryMediaStrip({items}: {items: SanityGalleryDoc[
           return (
             <li key={item._id} className="w-40 shrink-0">
               <Link href="/gallery" className="group block">
-                <div className="relative aspect-video overflow-hidden rounded-lg bg-charcoal/10">
+                <div className="relative aspect-video overflow-hidden rounded-lg bg-ink/10">
                   {poster ? (
                     <Image
                       src={poster}

@@ -1,5 +1,6 @@
 import {cookies} from 'next/headers';
 import {NextResponse} from 'next/server';
+import {revalidatePath} from 'next/cache';
 import {sanityWriteClient} from '@/lib/sanity-write';
 
 export async function POST(request: Request) {
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
         ? {slug: {_type: 'slug' as const, current: value}}
         : {[field]: value};
     await sanityWriteClient.patch(documentId).set(payload).commit();
+    revalidatePath('/', 'layout');
     return NextResponse.json({ok: true});
   } catch (error) {
     console.error('[admin/update]', error);

@@ -58,6 +58,21 @@ export const shopProductType = defineType({
       ],
     }),
     defineField({
+      name: 'sizeLinks',
+      type: 'array',
+      title: 'Size-specific payment links',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({name: 'size', type: 'string', title: 'Size (e.g. S, M, L, XL)'}),
+            defineField({name: 'link', type: 'url', title: 'Stripe link for this size'}),
+          ],
+          preview: {select: {title: 'size', subtitle: 'link'}},
+        },
+      ],
+    }),
+    defineField({
       name: 'featuredOnHome',
       type: 'boolean',
       title: 'Featured on homepage Members Shop card',

@@ -1,11 +1,14 @@
 import {sanityClient, urlFor} from '@/lib/sanity';
 
+export type SizeLink = {size: string; link: string};
+
 export type ShopProduct = {
   id: string;
   productName: string;
   description: string;
   price: number; // Stored in cents (e.g., 4500 for $45.00)
   paymentLink: string;
+  sizeLinks: SizeLink[]; // Per-size Stripe links (overrides paymentLink when set)
   imagePath: string; // Main product image (resolved URL)
   galleryImages: string[]; // Additional product angles/images (resolved URLs)
   isAvailable: boolean;
@@ -20,6 +23,7 @@ type ShopProductSanityDoc = {
   description?: string;
   price?: number;
   stripePaymentLink?: string;
+  sizeLinks?: {size?: string; link?: string}[];
   isAvailable?: boolean;
   productImage?: unknown;
   galleryImages?: unknown[];
@@ -33,6 +37,7 @@ const SHOP_PROJECTION = `{
   description,
   price,
   stripePaymentLink,
+  sizeLinks,
   isAvailable,
   productImage,
   galleryImages,
@@ -60,6 +65,9 @@ function mapProduct(doc: ShopProductSanityDoc): ShopProduct {
     description: doc.description ?? '',
     price: typeof doc.price === 'number' ? doc.price : 0,
     paymentLink: doc.stripePaymentLink ?? '',
+    sizeLinks: (doc.sizeLinks ?? [])
+      .filter((s) => s.size && s.link)
+      .map((s) => ({size: s.size!, link: s.link!})),
     imagePath: imageUrl(doc.productImage),
     galleryImages: Array.isArray(doc.galleryImages)
       ? doc.galleryImages.filter(hasAsset).map(imageUrl).filter(Boolean)

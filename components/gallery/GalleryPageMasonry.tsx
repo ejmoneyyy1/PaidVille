@@ -4,7 +4,6 @@ import {useState} from 'react';
 import Image from 'next/image';
 import {AnimatePresence, motion} from 'framer-motion';
 import {Play} from 'lucide-react';
-import ScrollReveal from '@/components/ui/ScrollReveal';
 import GalleryMediaLightbox, {type GalleryLightboxItem} from '@/components/gallery/GalleryMediaLightbox';
 import GalleryVideoThumbnail from '@/components/gallery/GalleryVideoThumbnail';
 import {resolveGalleryImageUrl} from '@/lib/gallery-image-url';
@@ -84,7 +83,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
 
   return (
     <>
-      <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 [column-fill:_balance]">
+      <div className="relative z-[1] w-full columns-1 gap-5 sm:columns-2 lg:columns-3 [column-fill:_balance]">
         {items.map((item, index) => {
           const poster = resolvePoster(item);
           const categoryLabel = categoryDisplayLabel(item.category);
@@ -106,9 +105,9 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
           const cms = isDeletableSanityGalleryEntry(item);
 
           return (
-            <ScrollReveal key={item._id} delay={index * 0.04} direction="up">
-              <motion.div className="break-inside-avoid relative mb-5" whileHover={{scale: 1.005}} transition={{duration: 0.2}}>
-                <div className="overflow-hidden rounded-2xl border border-brand-red bg-cream text-left shadow-sm transition-shadow hover:shadow-md">
+            <div key={item._id} className="break-inside-avoid w-full mb-5">
+              <motion.div whileHover={{scale: 1.005}} transition={{duration: 0.2}}>
+                <div className="overflow-hidden rounded-2xl border border-brand-red bg-[#141518] text-left shadow-sm transition-shadow hover:shadow-md">
                 <motion.div
                   role="button"
                   tabIndex={0}
@@ -134,6 +133,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                       src={poster}
                       alt={altText}
                       fill
+                      loading="eager"
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
@@ -173,7 +173,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                       {item.title}
                     </h2>
                   )}
-                  {cms ? (
+                  {isAdmin && cms ? (
                     <EditableField
                       documentId={item._id}
                       field="videoUrl"
@@ -216,7 +216,7 @@ export default function GalleryPageMasonry({items}: {items: GalleryPageItem[]}) 
                 </div>
                 </div>
               </motion.div>
-            </ScrollReveal>
+            </div>
           );
         })}
       </div>

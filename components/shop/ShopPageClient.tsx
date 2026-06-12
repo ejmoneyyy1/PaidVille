@@ -5,18 +5,18 @@ import {useRouter} from 'next/navigation';
 import ShopCatalog from '@/components/sections/ShopCatalog';
 import CollectionGallery from '@/components/shop/CollectionGallery';
 import ShopProductModal from '@/components/shop/ShopProductModal';
+import {useAdmin} from '@/contexts/AdminContext';
 import type {ShopProduct} from '@/lib/shop-storage';
 import type {CollectionImage} from '@/lib/collection-storage';
 
 export default function ShopPageClient({
   initialProducts,
   collectionImages,
-  isAdmin,
 }: {
   initialProducts: ShopProduct[];
   collectionImages: CollectionImage[];
-  isAdmin: boolean;
 }) {
+  const {isAdmin} = useAdmin();
   const router = useRouter();
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
@@ -43,7 +43,7 @@ export default function ShopPageClient({
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-0 bg-cream">
+    <div className="min-h-screen pt-32 pb-0 bg-transparent isolate [transform:translateZ(0)]">
       <div className="container-max section-padding mb-12 text-center relative">
         <span className="section-label justify-center">Members Shop</span>
         <h1 className="section-title text-charcoal mt-2">
