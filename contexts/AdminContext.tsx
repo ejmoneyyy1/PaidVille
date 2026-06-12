@@ -40,7 +40,7 @@ export function AdminProvider({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const adminFromCookie = document.cookie.split(';').some((c) => c.trim() === 'pv_admin=true');
+    const adminFromCookie = document.cookie.split(';').some((c) => c.trim() === 'pv_admin_ui=true');
     setIsAdmin(adminFromCookie);
     if (adminFromCookie) {
       const params = new URLSearchParams(window.location.search);
