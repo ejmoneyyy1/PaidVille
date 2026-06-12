@@ -331,6 +331,7 @@ function CollectionImageModal({
       onClick={onClose}
     >
       <div
+        data-lenis-prevent
         className="w-full max-w-lg rounded-lg bg-[#1A1A1A] border border-[#333] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >

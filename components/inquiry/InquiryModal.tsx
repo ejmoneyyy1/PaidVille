@@ -274,6 +274,7 @@ export default function InquiryModal({open, mode, onClose}: InquiryModalProps) {
             role="dialog"
             aria-modal
             aria-labelledby="inquiry-title"
+            data-lenis-prevent
             className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-pv-red bg-[#141518] shadow-xl"
             initial={{scale: 0.96, opacity: 0}}
             animate={{scale: 1, opacity: 1}}

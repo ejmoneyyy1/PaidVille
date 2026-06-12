@@ -78,7 +78,8 @@ export default function AddReviewModal({open, onClose}: {open: boolean; onClose:
             role="dialog"
             aria-modal
             aria-labelledby="add-review-title"
-            className="relative w-full max-w-md overflow-y-auto rounded-2xl border border-brand-red bg-[#141518] shadow-xl"
+            data-lenis-prevent
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-brand-red bg-[#141518] shadow-xl"
             initial={{scale: 0.96, opacity: 0}}
             animate={{scale: 1, opacity: 1}}
             exit={{scale: 0.98, opacity: 0}}

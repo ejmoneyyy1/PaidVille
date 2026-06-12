@@ -1,6 +1,7 @@
 'use client';
 
 import {useState, useEffect, useCallback} from 'react';
+import {createPortal} from 'react-dom';
 import {useRouter} from 'next/navigation';
 import Image from 'next/image';
 import {motion, AnimatePresence} from 'framer-motion';
@@ -249,7 +250,10 @@ export default function ShopCatalog({
         </div>
       </div>
 
-      {/* Lightbox - Show only selected product's images (front/back views) */}
+      {/* Lightbox — portaled to body: an ancestor CSS transform would
+          otherwise make this fixed overlay position relative to the page
+          instead of the viewport. */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {selectedProduct && (
           <motion.div
@@ -259,7 +263,7 @@ export default function ShopCatalog({
             role="dialog"
             aria-modal="true"
             aria-label={`${selectedProduct.productName} product gallery`}
-            className={`fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center px-4 pt-4 ${
+            className={`fixed inset-0 z-[10000] bg-black/95 flex flex-col items-center justify-center px-4 pt-4 ${
               isAdmin ? 'pb-28' : 'pb-4'
             }`}
             onClick={closeLightbox}
@@ -290,7 +294,7 @@ export default function ShopCatalog({
               onClick={(e) => e.stopPropagation()}
             >
               {getProductImages(selectedProduct).length > 1 && (
-                <div className="flex max-h-[68vh] w-[min(22vh,10rem)] shrink-0 flex-col gap-3 overflow-y-auto pr-1">
+                <div data-lenis-prevent className="flex max-h-[68vh] w-[min(22vh,10rem)] shrink-0 flex-col gap-3 overflow-y-auto pr-1">
                   {getProductImages(selectedProduct).map((img, i) => (
                     <button
                       key={`${img}-${i}`}
@@ -364,7 +368,9 @@ export default function ShopCatalog({
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </>
   );
 }

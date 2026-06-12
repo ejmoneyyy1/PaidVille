@@ -103,7 +103,7 @@ export default function ShopProductModal({
   // the viewport.
   return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl rounded-lg bg-[#1A1A1A] border border-[#333] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div data-lenis-prevent className="w-full max-w-2xl rounded-lg bg-[#1A1A1A] border border-[#333] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="border-b border-[#333] px-6 py-4 sticky top-0 bg-[#1A1A1A] z-10">
           <h2 className="text-lg font-bold text-white">
             {product ? 'Edit Product' : 'Add New Product'}

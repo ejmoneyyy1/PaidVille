@@ -78,7 +78,7 @@ export default function AdminPanel() {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5">
+      <div data-lenis-prevent className="flex-1 overflow-y-auto px-5 py-5">
         {activePanel.type === 'textarea' || activePanel.type === 'richtext' ? (
           <textarea
             value={draft}
