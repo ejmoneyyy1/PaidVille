@@ -9,7 +9,7 @@ import ShopSectionHome from '@/components/sections/ShopSectionHome';
 import BrandShowcase from '@/components/sections/BrandShowcase';
 import JoinSection from '@/components/sections/JoinSection';
 import Marquee from '@/components/ui/Marquee';
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {
   blogQuery,
   galleryItemsQuery,
@@ -49,7 +49,7 @@ async function getData() {
   const siteContent = await getSiteContent();
 
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const [fetchedPosts, fetchedGallery, fetchedStats, fetchedEvents, fetchedReviews] =
       await Promise.all([
       client.fetch<BlogPost[]>(blogQuery),

@@ -1,5 +1,5 @@
 import Events from '@/components/sections/Events';
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {eventsQuery, type SanityEventDoc} from '@/lib/sanity';
 
 export const metadata = {
@@ -12,7 +12,7 @@ export const revalidate = 60;
 export default async function EventsPage() {
   let events: SanityEventDoc[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     events = await client.fetch<SanityEventDoc[]>(eventsQuery);
   } catch {
     // ignore

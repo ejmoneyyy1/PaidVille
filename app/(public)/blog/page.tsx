@@ -1,4 +1,4 @@
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
@@ -29,7 +29,7 @@ function sectionString(sections: unknown, key: string, prop: 'heading' | 'subhea
 export default async function BlogPage() {
   let sanityPosts: BlogPost[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const fetchedPosts = await client.fetch<BlogPost[]>(blogQuery);
     sanityPosts = fetchedPosts ?? [];
   } catch {

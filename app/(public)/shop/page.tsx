@@ -1,4 +1,3 @@
-import {cookies} from 'next/headers';
 import {getAvailableProducts, getAllProducts} from '@/lib/shop-storage';
 import {getAllCollectionImages} from '@/lib/collection-storage';
 import type {CollectionImage} from '@/lib/collection-storage';
@@ -14,7 +13,7 @@ export const metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function ShopPage() {
   const [products, allProducts, collectionImages] = await Promise.all([
@@ -22,8 +21,6 @@ export default async function ShopPage() {
     getAllProducts(),
     getAllCollectionImages(),
   ]);
-  const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('pv_admin')?.value === 'true';
 
   // Combine collection images with product images
   const productAsCollectionImages: CollectionImage[] = allProducts.map((product) => ({
@@ -41,7 +38,6 @@ export default async function ShopPage() {
     <ShopPageClient
       initialProducts={products}
       collectionImages={allCollectionImages}
-      isAdmin={isAdmin}
     />
   );
 }

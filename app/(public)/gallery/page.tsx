@@ -1,4 +1,4 @@
-import {getSanityClient} from '@/lib/sanity-server';
+import {getSanityPublicClient} from '@/lib/sanity-server';
 import {galleryQuery, type SanityGalleryDoc} from '@/lib/sanity';
 import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/GalleryPageMasonry';
 
@@ -33,7 +33,7 @@ function normalizeGalleryFetch(raw: unknown): SanityGalleryDoc[] {
 export default async function GalleryPage() {
   let sanityGallery: SanityGalleryDoc[] = [];
   try {
-    const client = await getSanityClient();
+    const client = getSanityPublicClient();
     const raw = await client.fetch<unknown>(galleryQuery);
     sanityGallery = normalizeGalleryFetch(raw);
   } catch {
