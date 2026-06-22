@@ -6,4 +6,4 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /studio/
 
-Sitemap: https://paidville.com/sitemap.xml
+Sitemap: https://www.paidville.com/sitemap.xml

@@ -3,7 +3,10 @@ export const SiteConfig = {
   tagline: 'Premium Events. Elevated Lifestyle.',
   description:
     'PaidVille is a creative agency and lifestyle brand delivering high-energy experiences through curated events, media, fashion, and community.',
-  url: 'https://paidville.com',
+  // Must match the host the site actually serves on — the apex
+  // (paidville.com) 308-redirects to www, so canonical tags and sitemap
+  // URLs use www to avoid "Page with redirect" in Search Console.
+  url: 'https://www.paidville.com',
   logo: '/images/splashlogo.png',
 
   brand: {
