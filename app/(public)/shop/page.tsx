@@ -1,6 +1,5 @@
-import {getAvailableProducts, getAllProducts} from '@/lib/shop-storage';
+import {getAvailableProducts} from '@/lib/shop-storage';
 import {getAllCollectionImages} from '@/lib/collection-storage';
-import type {CollectionImage} from '@/lib/collection-storage';
 import ShopPageClient from '@/components/shop/ShopPageClient';
 
 export const metadata = {
@@ -16,28 +15,19 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function ShopPage() {
-  const [products, allProducts, collectionImages] = await Promise.all([
+  const [products, collectionImages] = await Promise.all([
     getAvailableProducts(),
-    getAllProducts(),
     getAllCollectionImages(),
   ]);
 
-  // Combine collection images with product images
-  const productAsCollectionImages: CollectionImage[] = allProducts.map((product) => ({
-    id: `product-${product.id}`,
-    title: product.productName,
-    description: product.description,
-    imagePath: product.imagePath,
-    createdAt: product.createdAt,
-    updatedAt: product.updatedAt,
-  }));
-
-  const allCollectionImages = [...collectionImages, ...productAsCollectionImages];
-
+  // The Collection Gallery shows only real, admin-managed collectionImage docs.
+  // Products are NOT mirrored in here: their synthetic "product-<id>" ids don't
+  // exist in Sanity, so Delete/Edit on them silently failed. Products already
+  // render in the shop catalog above.
   return (
     <ShopPageClient
       initialProducts={products}
-      collectionImages={allCollectionImages}
+      collectionImages={collectionImages}
     />
   );
 }

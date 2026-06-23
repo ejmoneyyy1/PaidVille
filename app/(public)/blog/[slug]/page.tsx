@@ -7,8 +7,7 @@ import ArticleHeroMedia from '@/components/blog/ArticleHeroMedia';
 import BlogPostMediaUpload from '@/components/blog/BlogPostMediaUpload';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import BlogCard from '../_components/BlogCard';
-import {stockArticles, stockPosts} from '../_data/stock-content';
-import {HeroMotion, PullQuoteMotion, ShareBar} from './_components/ArticleMotion';
+import {HeroMotion, ShareBar} from './_components/ArticleMotion';
 import {
   EditablePostAuthor,
   EditablePostBody,
@@ -17,7 +16,6 @@ import {
 } from './_components/ArticleAdmin';
 import EditableField from '@/components/admin/EditableField';
 import ArticleAdminBar from './_components/ArticleAdminBar';
-import PendingBlogPost from './_components/PendingBlogPost';
 import AdminPendingPost from './_components/AdminPendingPost';
 
 export const revalidate = 60;
@@ -37,13 +35,6 @@ type BlogDoc = {
   body?: unknown;
   category?: string | null;
   excerpt?: string | null;
-};
-
-const stockVolumeMap: Record<string, number> = {
-  'welcome-to-biased-opinions': 1,
-  'what-makes-an-unforgettable-event': 2,
-  'your-brand-is-priceless': 3,
-  'fayetteville-creative-scene': 4,
 };
 
 function formatVolume(value: number) {
@@ -67,14 +58,14 @@ async function getPost(slug: string): Promise<BlogDoc | null> {
 export default async function BlogPostPage({params}: Params) {
   const {slug} = await params;
   const sanityPost = await getPost(slug);
-  const stockArticle = stockArticles[slug];
-  if (!sanityPost && !stockArticle) {
-    // Render a client wrapper so the admin check happens without cookies()
-    // (which would force the route into dynamic rendering).
+  if (!sanityPost) {
+    // No real post at this slug. Admins see the "create post" prompt;
+    // everyone else gets a 404. Client wrapper so the admin check happens
+    // without cookies() (which would force the route into dynamic rendering).
     return <AdminPendingPost slug={slug} />;
   }
   let morePosts: BlogPost[] = [];
-  let volumeLabel = formatVolume(stockVolumeMap[slug] ?? 1);
+  let volumeLabel = formatVolume(1);
 
   try {
     const client = getSanityPublicClient();
@@ -96,31 +87,22 @@ export default async function BlogPostPage({params}: Params) {
     morePosts = [];
   }
 
-  const post = sanityPost ?? {
-    _id: `stock-${slug}`,
-    title: stockArticle!.title,
-    slug: {current: slug},
-    publishedAt: stockArticle!.publishedAt,
-    author: stockArticle!.author,
-  };
-  const cmsId = sanityPost?._id ?? '';
-  const category = sanityPost?.category ?? stockArticle?.category ?? 'EDITORIAL';
-  const heroBg = stockArticle?.headerBg ?? '#1A1A1A';
-  const isStock = !sanityPost;
+  const post = sanityPost;
+  const cmsId = sanityPost._id;
+  const category = sanityPost.category ?? 'EDITORIAL';
+  const heroBg = '#1A1A1A';
 
-  if (sanityPost) {
-    try {
-      const client = getSanityPublicClient();
-      const slugsByDate = await client.fetch<Array<{slug: {current: string}}>>(
-        `*[_type == "blog" && status == "published"] | order(publishedAt desc) {
-          slug
-        }`
-      );
-      const position = slugsByDate.findIndex((item) => item.slug?.current === slug);
-      volumeLabel = formatVolume(position >= 0 ? position + 1 : 1);
-    } catch {
-      volumeLabel = formatVolume(1);
-    }
+  try {
+    const client = getSanityPublicClient();
+    const slugsByDate = await client.fetch<Array<{slug: {current: string}}>>(
+      `*[_type == "blog" && status == "published"] | order(publishedAt desc) {
+        slug
+      }`
+    );
+    const position = slugsByDate.findIndex((item) => item.slug?.current === slug);
+    volumeLabel = formatVolume(position >= 0 ? position + 1 : 1);
+  } catch {
+    volumeLabel = formatVolume(1);
   }
 
   const date = new Date(post.publishedAt).toLocaleDateString('en-US', {
@@ -134,9 +116,7 @@ export default async function BlogPostPage({params}: Params) {
   const heroVideoUrl = sanityPost?.heroVideoUrl ?? null;
   const noiseTexture =
     "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E\")";
-  const relatedPosts =
-    morePosts.length > 0 ? morePosts : stockPosts.filter((item) => item.slug.current !== slug).slice(0, 3);
-  const pullQuote = isStock ? stockArticle?.body?.[2] : null;
+  const relatedPosts = morePosts;
 
   return (
     <article className="min-h-screen bg-transparent pb-24 pt-20">
@@ -208,34 +188,7 @@ export default async function BlogPostPage({params}: Params) {
       </div>
 
       <div className="mx-auto max-w-[700px] px-6 py-16 text-[18px] leading-[1.85] text-charcoal">
-        {isStock ? (
-          <>
-            {stockArticle?.body.map((paragraph, index) => (
-              <div key={`${paragraph.slice(0, 20)}-${index}`}>
-                <p
-                  className={
-                    index === 0
-                      ? 'mb-7 first-letter:float-left first-letter:mr-3 first-letter:mt-2 first-letter:text-7xl first-letter:font-black first-letter:leading-[0.8] first-letter:text-brand-red'
-                      : 'mb-7'
-                  }
-                >
-                  {paragraph}
-                </p>
-                {index === 2 && pullQuote ? (
-                  <PullQuoteMotion>
-                    <div className="my-12 bg-ink px-8 py-12 text-center">
-                      <div className="mx-auto mb-6 h-[2px] w-24 bg-brand-red" />
-                      <p className="text-[28px] italic leading-tight text-white">"{pullQuote}"</p>
-                      <div className="mx-auto mt-6 h-[2px] w-24 bg-brand-red" />
-                    </div>
-                  </PullQuoteMotion>
-                ) : null}
-              </div>
-            ))}
-          </>
-        ) : sanityPost ? (
-          <EditablePostBody documentId={cmsId} body={sanityPost.body} />
-        ) : null}
+        <EditablePostBody documentId={cmsId} body={sanityPost.body} />
 
         <ShareBar slug={slug} />
       </div>

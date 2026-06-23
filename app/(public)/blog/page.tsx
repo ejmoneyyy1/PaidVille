@@ -2,7 +2,6 @@ import {getSanityPublicClient} from '@/lib/sanity-server';
 import {blogQuery} from '@/lib/sanity';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import {getSingletonDocs} from '@/lib/get-singleton-docs';
-import {stockPosts} from './_data/stock-content';
 
 export const metadata = {
   title: 'Biased Opinions',
@@ -35,7 +34,8 @@ export default async function BlogPage() {
   } catch {
     // Unconfigured Sanity
   }
-  const displayPosts: DisplayPost[] = sanityPosts.length > 0 ? sanityPosts : stockPosts;
+  // Only real (Sanity) posts — no stock fallback, so deleted articles stay gone.
+  const displayPosts: DisplayPost[] = sanityPosts;
   const {homepage} = await getSingletonDocs();
   const sections = homepage?.sections;
   const blogHeading = sectionString(sections, 'blog-1', 'heading') ?? 'Biased Opinions';
