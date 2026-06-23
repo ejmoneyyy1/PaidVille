@@ -94,10 +94,10 @@ export default function AdminDashboardClient({
     if (!window.confirm('Delete this product permanently?')) return;
     setBusyId(productId);
     try {
-      const res = await fetch('/api/admin/shop', {
+      // Route reads the id from the query string (searchParams.get('id')),
+      // not a JSON body — sending a body here left it null and 400'd.
+      const res = await fetch(`/api/admin/shop?id=${encodeURIComponent(productId)}`, {
         method: 'DELETE',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({productId}),
       });
       if (!res.ok) {
         alert('Could not delete product');
