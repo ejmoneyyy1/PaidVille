@@ -1,6 +1,7 @@
 import type {Metadata, Viewport} from 'next';
 import {Inter, Montserrat} from 'next/font/google';
 import './globals.css';
+import {Analytics} from '@vercel/analytics/next';
 import {SiteConfig} from '@/lib/config';
 import VisualEditingClient from '@/components/VisualEditingClient';
 
@@ -105,6 +106,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className="min-h-screen">
         {children}
         <VisualEditingClient />
+        <Analytics />
       </body>
     </html>
   );
