@@ -243,9 +243,12 @@ export default function ShopProductModal({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase text-white/70 mb-2">
-              Product Gallery (Front/Back Views)
+            <label className="block text-xs font-semibold uppercase text-white/70 mb-1">
+              Product Gallery — Add Multiple Photos
             </label>
+            <p className="mb-2 text-xs text-white/40">
+              Front, back, and detail shots. Add as many as you like — they show as a gallery on the product.
+            </p>
             
             {/* Existing Gallery Images */}
             {galleryImagesToKeep.length > 0 && (

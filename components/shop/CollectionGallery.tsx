@@ -340,6 +340,11 @@ function CollectionImageModal({
             {image ? 'Edit Collection Image' : 'Add Collection Image'}
           </h2>
         </div>
+        <div className="mx-6 mt-4 rounded border border-brand-red/30 bg-brand-red/10 px-3 py-2 text-xs text-white/70">
+          This holds <span className="font-semibold text-white">one image per tile</span>. To add
+          multiple photos (front, back, detail) to a shop product, use the{' '}
+          <span className="font-semibold text-white">Edit</span> button on that product instead.
+        </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label
