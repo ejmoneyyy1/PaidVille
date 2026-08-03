@@ -26,7 +26,7 @@ export default function ShopSectionHome({products}: {products: ShopProduct[]}) {
           <div>
             <span className="section-label">Members Shop</span>
             <h2 className="section-title text-charcoal">
-              Pre-order the <span className="text-brand-red">drop</span>
+              Order The <span className="text-brand-red">Drop</span>
             </h2>
             <p className="section-subtitle text-charcoal/70 mt-3">
               Summer collection — fresh drops, exclusive vibes.

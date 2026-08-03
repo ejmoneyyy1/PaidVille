@@ -47,7 +47,7 @@ export default function ShopPageClient({
       <div className="container-max section-padding mb-12 text-center relative">
         <span className="section-label justify-center">Members Shop</span>
         <h1 className="section-title text-charcoal mt-2">
-          Pre-order <span className="text-brand-red">drops</span>
+          Order The <span className="text-brand-red">Drop</span>
         </h1>
         <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/65">
           Summer collection — fresh drops, exclusive vibes.
