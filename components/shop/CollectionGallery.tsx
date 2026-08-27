@@ -7,13 +7,21 @@ import {AnimatePresence, motion} from 'framer-motion';
 import {X, ChevronLeft, ChevronRight, Trash2, Upload, Edit} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 import type {CollectionImage} from '@/lib/collection-storage';
+import EditableField from '@/components/admin/EditableField';
+import {splitHeadingLastWord} from '@/lib/heading-display';
 
 export default function CollectionGallery({
   images,
   isAdmin,
+  documentId = '',
+  title,
+  subtitle,
 }: {
   images: CollectionImage[];
   isAdmin?: boolean;
+  documentId?: string;
+  title?: string | null;
+  subtitle?: string | null;
 }) {
   const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -21,6 +29,12 @@ export default function CollectionGallery({
   const [showModal, setShowModal] = useState(false);
   const [editingImage, setEditingImage] = useState<CollectionImage | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  const headingText = (title ?? '').trim() || 'Explore the collection';
+  const {lead: headingLead, accent: headingAccent} = splitHeadingLastWord(
+    headingText,
+    'Explore the collection',
+  );
 
   if (images.length === 0 && !isAdmin) return null;
 
@@ -74,9 +88,36 @@ export default function CollectionGallery({
       <div className="container-max section-padding">
         <div className="text-center mb-8 relative">
           <span className="section-label justify-center">Collection Gallery</span>
-          <h2 className="section-title text-charcoal mt-2">
-            Explore the <span className="text-brand-red">collection</span>
-          </h2>
+          <EditableField
+            documentId={documentId}
+            field="collectionTitle"
+            label="Collection heading (last word shows in red)"
+            value={headingText}
+            type="text"
+            wrapperClassName="group/edit relative mx-auto inline-block"
+          >
+            <h2 className="section-title text-charcoal mt-2">
+              {headingLead ? (
+                <>
+                  {headingLead} <span className="text-brand-red">{headingAccent}</span>
+                </>
+              ) : (
+                <span className="text-brand-red">{headingAccent}</span>
+              )}
+            </h2>
+          </EditableField>
+          {(subtitle?.trim() || isAdmin) && (
+            <EditableField
+              documentId={documentId}
+              field="collectionSubtitle"
+              label="Collection subheading"
+              value={subtitle ?? ''}
+              type="textarea"
+              wrapperClassName="group/edit relative mx-auto mt-3 block max-w-2xl"
+            >
+              <p className="section-subtitle mx-auto text-center text-charcoal/65">{subtitle ?? ''}</p>
+            </EditableField>
+          )}
 
           {/* Admin Add Image Button */}
           {isAdmin && (

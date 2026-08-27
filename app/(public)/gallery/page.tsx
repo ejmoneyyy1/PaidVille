@@ -1,6 +1,8 @@
 import {getSanityPublicClient} from '@/lib/sanity-server';
 import {galleryQuery, type SanityGalleryDoc} from '@/lib/sanity';
 import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/GalleryPageMasonry';
+import {getSiteContent} from '@/lib/get-site-content';
+import EditablePageHeader from '@/components/admin/EditablePageHeader';
 
 export const revalidate = 60;
 
@@ -44,17 +46,20 @@ export default async function GalleryPage() {
   const images: GalleryPageItem[] =
     sanityGallery.length > 0 ? sanityGallery : HARDCODED_FALLBACK;
 
+  const siteContent = await getSiteContent();
+
   return (
     <div className="min-h-screen pt-32 pb-24 bg-transparent isolate [transform:translateZ(0)]">
-      <div className="container-max section-padding mb-12 text-center">
-        <span className="section-label justify-center">Moments & Memories</span>
-        <h1 className="section-title text-charcoal mt-2">
-          Event <span className="text-brand-red">Gallery</span>
-        </h1>
-        <p className="section-subtitle mx-auto mt-4 text-center text-charcoal/65">
-          A visual timeline of every unforgettable PaidVille experience.
-        </p>
-      </div>
+      <EditablePageHeader
+        documentId={siteContent?._id ?? ''}
+        label="Moments & Memories"
+        titleField="galleryPageTitle"
+        subtitleField="galleryPageSubtitle"
+        title={siteContent?.galleryPageTitle}
+        subtitle={siteContent?.galleryPageSubtitle}
+        fallbackTitle="Event Gallery"
+        fallbackSubtitle="A visual timeline of every unforgettable PaidVille experience."
+      />
       <div className="container-max section-padding pb-24">
         <GalleryPageMasonry items={images} />
       </div>

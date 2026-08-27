@@ -8,6 +8,7 @@ export const siteContentType = defineType({
     {name: 'hero', title: 'Hero & Videos'},
     {name: 'services', title: 'Services'},
     {name: 'social', title: 'Social & Footer'},
+    {name: 'pageHeaders', title: 'Page Headers'},
   ],
   fields: [
     // ── Videos ───────────────────────────────────────────────────────────────
@@ -55,6 +56,16 @@ export const siteContentType = defineType({
     defineField({name: 'twitterUrl', title: 'Twitter / X URL', type: 'url', group: 'social'}),
     defineField({name: 'youtubeUrl', title: 'YouTube URL', type: 'url', group: 'social'}),
     defineField({name: 'facebookUrl', title: 'Facebook URL', type: 'url', group: 'social'}),
+    // ── Page headers (editable on-page) ──────────────────────────────────────
+    // The last word of each *Title renders in the brand red automatically.
+    defineField({name: 'eventsPageTitle', title: 'Events Page — Heading', type: 'string', group: 'pageHeaders'}),
+    defineField({name: 'eventsPageSubtitle', title: 'Events Page — Subheading', type: 'text', group: 'pageHeaders'}),
+    defineField({name: 'shopPageTitle', title: 'Shop Page — Heading', type: 'string', group: 'pageHeaders'}),
+    defineField({name: 'shopPageSubtitle', title: 'Shop Page — Subheading', type: 'text', group: 'pageHeaders'}),
+    defineField({name: 'galleryPageTitle', title: 'Gallery Page — Heading', type: 'string', group: 'pageHeaders'}),
+    defineField({name: 'galleryPageSubtitle', title: 'Gallery Page — Subheading', type: 'text', group: 'pageHeaders'}),
+    defineField({name: 'collectionTitle', title: 'Collection Gallery — Heading', type: 'string', group: 'pageHeaders'}),
+    defineField({name: 'collectionSubtitle', title: 'Collection Gallery — Subheading', type: 'text', group: 'pageHeaders'}),
   ],
   preview: {
     prepare() {

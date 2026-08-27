@@ -1,5 +1,6 @@
 import {getAvailableProducts} from '@/lib/shop-storage';
 import {getAllCollectionImages} from '@/lib/collection-storage';
+import {getSiteContent} from '@/lib/get-site-content';
 import ShopPageClient from '@/components/shop/ShopPageClient';
 
 export const metadata = {
@@ -15,9 +16,10 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function ShopPage() {
-  const [products, collectionImages] = await Promise.all([
+  const [products, collectionImages, siteContent] = await Promise.all([
     getAvailableProducts(),
     getAllCollectionImages(),
+    getSiteContent(),
   ]);
 
   // The Collection Gallery shows only real, admin-managed collectionImage docs.
@@ -28,6 +30,11 @@ export default async function ShopPage() {
     <ShopPageClient
       initialProducts={products}
       collectionImages={collectionImages}
+      documentId={siteContent?._id ?? ''}
+      shopTitle={siteContent?.shopPageTitle}
+      shopSubtitle={siteContent?.shopPageSubtitle}
+      collectionTitle={siteContent?.collectionTitle}
+      collectionSubtitle={siteContent?.collectionSubtitle}
     />
   );
 }
