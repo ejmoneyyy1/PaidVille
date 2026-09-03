@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {Resend} from 'resend';
 import {getSanityWriteClient} from '@/lib/sanity-write';
+import {subscribeToList} from '@/lib/subscribe-to-list';
 
 export const runtime = 'nodejs';
 
@@ -42,6 +43,10 @@ export async function POST(request: Request) {
         json: JSON.stringify(formData, null, 2),
       },
     });
+
+    // Auto-grow the client's email list: every signup joins his Beehiiv
+    // audience. No-ops if Beehiiv isn't configured; never throws.
+    await subscribeToList({email, name, source: submissionType});
 
     const resendKey = process.env.RESEND_API_KEY;
     const to = process.env.RESEND_TO_EMAIL;
