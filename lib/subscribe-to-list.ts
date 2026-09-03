@@ -10,6 +10,7 @@
  */
 export async function subscribeToList(params: {
   email: string;
+  /** Accepted for future use; not sent (Beehiiv custom fields must pre-exist or the subscribe fails). */
   name?: string;
   source?: string;
 }): Promise<void> {
@@ -35,7 +36,6 @@ export async function subscribeToList(params: {
           send_welcome_email: true,
           utm_source: 'paidville.com',
           utm_medium: params.source ?? 'website',
-          ...(params.name ? {custom_fields: [{name: 'Name', value: params.name}]} : {}),
         }),
       },
     );
