@@ -2,7 +2,8 @@ import {getAllProducts, getProductById} from '@/lib/shop-storage';
 import {notFound} from 'next/navigation';
 import ProductDetailClient from '@/components/shop/ProductDetailClient';
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const products = await getAllProducts();

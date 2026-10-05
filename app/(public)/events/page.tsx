@@ -9,7 +9,8 @@ export const metadata = {
   description: 'Upcoming PaidVille events — reserve on Eventbrite.',
 };
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 export default async function EventsPage() {
   let events: SanityEventDoc[] = [];

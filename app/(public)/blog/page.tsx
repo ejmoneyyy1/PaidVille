@@ -16,7 +16,8 @@ import BlogIndexClient from './_components/BlogIndexClient';
 import BlogPageHeader from './_components/BlogPageHeader';
 import type {DisplayPost} from './_components/BlogCard';
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 function sectionString(sections: unknown, key: string, prop: 'heading' | 'subheading'): string | null {
   if (!Array.isArray(sections)) return null;

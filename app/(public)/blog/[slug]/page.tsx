@@ -18,7 +18,8 @@ import EditableField from '@/components/admin/EditableField';
 import ArticleAdminBar from './_components/ArticleAdminBar';
 import AdminPendingPost from './_components/AdminPendingPost';
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 interface Params {
   params: Promise<{slug: string}>;

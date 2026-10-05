@@ -4,7 +4,8 @@ import GalleryPageMasonry, {type GalleryPageItem} from '@/components/gallery/Gal
 import {getSiteContent} from '@/lib/get-site-content';
 import EditablePageHeader from '@/components/admin/EditablePageHeader';
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 export const metadata = {
   title: 'Gallery',

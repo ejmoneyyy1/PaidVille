@@ -26,7 +26,8 @@ import {getSingletonDocs} from '@/lib/get-singleton-docs';
 import type {BlogPost} from '@/components/sections/BlogPreview';
 import type {GalleryItem} from '@/components/sections/Gallery';
 
-export const revalidate = 60;
+// Admin edits refresh pages on demand (revalidatePath); this is only a daily safety net.
+export const revalidate = 86400;
 
 /** Local placeholders when Sanity returns no rows — `staticSrc` only (no fake image refs). */
 const STATIC_GALLERY: GalleryItem[] = [
